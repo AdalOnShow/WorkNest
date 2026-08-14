@@ -731,146 +731,7 @@ Update UI (badge count decreases)
 
 ---
 
-## 9. Real-Time Messaging Flow
-
-### WebSocket Connection
-
-```text
-Client Opens Chat
-    |
-    v
-Connect to Durable Object WebSocket
-    |
-    v
-Durable Object Validates:
-    1. Session cookie valid
-    2. User identified
-    3. Project ID provided
-    4. User is project member
-    |
-    +-- Invalid --> Close connection
-    |
-    v
-Connection Accepted
-    |
-    +--> Register user in room state
-    +--> Broadcast USER_JOINED to others
-    +--> Set user online status
-    +--> Send current online users list
-```
-
-### Send Message
-
-```text
-Client Types Message + Enter
-    |
-    v
-WebSocket Send (MESSAGE_CREATED)
-    |
-    v
-Durable Object Receives
-    |
-    +--> Validate sender is connected & member
-    |
-    v
-Drizzle Insert (ChatMessage) --> D1
-    |
-    v
-Broadcast MESSAGE_CREATED to all connected room members
-    |
-    v
-All clients receive message
-```
-
-### Typing Indicators
-
-```text
-Client Starts Typing
-    |
-    v
-WebSocket Send (TYPING_STARTED)
-    |
-    v
-Durable Object Broadcasts to others
-    |
-    v
-Other clients show "User is typing..."
-    |
-    v
-Client Stops Typing (debounce 2s)
-    |
-    v
-WebSocket Send (TYPING_STOPPED)
-    |
-    v
-Durable Object Broadcasts
-    |
-    v
-Other clients hide typing indicator
-```
-
-### Online/Offline Presence
-
-```text
-User Connects
-    |
-    v
-Durable Object:
-    - Set status: ONLINE
-    - Set lastSeen: NOW
-    - Broadcast USER_ONLINE
-    |
-    v
-Other clients update presence list
-    |
-    |
-    +--- When user disconnects:
-    |
-    v
-Durable Object:
-    - Set status: OFFLINE
-    - Set lastSeen: NOW
-    - Broadcast USER_OFFLINE
-    - Broadcast lastSeen timestamp
-    |
-    v
-Other clients show "Offline 2 hours ago" (relative time)
-```
-
-### Load Chat History
-
-```text
-Client Opens Chat
-    |
-    v
-useChatMessagesQuery(projectId, { limit: 50, before: timestamp })
-    |
-    v
-Server Function
-    |
-    +--> Validate Session + Membership
-    +--> Drizzle Query (ChatMessage)
-    |      WHERE projectId = ?
-    |      AND createdAt < before (if provided)
-    |      ORDER BY createdAt DESC
-    |      LIMIT 50
-    |
-    v
-Return messages (newest first)
-    |
-    v
-Render in chronological order
-    |
-    v
-Scroll to bottom (newest)
-    |
-    v
-On scroll up --> load older messages (infinite scroll)
-```
-
----
-
-## 10. Theme Flow
+## 9. Theme Flow
 
 ### Theme Selection
 
@@ -912,7 +773,7 @@ No flash of wrong theme
 
 ---
 
-## 11. Responsive Design Flow
+## 10. Responsive Design Flow
 
 ### Layout Breakpoints
 
@@ -944,7 +805,7 @@ Mobile View
     |
     v
 Bottom Navigation Bar:
-    [Dashboard] [Projects] [Tasks] [Chat] [Profile]
+    [Dashboard] [Projects] [Tasks] [Profile]
     |
     v
 Or Hamburger Menu:
@@ -955,7 +816,7 @@ Slide-out drawer with full navigation
 
 ---
 
-## 12. Search, Filter, Sort Flow
+## 11. Search, Filter, Sort Flow
 
 ### Client-Side State
 
@@ -992,7 +853,7 @@ Return { data, total, page, pageSize, totalPages }
 
 ---
 
-## 13. Pagination Flow
+## 12. Pagination Flow
 
 ### Server-Side Pagination
 
@@ -1024,34 +885,9 @@ Pagination component shows:
     - Page numbers
 ```
 
-### Chat Pagination (Infinite Scroll)
-
-```text
-Initial Load:
-    useChatMessagesQuery(projectId, { limit: 50 })
-    |
-    v
-Load 50 most recent messages
-    |
-    v
-User Scrolls to Top
-    |
-    v
-Trigger: loadOlderMessages(before: oldestMessage.createdAt)
-    |
-    v
-Server returns 50 older messages
-    |
-    v
-Prepend to list (maintain scroll position)
-    |
-    v
-Repeat until no older messages
-```
-
 ---
 
-## 14. Error Handling Flow
+## 13. Error Handling Flow
 
 ### Server-Side Error Categories
 
@@ -1104,7 +940,7 @@ Toast notification for transient errors
 
 ---
 
-## 15. State Management Flow
+## 14. State Management Flow
 
 ### Server State (TanStack Query)
 
@@ -1120,7 +956,6 @@ Toast notification for transient errors
 │   useMembersQuery(projectId)                         │
 │   useCommentsQuery(taskId)                           │
 │   useNotificationsQuery(filters)                     │
-│   useChatMessagesQuery(projectId)                    │
 │   useDashboardKPIs()                                 │
 │   useProjectProgress()                               │
 │   useTasksByPriority()                               │
@@ -1182,7 +1017,6 @@ Toast notification for transient errors
 │   - Active tab                                      │
 │   - Form input values                               │
 │   - File preview state                              │
-│   - Chat input text                                 │
 │   - Search input (before debounce)                  │
 │   - Sidebar collapsed state                         │
 │   - Theme preference                                │
@@ -1197,22 +1031,18 @@ Toast notification for transient errors
 ├─────────────────────────────────────────────────────┤
 │ Manages:                                             │
 │   - WebSocket connection status                     │
-│   - Connected users list                            │
-│   - Typing users map                                │
 │   - Online/offline presence                         │
-│   - Last seen timestamps                            │
-│   - Real-time message buffer                        │
+│   - Notification count (unread)                     │
 │                                                      │
 │ Implementation:                                      │
-│   - React state in chat context                     │
-│   - Or small dedicated store if complexity grows    │
+│   - React state or small dedicated store            │
 │   - NO Zustand unless genuinely needed              │
 └─────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 16. Data Flow Summary
+## 15. Data Flow Summary
 
 ### Complete Request Lifecycle
 
@@ -1297,7 +1127,7 @@ Toast notification for transient errors
 
 ---
 
-## 17. Feature Interaction Map
+## 16. Feature Interaction Map
 
 ```text
                         ┌─────────────┐
@@ -1329,7 +1159,7 @@ Toast notification for transient errors
 
 ---
 
-## 18. Security Enforcement Points
+## 17. Security Enforcement Points
 
 ```text
 Every Server Function:

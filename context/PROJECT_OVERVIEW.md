@@ -26,8 +26,6 @@ WorkNest should allow teams to:
 - Add comments to tasks
 - Upload task attachments
 - Receive notifications
-- Communicate through real-time project chat
-- See online presence and typing indicators
 - Use the application on desktop, tablet, and mobile
 - Use light and dark themes
 
@@ -216,7 +214,6 @@ comments
 attachments
 notifications
 activities
-chat
 dashboard
 ```
 
@@ -268,7 +265,6 @@ Can:
 - View assigned tasks
 - Update assigned task status
 - Add comments where permitted
-- Participate in project chat
 - Upload permitted attachments
 - View relevant project activity
 
@@ -420,7 +416,6 @@ Membership controls access to:
 
 - Project data
 - Tasks
-- Chat
 - Comments
 - Attachments
 - Activities
@@ -639,7 +634,6 @@ Use server-side pagination for large datasets:
 - Members
 - Activities
 - Notifications
-- Chat history
 
 Chat should initially load recent messages and progressively load older messages.
 
@@ -777,9 +771,9 @@ Show latest 5-10 relevant activities.
 
 ---
 
-## 23. Real-Time Messaging
+## 23. Real-Time Notifications
 
-WorkNest includes live project-based messaging.
+WorkNest includes live notifications via WebSockets.
 
 Technology:
 
@@ -791,114 +785,51 @@ WebSockets
 WebSocket Hibernation
 ```
 
-Concept:
-
-```text
-Project
-   |
-   v
-ChatRoom Durable Object
-   |
-   +---- User A
-   +---- User B
-   +---- User C
-```
-
-Connected members of the same project can receive messages in real time.
-
----
-
-## 24. Durable Object Responsibilities
-
 Durable Objects handle:
 
 - WebSocket connections
-- Room coordination
-- Live message broadcasting
-- Online presence
-- Typing indicators
-- Real-time events
+- Online presence tracking
+- Notification delivery (push when online)
 - Connection lifecycle
-- Minimal transient room state
 
-Permanent application data belongs in D1.
-
-Do not use Durable Object memory as the primary database.
+Permanent notification data is stored in D1.
 
 ---
 
-## 25. Chat Persistence
+## 24. Real-Time Events
 
-Chat messages are stored in D1.
-
-Message fields:
-
-- ID
-- Project ID
-- Sender ID
-- Content
-- Created timestamp
-- Edited timestamp if implemented
-- Deleted timestamp if soft deletion is implemented
-
-Flow:
+WebSocket events:
 
 ```text
-Client
- |
- | WebSocket
- v
-Durable Object
- |
- +---- Persist -> D1
- |
- +---- Broadcast -> connected users
-```
-
----
-
-## 26. Real-Time Events
-
-Initial WebSocket events:
-
-```text
-MESSAGE_CREATED
-MESSAGE_UPDATED
-MESSAGE_DELETED
-
-USER_JOINED
-USER_LEFT
 USER_ONLINE
 USER_OFFLINE
-
-TYPING_STARTED
-TYPING_STOPPED
 
 TASK_UPDATED
 TASK_ASSIGNED
 
 NOTIFICATION_CREATED
+NOTIFICATION_READ
 ```
 
 All WebSocket event payloads must be strongly typed.
 
 ---
 
-## 27. WebSocket Security
+## 25. WebSocket Security
 
 Before accepting a WebSocket connection:
 
 1. Validate session.
 2. Identify user.
-3. Identify project.
-4. Verify project membership.
-5. Accept connection.
+3. Accept connection.
 
-A user must never gain access merely by knowing a project ID.
+WebSocket connections are used for:
+- Online presence tracking
+- Real-time notification delivery
 
 ---
 
-## 28. State Management
+## 26. State Management
 
 Do not add Zustand unless a real requirement appears.
 
@@ -913,7 +844,6 @@ Use TanStack Query for:
 - Notifications
 - Activities
 - Dashboard data
-- Chat history
 
 ### Authentication state
 
@@ -930,22 +860,21 @@ Use React state for:
 - Tabs
 - Form state
 - File previews
-- Local chat input
 
 ### Real-time client state
 
 React state or a small dedicated store may manage:
 
 - Connection status
-- Typing users
 - Online presence
 - WebSocket state
+- Notification count
 
 Only add Zustand if global client state becomes genuinely difficult to manage otherwise.
 
 ---
 
-## 29. TanStack Query
+## 27. TanStack Query
 
 Expected queries:
 
@@ -958,7 +887,6 @@ useMembersQuery
 useCommentsQuery
 useNotificationsQuery
 useActivitiesQuery
-useChatMessagesQuery
 ```
 
 Expected mutations:
@@ -992,7 +920,7 @@ Real-time events should update relevant query caches where practical.
 
 ---
 
-## 30. Server Functions
+## 28. Server Functions
 
 Use TanStack Start Server Functions for internal application operations.
 
@@ -1023,7 +951,7 @@ Never expose secrets or Cloudflare bindings to the client.
 
 ---
 
-## 31. Server Routes
+## 29. Server Routes
 
 Use Server Routes when a real HTTP endpoint is useful.
 
@@ -1039,7 +967,7 @@ Do not build a traditional REST API for every internal UI operation without a re
 
 ---
 
-## 32. Drizzle ORM
+## 30. Drizzle ORM
 
 Use Drizzle for D1 access.
 
@@ -1064,7 +992,7 @@ Keep database queries out of React components.
 
 ---
 
-## 33. Database Design Principles
+## 31. Database Design Principles
 
 D1 is SQLite-based.
 
@@ -1107,7 +1035,7 @@ Task
 
 ---
 
-## 34. Important Database Constraints
+## 32. Important Database Constraints
 
 The final schema should enforce important integrity rules.
 
@@ -1151,7 +1079,7 @@ Review the complete schema before generating migrations.
 
 ---
 
-## 35. Migration Strategy
+## 33. Migration Strategy
 
 Use versioned migration files.
 
@@ -1182,7 +1110,7 @@ Do not reset production data during normal development.
 
 ---
 
-## 36. Cloudflare D1
+## 34. Cloudflare D1
 
 D1 is the primary relational database.
 
@@ -1207,7 +1135,7 @@ The Worker receives the D1 binding through Wrangler.
 
 ---
 
-## 37. Cloudflare R2
+## 35. Cloudflare R2
 
 R2 is object storage.
 
@@ -1221,7 +1149,7 @@ Do not store binary file contents inside D1.
 
 ---
 
-## 38. Cloudflare Turnstile
+## 36. Cloudflare Turnstile
 
 Turnstile may protect:
 
@@ -1236,7 +1164,7 @@ Client-side success is not sufficient authorization.
 
 ---
 
-## 39. UI/UX
+## 37. UI/UX
 
 Responsive targets:
 
@@ -1266,7 +1194,7 @@ System
 
 ---
 
-## 40. Shared UI Components
+## 38. Shared UI Components
 
 Common reusable components:
 
@@ -1295,7 +1223,7 @@ Avoid duplicating shared components across features.
 
 ---
 
-## 41. Error Handling
+## 39. Error Handling
 
 Use consistent categories:
 
@@ -1318,7 +1246,7 @@ Do not expose:
 
 ---
 
-## 42. Security Rules
+## 40. Security Rules
 
 Mandatory:
 
@@ -1340,7 +1268,7 @@ Mandatory:
 
 ---
 
-## 43. Environment and Secrets
+## 41. Environment and Secrets
 
 Expected secrets/configuration:
 
@@ -1359,7 +1287,7 @@ Never commit secrets.
 
 ---
 
-## 44. Deployment
+## 42. Deployment
 
 Target:
 
@@ -1396,7 +1324,7 @@ Production deployment must include:
 
 ---
 
-## 45. Development Order
+## 43. Development Order
 
 ### Phase 1: Infrastructure
 
@@ -1507,7 +1435,7 @@ Production deployment must include:
 
 ---
 
-## 46. Definition of Done
+## 44. Definition of Done
 
 A feature is complete only when:
 
@@ -1527,7 +1455,7 @@ A feature is complete only when:
 
 ---
 
-## 47. AI Agent Rules
+## 45. AI Agent Rules
 
 Any AI coding agent working on WorkNest must:
 
@@ -1572,7 +1500,7 @@ Any AI coding agent working on WorkNest must:
 
 ---
 
-## 48. Architectural Summary
+## 46. Architectural Summary
 
 ```text
                     WorkNest
@@ -1601,7 +1529,7 @@ The architecture should remain simple where possible. Do not add infrastructure 
 
 ---
 
-## 49. Immediate Next Step
+## 47. Immediate Next Step
 
 The immediate next task is **database schema design**.
 
@@ -1624,7 +1552,7 @@ Do not begin broad feature implementation until the core data model and authenti
 
 ---
 
-## 50. Quality Goal
+## 48. Quality Goal
 
 WorkNest should demonstrate:
 

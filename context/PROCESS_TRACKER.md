@@ -22,7 +22,7 @@ Track high-level development phases and milestones.
 | 5 | drizzle.config.ts configured (D1-http) | [ ] | |
 | 6 | D1 binding in wrangler config | [ ] | |
 | 7 | R2 bucket created + binding | [ ] | |
-| 8 | Durable Objects configured (ChatRoom) | [ ] | |
+| 8 | Durable Objects configured (Notifications + Presence) | [ ] | |
 | 9 | Database client (src/db/index.ts) | [ ] | |
 
 ---
@@ -42,8 +42,7 @@ Track high-level development phases and milestones.
 | 16 | Attachment schema | [ ] | |
 | 17 | Notification schema | [ ] | |
 | 18 | Activity schema | [ ] | |
-| 19 | Chat message schema | [ ] | |
-| 20 | All relations defined | [ ] | |
+| 19 | All relations defined | [ ] | |
 | 21 | All indexes defined | [ ] | |
 | 22 | Migrations generated | [ ] | |
 | 23 | Migrations applied locally | [ ] | |
@@ -164,49 +163,29 @@ Track high-level development phases and milestones.
 
 ---
 
-## Phase 9: Real-Time Chat
-
-**Goal:** Durable Object chat rooms with WebSocket, persistence, presence, typing.
-
-| # | Task | Status | Notes |
-|---|------|--------|-------|
-| 84 | ChatRoom Durable Object class | [ ] | |
-| 85 | WebSocket upgrade handling | [ ] | |
-| 86 | Session validation on connect | [ ] | |
-| 87 | Membership validation on connect | [ ] | |
-| 88 | Send message (persist to D1 + broadcast) | [ ] | |
-| 89 | Receive live messages | [ ] | |
-| 90 | Chat history (paginated from D1) | [ ] | |
-| 91 | Online presence tracking | [ ] | |
-| 92 | Typing indicators | [ ] | |
-| 93 | User joined/left events | [ ] | |
-| 94 | "Offline X ago" relative time | [ ] | |
-
----
-
-## Phase 10: Polish
+## Phase 9: Polish
 
 **Goal:** Theme, responsive design, accessibility, loading/error/empty states, performance.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 95 | styles.css updated (Tomorro Dark Neon) | [ ] | |
-| 96 | Dark mode | [ ] | |
-| 97 | Light mode | [ ] | |
-| 98 | System preference mode | [ ] | |
-| 99 | Desktop layout | [ ] | |
-| 100 | Tablet layout | [ ] | |
-| 101 | Mobile layout | [ ] | |
-| 102 | Loading states (all pages) | [ ] | |
-| 103 | Error states (all pages) | [ ] | |
-| 104 | Empty states (all pages) | [ ] | |
-| 105 | Confirmation dialogs | [ ] | |
-| 106 | Accessibility audit | [ ] | |
-| 107 | Performance review | [ ] | |
+| 84 | styles.css updated (Tomorro Dark Neon) | [ ] | |
+| 85 | Dark mode | [ ] | |
+| 86 | Light mode | [ ] | |
+| 87 | System preference mode | [ ] | |
+| 88 | Desktop layout | [ ] | |
+| 89 | Tablet layout | [ ] | |
+| 90 | Mobile layout | [ ] | |
+| 91 | Loading states (all pages) | [ ] | |
+| 92 | Error states (all pages) | [ ] | |
+| 93 | Empty states (all pages) | [ ] | |
+| 94 | Confirmation dialogs | [ ] | |
+| 95 | Accessibility audit | [ ] | |
+| 96 | Performance review | [ ] | |
 
 ---
 
-## Phase 11: Deployment
+## Phase 10: Deployment
 
 **Goal:** Production-ready on Cloudflare.
 
@@ -237,10 +216,10 @@ Track high-level development phases and milestones.
 | 6. Dashboard | 9 | 0 | 0 | 9 |
 | 7. Collaboration | 7 | 0 | 0 | 7 |
 | 8. Attachments | 5 | 0 | 0 | 5 |
-| 9. Real-Time Chat | 11 | 0 | 0 | 11 |
+| 9. Real-Time Chat | 14 | 0 | 0 | 14 |
 | 10. Polish | 13 | 0 | 0 | 13 |
 | 11. Deployment | 10 | 0 | 0 | 10 |
-| **Total** | **117** | **3** | **0** | **114** |
+| **Total** | **120** | **3** | **0** | **117** |
 
 ---
 

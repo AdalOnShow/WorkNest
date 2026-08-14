@@ -25,8 +25,7 @@ src/
 │   │   ├── comments.ts       # Task comments
 │   │   ├── attachments.ts    # File metadata (R2)
 │   │   ├── notifications.ts  # User notifications
-│   │   ├── activities.ts     # Activity log
-│   │   └── chat.ts           # Chat messages
+│   │   └── activities.ts     # Activity log
 │   └── relations.ts          # All relation definitions
 drizzle.config.ts
 ```
@@ -350,32 +349,6 @@ CREATE INDEX idx_activity_created ON activity(created_at);
 
 ---
 
-### Chat Messages
-
-```typescript
-// src/db/schema/chat.ts
-
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-
-export const chatMessage = sqliteTable("chat_message", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id").notNull(), // references project.id
-  senderId: text("sender_id").notNull(),   // references user.id
-  content: text("content").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }),
-});
-```
-
-#### Indexes
-
-```sql
-CREATE INDEX idx_chat_project ON chat_message(project_id);
-CREATE INDEX idx_chat_created ON chat_message(created_at);
-```
-
----
-
 ## Relations
 
 ```typescript
@@ -390,7 +363,6 @@ import { comment } from "./schema/comments";
 import { attachment } from "./schema/attachments";
 import { notification } from "./schema/notifications";
 import { activity } from "./schema/activities";
-import { chatMessage } from "./schema/chat";
 
 // ─── Auth relations ────────────────────────────────────
 
@@ -408,7 +380,6 @@ export const userRelations = relations(user, ({ one, many }) => ({
   attachments: many(attachment),
   notifications: many(notification),
   activities: many(activity),
-  sentMessages: many(chatMessage),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -444,7 +415,6 @@ export const projectRelations = relations(project, ({ one, many }) => ({
   members: many(projectMember),
   tasks: many(task),
   activities: many(activity),
-  chatMessages: many(chatMessage),
 }));
 
 export const projectMemberRelations = relations(projectMember, ({ one }) => ({
@@ -526,19 +496,6 @@ export const activityRelations = relations(activity, ({ one }) => ({
     references: [project.id],
   }),
 }));
-
-// ─── Chat ──────────────────────────────────────────────
-
-export const chatMessageRelations = relations(chatMessage, ({ one }) => ({
-  project: one(project, {
-    fields: [chatMessage.projectId],
-    references: [project.id],
-  }),
-  sender: one(user, {
-    fields: [chatMessage.senderId],
-    references: [user.id],
-  }),
-}));
 ```
 
 ---
@@ -609,11 +566,10 @@ pnpm drizzle-kit studio
 | `account` | OAuth provider accounts | → user |
 | `verification` | Email verification tokens | → user |
 | `user_profile` | App role (ADMIN, PM, MEMBER) | → user |
-| `project` | Projects | → creator, members, tasks, activities, chat |
+| `project` | Projects | → creator, members, tasks, activities |
 | `project_member` | Project membership | → project, user |
 | `task` | Tasks | → project, assignee, creator, comments, attachments |
 | `comment` | Task comments | → task, author |
 | `attachment` | R2 file metadata | → task, uploader |
 | `notification` | User notifications | → recipient |
 | `activity` | Activity log | → actor, project |
-| `chat_message` | Chat messages | → project, sender |

@@ -19,7 +19,7 @@ Track implementation status for every feature. Update as work progresses.
 | 3 | D1 database created | [x] | |
 | 4 | Drizzle ORM configured | [ ] | drizzle.config.ts + D1-http driver |
 | 5 | R2 bucket configured | [ ] | |
-| 6 | Durable Objects configured | [ ] | For chat rooms |
+| 6 | Durable Objects configured | [ ] | For notifications + presence |
 | 7 | Wrangler config (d1, r2, do bindings) | [ ] | |
 
 ---
@@ -37,8 +37,7 @@ Track implementation status for every feature. Update as work progresses.
 | 14 | Attachment schema | [ ] | R2 metadata |
 | 15 | Notification schema | [ ] | |
 | 16 | Activity schema | [ ] | |
-| 17 | Chat message schema | [ ] | |
-| 18 | All relations defined | [ ] | |
+| 17 | All relations defined | [ ] | |
 | 19 | All indexes defined | [ ] | |
 | 20 | Migrations generated + applied | [ ] | |
 
@@ -181,31 +180,15 @@ Track implementation status for every feature. Update as work progresses.
 
 ---
 
-## Real-Time Chat
-
-| # | Feature | Status | Notes |
-|---|---------|--------|-------|
-| 95 | Durable Object chat room | [ ] | Per project |
-| 96 | WebSocket connection | [ ] | |
-| 97 | Send message | [ ] | Persist to D1 + broadcast |
-| 98 | Receive live messages | [ ] | |
-| 99 | Chat history (D1) | [ ] | Paginated, oldest-first |
-| 100 | Online presence | [ ] | With "offline X ago" relative time |
-| 101 | Typing indicators | [ ] | |
-| 102 | User joined/left events | [ ] | |
-| 103 | WebSocket security | [ ] | Validate session + membership |
-
----
-
 ## Theme
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 104 | Dark mode | [ ] | |
-| 105 | Light mode | [ ] | |
-| 106 | System preference mode | [ ] | |
-| 107 | Theme toggle | [ ] | |
-| 108 | Theme persistence | [ ] | |
+| 94 | Dark mode | [ ] | |
+| 95 | Light mode | [ ] | |
+| 96 | System preference mode | [ ] | |
+| 97 | Theme toggle | [ ] | |
+| 98 | Theme persistence | [ ] | |
 
 ---
 
@@ -213,10 +196,10 @@ Track implementation status for every feature. Update as work progresses.
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 109 | Desktop layout | [ ] | Sidebar + content |
-| 110 | Tablet layout | [ ] | Collapsible sidebar |
-| 111 | Mobile layout | [ ] | Bottom nav or hamburger |
-| 112 | Mobile navigation | [ ] | |
+| 99 | Desktop layout | [ ] | Sidebar + content |
+| 100 | Tablet layout | [ ] | Collapsible sidebar |
+| 101 | Mobile layout | [ ] | Bottom nav or hamburger |
+| 102 | Mobile navigation | [ ] | |
 
 ---
 
@@ -224,10 +207,10 @@ Track implementation status for every feature. Update as work progresses.
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 113 | Server-side search | [ ] | Projects, tasks, members |
-| 114 | Server-side filtering | [ ] | All relevant entities |
-| 115 | Server-side sorting | [ ] | All relevant entities |
-| 116 | Server-side pagination | [ ] | Projects, tasks, members, activities, notifications |
+| 103 | Server-side search | [ ] | Projects, tasks, members |
+| 104 | Server-side filtering | [ ] | All relevant entities |
+| 105 | Server-side sorting | [ ] | All relevant entities |
+| 106 | Server-side pagination | [ ] | Projects, tasks, members, activities, notifications |
 
 ---
 
@@ -235,21 +218,21 @@ Track implementation status for every feature. Update as work progresses.
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 117 | Sidebar | [ ] | shadcn install + customize |
-| 118 | Header | [ ] | |
-| 119 | Mobile navigation | [ ] | |
-| 120 | Loading states | [ ] | Skeleton / spinner |
-| 121 | Error states | [ ] | |
-| 122 | Empty states | [ ] | |
-| 123 | Confirmation dialogs | [ ] | Destructive actions |
-| 124 | Data table | [ ] | TanStack Table |
-| 125 | Search input | [ ] | |
-| 126 | Filter controls | [ ] | |
-| 127 | Status badge | [ ] | |
-| 128 | Priority badge | [ ] | |
-| 129 | Avatar | [ ] | |
-| 130 | Toast notifications | [ ] | |
-| 131 | Pagination component | [ ] | |
+| 107 | Sidebar | [ ] | shadcn install + customize |
+| 108 | Header | [ ] | |
+| 109 | Mobile navigation | [ ] | |
+| 110 | Loading states | [ ] | Skeleton / spinner |
+| 111 | Error states | [ ] | |
+| 112 | Empty states | [ ] | |
+| 113 | Confirmation dialogs | [ ] | Destructive actions |
+| 114 | Data table | [ ] | TanStack Table |
+| 115 | Search input | [ ] | |
+| 116 | Filter controls | [ ] | |
+| 117 | Status badge | [ ] | |
+| 118 | Priority badge | [ ] | |
+| 119 | Avatar | [ ] | |
+| 120 | Toast notifications | [ ] | |
+| 121 | Pagination component | [ ] | |
 
 ---
 
@@ -257,9 +240,9 @@ Track implementation status for every feature. Update as work progresses.
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 132 | styles.css updated to Tomorro Dark Neon | [ ] | Replace old WorkNest theme |
-| 133 | CSS variables match DESIGN.md tokens | [ ] | Colors, typography, spacing |
-| 134 | shadcn components customized | [ ] | Via CSS variables |
+| 122 | styles.css updated to Tomorro Dark Neon | [ ] | Replace old WorkNest theme |
+| 123 | CSS variables match DESIGN.md tokens | [ ] | Colors, typography, spacing |
+| 124 | shadcn components customized | [ ] | Via CSS variables |
 
 ---
 
@@ -267,11 +250,11 @@ Track implementation status for every feature. Update as work progresses.
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 135 | Server-side validation (Zod) | [ ] | All inputs |
-| 136 | Server-side authorization | [ ] | All protected operations |
-| 137 | No secrets in frontend | [ ] | |
-| 138 | No tokens in localStorage | [ ] | |
-| 139 | Session validation on every request | [ ] | |
+| 125 | Server-side validation (Zod) | [ ] | All inputs |
+| 126 | Server-side authorization | [ ] | All protected operations |
+| 127 | No secrets in frontend | [ ] | |
+| 128 | No tokens in localStorage | [ ] | |
+| 129 | Session validation on every request | [ ] | |
 
 ---
 
@@ -279,14 +262,14 @@ Track implementation status for every feature. Update as work progresses.
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 140 | Production D1 | [ ] | |
-| 141 | Production R2 | [ ] | |
-| 142 | Production Durable Objects | [ ] | |
-| 143 | Production secrets | [ ] | BETTER_AUTH_SECRET, OAuth keys |
-| 144 | OAuth callback URLs | [ ] | Google + GitHub |
-| 145 | Custom domain | [ ] | |
-| 146 | README | [ ] | |
-| 147 | Demo credentials | [ ] | |
+| 130 | Production D1 | [ ] | |
+| 131 | Production R2 | [ ] | |
+| 132 | Production Durable Objects | [ ] | |
+| 133 | Production secrets | [ ] | BETTER_AUTH_SECRET, OAuth keys |
+| 134 | OAuth callback URLs | [ ] | Google + GitHub |
+| 135 | Custom domain | [ ] | |
+| 136 | README | [ ] | |
+| 137 | Demo credentials | [ ] | |
 
 ---
 
@@ -295,7 +278,7 @@ Track implementation status for every feature. Update as work progresses.
 | Category | Total | Complete | In Progress | Not Started |
 |----------|-------|----------|-------------|-------------|
 | Infrastructure | 7 | 1 | 0 | 6 |
-| Database | 13 | 0 | 0 | 13 |
+| Database | 12 | 0 | 0 | 12 |
 | Authentication | 10 | 0 | 0 | 10 |
 | Projects | 10 | 0 | 0 | 10 |
 | Members | 5 | 0 | 0 | 5 |
@@ -305,7 +288,6 @@ Track implementation status for every feature. Update as work progresses.
 | Attachments | 5 | 0 | 0 | 5 |
 | Notifications | 7 | 0 | 0 | 7 |
 | Activity Log | 11 | 0 | 0 | 11 |
-| Real-Time Chat | 9 | 0 | 0 | 9 |
 | Theme | 5 | 0 | 0 | 5 |
 | Responsive Design | 4 | 0 | 0 | 4 |
 | Search/Filter/Sort/Page | 4 | 0 | 0 | 4 |
@@ -313,4 +295,4 @@ Track implementation status for every feature. Update as work progresses.
 | Design System | 3 | 0 | 0 | 3 |
 | Security | 5 | 0 | 0 | 5 |
 | Deployment | 8 | 0 | 0 | 8 |
-| **Total** | **147** | **1** | **0** | **146** |
+| **Total** | **137** | **1** | **0** | **136** |
