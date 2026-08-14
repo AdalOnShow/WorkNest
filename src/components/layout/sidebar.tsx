@@ -20,7 +20,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from '#/components/ui/sidebar'
 import { UserAvatar } from '#/components/ui/user-avatar'
 
@@ -41,8 +40,8 @@ export function AppSidebar() {
 
   return (
     <SidebarComponent collapsible="icon" className="bg-sidebar">
-      <SidebarHeader className="p-4">
-        <Link to="/dashboard" className="flex items-center gap-2.5">
+      <SidebarHeader className="p-4 h-16 flex items-center border-b border-sidebar-border">
+        <Link to="/" className="flex items-center gap-2.5">
           <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary">
             <Sprout className="w-5 h-5 text-primary-foreground" />
           </div>
@@ -51,8 +50,6 @@ export function AppSidebar() {
           </span>
         </Link>
       </SidebarHeader>
-
-      <SidebarSeparator />
 
       <SidebarContent>
         <SidebarGroup>
@@ -83,7 +80,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarSeparator />
+      <div className="border-t border-sidebar-border" />
 
       <SidebarFooter className="p-2">
         <SidebarMenu>

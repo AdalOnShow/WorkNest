@@ -56,14 +56,14 @@ export function Navbar({ isAuthenticated = false, userName = 'John Doe', userIma
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
       <div className={isAuthenticated ? "px-4 sm:px-6 lg:px-8" : "container mx-auto px-4 sm:px-6 lg:px-8"}>
         <div className="flex items-center justify-between h-16">
           {/* Logo - Only show on landing page */}
           {!isAuthenticated && (
             <div className="flex-shrink-0">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="text-2xl font-headline font-bold text-foreground"
               >
                 WorkNest
@@ -95,18 +95,19 @@ export function Navbar({ isAuthenticated = false, userName = 'John Doe', userIma
             </div>
           )}
 
-          <div className="flex-1" />
+          {/* Spacer - Only for authenticated pages */}
+          {isAuthenticated && <div className="flex-1" />}
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2">
             <ThemeToggle />
-            
+
             {isAuthenticated ? (
               <>
                 <NotificationBell
                   notifications={MOCK_NOTIFICATIONS}
-                  onMarkRead={() => {}}
-                  onMarkAllRead={() => {}}
+                  onMarkRead={() => { }}
+                  onMarkAllRead={() => { }}
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
