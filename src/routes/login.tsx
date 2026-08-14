@@ -1,4 +1,4 @@
-import { createFileRoute, Link  } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod/v4'
@@ -7,18 +7,38 @@ import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Separator } from '#/components/ui/separator'
 import { Sprout, Github, Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { authClient } from '#/lib/auth-client'
 
 const loginSchema = z.object({
   email: z.email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 })
 
+function isSafeRedirect(path: string): boolean {
+  if (!path.startsWith('/')) return false
+  if (path.startsWith('//')) return false
+  if (path.includes('\\')) return false
+  try {
+    const url = new URL(path, 'http://localhost')
+    return url.pathname === path
+  } catch {
+    return false
+  }
+}
+
 export const Route = createFileRoute('/login')({
+  validateSearch: (search: Record<string, unknown>) => {
+    const raw = (search.redirect as string) || '/dashboard'
+    return { redirect: isSafeRedirect(raw) ? raw : '/dashboard' }
+  },
   component: LoginPage,
 })
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const { redirect } = Route.useSearch()
 
   const form = useForm({
     defaultValues: {
@@ -26,7 +46,16 @@ function LoginPage() {
       password: '',
     },
     onSubmit: async ({ value }) => {
-      console.log('Login:', value)
+      setError(null)
+      const { error: authError } = await authClient.signIn.email({
+        email: value.email,
+        password: value.password,
+      })
+      if (authError) {
+        setError(authError.message || 'Invalid email or password')
+        return
+      }
+      navigate({ to: redirect })
     },
   })
 
@@ -86,7 +115,12 @@ function LoginPage() {
               type="button"
               variant="outline"
               className="flex-1 bg-card hover:bg-accent"
-              onClick={() => console.log('Google login')}
+              onClick={() =>
+                authClient.signIn.social({
+                  provider: 'google',
+                  callbackURL: redirect,
+                })
+              }
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -112,7 +146,12 @@ function LoginPage() {
               type="button"
               variant="outline"
               className="flex-1 bg-card hover:bg-accent"
-              onClick={() => console.log('GitHub login')}
+              onClick={() =>
+                authClient.signIn.social({
+                  provider: 'github',
+                  callbackURL: redirect,
+                })
+              }
             >
               <Github className="w-5 h-5 mr-2" />
               GitHub
@@ -127,6 +166,11 @@ function LoginPage() {
           </div>
 
           {/* Email/Password Form */}
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive">
+              {error}
+            </div>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault()

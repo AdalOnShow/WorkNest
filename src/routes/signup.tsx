@@ -1,4 +1,4 @@
-import { createFileRoute, Link  } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod/v4'
@@ -7,6 +7,7 @@ import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Separator } from '#/components/ui/separator'
 import { Sprout, Github, Eye, EyeOff, ArrowLeft, Check } from 'lucide-react'
+import { authClient } from '#/lib/auth-client'
 
 const signupSchema = z
   .object({
@@ -32,6 +33,8 @@ export const Route = createFileRoute('/signup')({
 function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   const form = useForm({
     defaultValues: {
@@ -41,7 +44,17 @@ function SignupPage() {
       confirmPassword: '',
     },
     onSubmit: async ({ value }) => {
-      console.log('Signup:', value)
+      setError(null)
+      const { error: authError } = await authClient.signUp.email({
+        email: value.email,
+        password: value.password,
+        name: value.fullName,
+      })
+      if (authError) {
+        setError(authError.message || 'Failed to create account')
+        return
+      }
+      navigate({ to: '/dashboard' })
     },
   })
 
@@ -101,7 +114,12 @@ function SignupPage() {
               type="button"
               variant="outline"
               className="flex-1 bg-card hover:bg-accent"
-              onClick={() => console.log('Google signup')}
+              onClick={() =>
+                authClient.signIn.social({
+                  provider: 'google',
+                  callbackURL: '/dashboard',
+                })
+              }
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -127,7 +145,12 @@ function SignupPage() {
               type="button"
               variant="outline"
               className="flex-1 bg-card hover:bg-accent"
-              onClick={() => console.log('GitHub signup')}
+              onClick={() =>
+                authClient.signIn.social({
+                  provider: 'github',
+                  callbackURL: '/dashboard',
+                })
+              }
             >
               <Github className="w-5 h-5 mr-2" />
               GitHub
@@ -142,6 +165,11 @@ function SignupPage() {
           </div>
 
           {/* Signup Form */}
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive">
+              {error}
+            </div>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -328,10 +356,9 @@ function SignupPage() {
                 className={`
                   mt-0.5 w-4 h-4 rounded border flex items-center justify-center
                   transition-colors
-                  ${
-                    agreed
-                      ? 'bg-primary border-primary text-black'
-                      : 'border-border hover:border-primary/50'
+                  ${agreed
+                    ? 'bg-primary border-primary text-black'
+                    : 'border-border hover:border-primary/50'
                   }
                 `}
               >
