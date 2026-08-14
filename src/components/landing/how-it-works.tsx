@@ -105,11 +105,11 @@ export function HowItWorks() {
   const { ref, isVisible } = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section id="how-it-works" className="py-24 bg-gradient-to-b from-background via-accent/30 to-background relative overflow-hidden">
+    <section id="how-it-works" className="py-24 relative overflow-hidden bg-gradient-to-b from-background via-accent/20 to-background dark:via-accent/30">
       {/* Background Decorations */}
       <div className="absolute inset-0 opacity-50">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 dark:bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">

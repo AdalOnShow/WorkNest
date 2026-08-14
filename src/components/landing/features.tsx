@@ -64,8 +64,14 @@ export function Features() {
   const { ref, isVisible } = useScrollAnimation<HTMLDivElement>();
 
   return (
-    <section id="features" className="py-24 bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="features" className="py-24 relative overflow-hidden bg-gradient-to-b from-accent/10 via-background to-accent/10 dark:from-background dark:via-background dark:to-background">
+      {/* Background Decorations for light mode */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-0 w-96 h-96 bg-primary/8 dark:bg-primary/3 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-blue-500/8 dark:bg-blue-500/3 rounded-full blur-3xl" />
+      </div>
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Title */}
         <div
           ref={ref}
