@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
@@ -25,7 +26,11 @@ const signupSchema = z
     path: ['confirmPassword'],
   })
 
-export default function SignupPage() {
+export const Route = createFileRoute('/signup')({
+  component: SignupPage,
+})
+
+function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
 
@@ -46,14 +51,14 @@ export default function SignupPage() {
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-card relative overflow-hidden flex-col justify-between p-12">
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-24">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Sprout className="w-6 h-6 text-black" />
+          <Link to="/" className="flex items-center gap-2.5 mb-24">
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary">
+              <Sprout className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-heading text-2xl font-bold text-foreground">
+            <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
               WorkNest
             </span>
-          </div>
+          </Link>
 
           <h1 className="font-heading text-5xl font-bold text-foreground leading-tight mb-6">
             Start collaborating

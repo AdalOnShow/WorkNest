@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sprout } from 'lucide-react';
 
 // Mock data - replace with real data from context/auth
 const MOCK_NOTIFICATIONS = [
@@ -61,12 +62,14 @@ export function Navbar({ isAuthenticated = false, userName = 'John Doe', userIma
         <div className="flex items-center justify-between h-16">
           {/* Logo - Only show on landing page */}
           {!isAuthenticated && (
-            <div className="flex-shrink-0">
-              <Link
-                to="/"
-                className="text-2xl font-headline font-bold text-foreground"
-              >
-                WorkNest
+            <div className="shrink-0">
+              <Link to="/" className="flex items-center gap-2.5">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary">
+                  <Sprout className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
+                  WorkNest
+                </span>
               </Link>
             </div>
           )}
