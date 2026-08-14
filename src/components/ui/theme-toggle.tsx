@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
 import { Monitor, Moon, Sun } from 'lucide-react'
-import { Button } from '#/components/ui/button'
-import { cn } from '#/lib/utils'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const themes = ['dark', 'light', 'system'] as const
 const icons = {
