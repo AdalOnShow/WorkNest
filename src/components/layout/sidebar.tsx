@@ -7,6 +7,7 @@ import {
   Bell,
   Settings,
   Sprout,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/projects', label: 'Projects', icon: FolderKanban },
   { to: '/tasks', label: 'Tasks', icon: CheckSquare },
+  { to: '/messages', label: 'Messages', icon: MessageSquare },
   { to: '/members', label: 'Members', icon: Users },
   { to: '/notifications', label: 'Notifications', icon: Bell },
 ]
