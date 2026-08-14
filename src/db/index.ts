@@ -1,5 +1,9 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3'
+import { drizzle } from 'drizzle-orm/d1'
+import * as schema from './schema'
+import * as relations from './relations'
 
-import * as schema from './schema.ts'
+export function createDb(env: { DB: D1Database }) {
+  return drizzle(env.DB, { schema: { ...schema, ...relations } })
+}
 
-export const db = drizzle(process.env.DATABASE_URL, { schema })
+export type Database = ReturnType<typeof createDb>
