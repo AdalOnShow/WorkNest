@@ -1,12 +1,17 @@
 import { relations } from 'drizzle-orm'
-import { user, session, account } from './auth'
-import { userProfile } from './users'
-import { project, projectMember } from './projects'
-import { task } from './tasks'
-import { comment } from './comments'
-import { attachment } from './attachments'
-import { notification } from './notifications'
-import { activity } from './activities'
+import {
+  user,
+  session,
+  account,
+  userProfile,
+  project,
+  projectMember,
+  task,
+  comment,
+  attachment,
+  notification,
+  activity,
+} from './schema'
 
 // ─── Auth relations ────────────────────────────────────
 

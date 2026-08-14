@@ -14,10 +14,10 @@
   "upload_source_maps": true,
   "d1_databases": [
     {
-      "binding": "worknest_db",
+      "binding": "DB",
       "database_name": "worknest-db",
       "database_id": "e1fe6dd5-45b6-429f-a7e4-6eefac320f47",
-      "migrations_dir": "drizzle",
+      "migrations_dir": "migrations",
     },
   ],
   /**

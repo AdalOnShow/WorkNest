@@ -4,7 +4,7 @@ import { defineConfig } from 'drizzle-kit'
 config({ path: ['.env.local', '.env'] })
 
 export default defineConfig({
-  schema: './src/db/schema/**/*',
+  schema: './src/db/schema/index.ts',
   out: './migrations',
   dialect: 'sqlite',
   driver: 'd1-http',
