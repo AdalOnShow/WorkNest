@@ -1,27 +1,27 @@
-import { cn } from "#/lib/utils.ts"
-import { Button } from "#/components/ui/button.tsx"
+import { cn } from '#/lib/utils.ts'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "#/components/ui/card.tsx"
+} from '#/components/ui/card.tsx'
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "#/components/ui/field.tsx"
-import { Input } from "#/components/ui/input.tsx"
+} from '#/components/ui/field.tsx'
+import { Input } from '#/components/ui/input.tsx'
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<'div'>) {
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Welcome back</CardTitle>
@@ -87,7 +87,7 @@ export function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
+        By clicking continue, you agree to our <a href="#">Terms of Service</a>{' '}
         and <a href="#">Privacy Policy</a>.
       </FieldDescription>
     </div>

@@ -3,7 +3,7 @@
 ## Configuration (drizzle.config.ts)
 
 ```typescript
-import { defineConfig } from 'drizzle-kit';
+import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
   schema: './src/db/schema.ts',
@@ -12,12 +12,13 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },
-});
+})
 ```
 
 ## Configuration for Different Databases
 
 ### PostgreSQL
+
 ```typescript
 export default defineConfig({
   schema: './src/db/schema.ts',
@@ -26,10 +27,11 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },
-});
+})
 ```
 
 ### MySQL
+
 ```typescript
 export default defineConfig({
   schema: './src/db/schema.ts',
@@ -42,10 +44,11 @@ export default defineConfig({
     password: process.env.DB_PASSWORD!,
     database: process.env.DB_NAME!,
   },
-});
+})
 ```
 
 ### SQLite
+
 ```typescript
 export default defineConfig({
   schema: './src/db/schema.ts',
@@ -54,7 +57,7 @@ export default defineConfig({
   dbCredentials: {
     url: './local-db.sqlite',
   },
-});
+})
 ```
 
 ## package.json Scripts
@@ -93,13 +96,13 @@ npx drizzle-kit studio
 ## Programmatic Migration
 
 ```typescript
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { migrate } from 'drizzle-orm/node-postgres/migrator'
 
-const db = drizzle(process.env.DATABASE_URL);
+const db = drizzle(process.env.DATABASE_URL)
 
 // Run migrations
-await migrate(db, { migrationsFolder: './drizzle' });
+await migrate(db, { migrationsFolder: './drizzle' })
 ```
 
 ## Migration File Structure

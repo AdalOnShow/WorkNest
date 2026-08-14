@@ -30,7 +30,7 @@ export function StatusBadge({ status, className, ...props }: StatusBadgeProps) {
       variant="outline"
       className={cn(
         'inline-flex items-center gap-1.5 font-medium border-border bg-card text-foreground',
-        className
+        className,
       )}
       {...props}
     >

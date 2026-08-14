@@ -1,6 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link  } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod/v4'
 import { Button } from '#/components/ui/button'
@@ -51,7 +50,8 @@ function LoginPage() {
             your workspace
           </h1>
           <p className="text-xl text-muted-foreground max-w-md">
-            Sign in to continue managing your projects and collaborating with your team.
+            Sign in to continue managing your projects and collaborating with
+            your team.
           </p>
         </div>
 
@@ -142,7 +142,9 @@ function LoginPage() {
                 validators={{
                   onChange: ({ value }) => {
                     const result = z.email().safeParse(value)
-                    return result.success ? undefined : result.error.issues[0]?.message
+                    return result.success
+                      ? undefined
+                      : result.error.issues[0]?.message
                   },
                 }}
               >
@@ -156,7 +158,9 @@ function LoginPage() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className={
-                        field.state.meta.errors.length > 0 ? 'border-destructive' : ''
+                        field.state.meta.errors.length > 0
+                          ? 'border-destructive'
+                          : ''
                       }
                     />
                     {field.state.meta.errors.length > 0 && (

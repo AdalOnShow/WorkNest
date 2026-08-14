@@ -824,6 +824,7 @@ Before accepting a WebSocket connection:
 3. Accept connection.
 
 WebSocket connections are used for:
+
 - Online presence tracking
 - Real-time notification delivery
 

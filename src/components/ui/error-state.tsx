@@ -9,9 +9,19 @@ export interface ErrorStateProps {
   className?: string
 }
 
-export function ErrorState({ title, message, onRetry, className }: ErrorStateProps) {
+export function ErrorState({
+  title,
+  message,
+  onRetry,
+  className,
+}: ErrorStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 text-center px-4 rounded-xl border border-[#2D3B2A] bg-[#172318]/50', className)}>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center py-16 text-center px-4 rounded-xl border border-[#2D3B2A] bg-[#172318]/50',
+        className,
+      )}
+    >
       <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#FF5A5F]/10 mb-4">
         <AlertTriangle className="w-8 h-8 text-[#FF5A5F]" />
       </div>

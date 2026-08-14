@@ -23,7 +23,9 @@ export function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border bg-sidebar">
       <div className="flex items-center justify-around h-16 px-2">
         {MOBILE_NAV_ITEMS.map((item) => {
-          const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
+          const isActive =
+            location.pathname === item.to ||
+            location.pathname.startsWith(item.to + '/')
           return (
             <Link
               key={item.to}
@@ -32,7 +34,7 @@ export function MobileNav() {
                 'flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors min-w-[60px]',
                 isActive
                   ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               <item.icon className="w-5 h-5" />

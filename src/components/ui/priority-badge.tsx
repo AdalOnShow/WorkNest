@@ -20,13 +20,17 @@ export interface PriorityBadgeProps extends Omit<BadgeProps, 'variant'> {
   priority: Priority
 }
 
-export function PriorityBadge({ priority, className, ...props }: PriorityBadgeProps) {
+export function PriorityBadge({
+  priority,
+  className,
+  ...props
+}: PriorityBadgeProps) {
   return (
     <Badge
       variant="outline"
       className={cn(
         'inline-flex items-center gap-1.5 font-medium border-border bg-card text-foreground',
-        className
+        className,
       )}
       {...props}
     >

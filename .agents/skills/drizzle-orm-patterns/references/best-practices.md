@@ -19,17 +19,19 @@ Always use TypeScript and leverage `$inferInsert` / `$inferSelect` for complete 
 
 ```typescript
 // Infer types from schema
-type NewUser = typeof users.$inferInsert;
-type User = typeof users.$inferSelect;
+type NewUser = typeof users.$inferInsert
+type User = typeof users.$inferSelect
 
 // Use in function signatures
 async function createUser(data: typeof users.$inferInsert) {
-  return db.insert(users).values(data).returning();
+  return db.insert(users).values(data).returning()
 }
 
-async function getUser(id: number): Promise<typeof users.$inferSelect | undefined> {
-  const [user] = await db.select().from(users).where(eq(users.id, id));
-  return user;
+async function getUser(
+  id: number,
+): Promise<typeof users.$inferSelect | undefined> {
+  const [user] = await db.select().from(users).where(eq(users.id, id))
+  return user
 }
 ```
 
@@ -41,14 +43,14 @@ Define relations using the `relations()` API to enable nested queries and mainta
 // Good: Define both sides of the relation
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
-}));
+}))
 
 export const postsRelations = relations(posts, ({ one }) => ({
   author: one(users, {
     fields: [posts.authorId],
     references: [users.id],
   }),
-}));
+}))
 ```
 
 ### 3. Transactions
@@ -58,28 +60,40 @@ Use transactions for multi-step operations that must succeed together.
 ```typescript
 // Good: Transfer with transaction
 await db.transaction(async (tx) => {
-  await tx.update(accounts).set({ balance: fromBalance - amount }).where(eq(accounts.id, fromId));
-  await tx.update(accounts).set({ balance: toBalance + amount }).where(eq(accounts.id, toId));
-});
+  await tx
+    .update(accounts)
+    .set({ balance: fromBalance - amount })
+    .where(eq(accounts.id, fromId))
+  await tx
+    .update(accounts)
+    .set({ balance: toBalance + amount })
+    .where(eq(accounts.id, toId))
+})
 
 // Bad: No transaction - partial failure possible
-await db.update(accounts).set({ balance: fromBalance - amount }).where(eq(accounts.id, fromId));
-await db.update(accounts).set({ balance: toBalance + amount }).where(eq(accounts.id, toId));
+await db
+  .update(accounts)
+  .set({ balance: fromBalance - amount })
+  .where(eq(accounts.id, fromId))
+await db
+  .update(accounts)
+  .set({ balance: toBalance + amount })
+  .where(eq(accounts.id, toId))
 ```
 
 ### 4. Migrations
 
 Use the appropriate migration strategy for each environment:
 
-| Environment | Command | Use Case |
-|-------------|---------|----------|
-| Development | `drizzle-kit push` | Quick schema sync |
-| Production | `drizzle-kit generate` + `drizzle-kit migrate` | Versioned migrations |
-| Recovery | `drizzle-kit pull` | Recreate schema from DB |
+| Environment | Command                                        | Use Case                |
+| ----------- | ---------------------------------------------- | ----------------------- |
+| Development | `drizzle-kit push`                             | Quick schema sync       |
+| Production  | `drizzle-kit generate` + `drizzle-kit migrate` | Versioned migrations    |
+| Recovery    | `drizzle-kit pull`                             | Recreate schema from DB |
 
 ```typescript
 // drizzle.config.ts
-import { defineConfig } from 'drizzle-kit';
+import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
   schema: './src/db/schema.ts',
@@ -88,7 +102,7 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },
-});
+})
 ```
 
 ### 5. Indexes
@@ -96,15 +110,19 @@ export default defineConfig({
 Add indexes on frequently queried columns and foreign keys.
 
 ```typescript
-export const posts = pgTable('posts', {
-  id: serial('id').primaryKey(),
-  title: text('title').notNull(),
-  authorId: integer('author_id').references(() => users.id),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-}, (table) => [
-  index('author_idx').on(table.authorId),    // For filtering by author
-  index('created_idx').on(table.createdAt),  // For sorting by date
-]);
+export const posts = pgTable(
+  'posts',
+  {
+    id: serial('id').primaryKey(),
+    title: text('title').notNull(),
+    authorId: integer('author_id').references(() => users.id),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('author_idx').on(table.authorId), // For filtering by author
+    index('created_idx').on(table.createdAt), // For sorting by date
+  ],
+)
 ```
 
 ### 6. Soft Deletes
@@ -116,13 +134,10 @@ export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   deletedAt: timestamp('deleted_at'),
-});
+})
 
 // Always filter deleted records
-const activeUsers = await db
-  .select()
-  .from(users)
-  .where(isNull(users.deletedAt));
+const activeUsers = await db.select().from(users).where(isNull(users.deletedAt))
 ```
 
 ### 7. Pagination
@@ -136,7 +151,7 @@ const users = await db
   .from(users)
   .where(gt(users.id, lastId))
   .orderBy(asc(users.id))
-  .limit(10);
+  .limit(10)
 
 // Acceptable: OFFSET-based (okay for small datasets)
 const users = await db
@@ -144,7 +159,7 @@ const users = await db
   .from(users)
   .orderBy(asc(users.id))
   .limit(pageSize)
-  .offset((page - 1) * pageSize);
+  .offset((page - 1) * pageSize)
 ```
 
 ### 8. Query Optimization
@@ -157,10 +172,10 @@ const userNames = await db
   .select({ name: users.name })
   .from(users)
   .where(eq(users.verified, true))
-  .limit(10);
+  .limit(10)
 
 // Bad: Selecting all columns and rows
-const allUsers = await db.select().from(users);
+const allUsers = await db.select().from(users)
 ```
 
 ---
@@ -188,9 +203,9 @@ Calling `tx.rollback()` throws an exception. Use try/catch if you need to handle
 try {
   await db.transaction(async (tx) => {
     if (insufficientFunds) {
-      tx.rollback();
+      tx.rollback()
     }
-  });
+  })
 } catch (error) {
   // Transaction was rolled back
 }
@@ -200,22 +215,22 @@ try {
 
 Not all databases support `.returning()`. Check your dialect compatibility:
 
-| Database | Returning Support |
-|----------|-------------------|
-| PostgreSQL | Full support |
-| MySQL | Limited (8.0.19+) |
-| SQLite | Limited (3.35.0+) |
-| MSSQL | Use `OUTPUT` clause |
+| Database   | Returning Support   |
+| ---------- | ------------------- |
+| PostgreSQL | Full support        |
+| MySQL      | Limited (8.0.19+)   |
+| SQLite     | Limited (3.35.0+)   |
+| MSSQL      | Use `OUTPUT` clause |
 
 ### Type Inference
 
 For newer type-safe patterns, use `InferSelectModel` and `InferInsertModel` from `drizzle-orm`:
 
 ```typescript
-import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
+import { InferSelectModel, InferInsertModel } from 'drizzle-orm'
 
-type User = InferSelectModel<typeof users>;
-type NewUser = InferInsertModel<typeof users>;
+type User = InferSelectModel<typeof users>
+type NewUser = InferInsertModel<typeof users>
 ```
 
 ### Batch Operations
@@ -224,14 +239,14 @@ Large batch inserts may hit database limits. Chunk into smaller batches:
 
 ```typescript
 // Good: Chunked batch insert
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = 1000
 for (let i = 0; i < users.length; i += BATCH_SIZE) {
-  const batch = users.slice(i, i + BATCH_SIZE);
-  await db.insert(users).values(batch);
+  const batch = users.slice(i, i + BATCH_SIZE)
+  await db.insert(users).values(batch)
 }
 
 // Bad: Single large batch may fail
-await db.insert(users).values(veryLargeArray);
+await db.insert(users).values(veryLargeArray)
 ```
 
 ### Migrations in Production
@@ -258,13 +273,10 @@ Remember to always filter `deletedAt IS NULL` in queries:
 
 ```typescript
 // Good: Explicitly filter soft-deleted
-const activeUsers = await db
-  .select()
-  .from(users)
-  .where(isNull(users.deletedAt));
+const activeUsers = await db.select().from(users).where(isNull(users.deletedAt))
 
 // Bad: Returns all including deleted
-const allUsers = await db.select().from(users);
+const allUsers = await db.select().from(users)
 ```
 
 ---
@@ -276,15 +288,15 @@ const allUsers = await db.select().from(users);
 Use connection pooling for production workloads:
 
 ```typescript
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { Pool } from 'pg'
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 20, // Maximum pool size
-});
+})
 
-const db = drizzle(pool);
+const db = drizzle(pool)
 ```
 
 ### Prepared Statements
@@ -293,12 +305,15 @@ Drizzle automatically uses prepared statements. Avoid dynamic query building whe
 
 ```typescript
 // Good: Static query (prepared statement)
-await db.select().from(users).where(eq(users.id, userId));
+await db.select().from(users).where(eq(users.id, userId))
 
 // Acceptable: Dynamic with caution
-const conditions = [eq(users.active, true)];
-if (name) conditions.push(like(users.name, `%${name}%`));
-await db.select().from(users).where(and(...conditions));
+const conditions = [eq(users.active, true)]
+if (name) conditions.push(like(users.name, `%${name}%`))
+await db
+  .select()
+  .from(users)
+  .where(and(...conditions))
 ```
 
 ### Select Only Needed Columns
@@ -308,10 +323,10 @@ await db.select().from(users).where(and(...conditions));
 const { name, email } = await db
   .select({ name: users.name, email: users.email })
   .from(users)
-  .where(eq(users.id, 1));
+  .where(eq(users.id, 1))
 
 // Bad: Select all columns
-const [user] = await db.select().from(users).where(eq(users.id, 1));
+const [user] = await db.select().from(users).where(eq(users.id, 1))
 ```
 
 ---
@@ -324,10 +339,10 @@ Drizzle ORM prevents SQL injection through parameterized queries. Never concaten
 
 ```typescript
 // Safe: Parameterized query
-await db.select().from(users).where(eq(users.name, userInput));
+await db.select().from(users).where(eq(users.name, userInput))
 
 // Dangerous: Never do this
-await db.execute(`SELECT * FROM users WHERE name = '${userInput}'`);
+await db.execute(`SELECT * FROM users WHERE name = '${userInput}'`)
 ```
 
 ### Environment Variables
@@ -340,7 +355,7 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL!, // Use env var
   },
-});
+})
 
 // NOT: url: 'postgres://user:password@localhost/db'
 ```

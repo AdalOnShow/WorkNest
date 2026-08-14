@@ -25,7 +25,9 @@ export function ThemeToggle({ className }: { className?: string }) {
     setMounted(true)
   }, [])
 
-  const currentIndex = themes.indexOf((theme as typeof themes[number]) ?? 'dark')
+  const currentIndex = themes.indexOf(
+    (theme as (typeof themes)[number]) ?? 'dark',
+  )
   const nextTheme = themes[(currentIndex + 1) % themes.length]
   const Icon = icons[theme as keyof typeof icons] ?? Monitor
 
@@ -66,19 +68,20 @@ export function ThemeToggle({ className }: { className?: string }) {
       className={cn(
         'text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
         animating && 'pointer-events-none',
-        className
+        className,
       )}
     >
       <span
         className={cn(
           'inline-flex transition-transform duration-300',
-          animating && 'animate-[theme-spin_0.5s_cubic-bezier(0.4,0,0.2,1)]'
+          animating && 'animate-[theme-spin_0.5s_cubic-bezier(0.4,0,0.2,1)]',
         )}
       >
         <Icon className="w-5 h-5" />
       </span>
       <span className="sr-only">
-        Theme: {labels[theme as keyof typeof labels] ?? 'System'} — click for {labels[nextTheme]}
+        Theme: {labels[theme as keyof typeof labels] ?? 'System'} — click for{' '}
+        {labels[nextTheme]}
       </span>
     </Button>
   )

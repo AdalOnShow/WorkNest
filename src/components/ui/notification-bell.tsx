@@ -37,7 +37,10 @@ export function NotificationBell({
         <Button
           variant="ghost"
           size="icon"
-          className={cn('relative text-muted-foreground hover:text-foreground hover:bg-accent', className)}
+          className={cn(
+            'relative text-muted-foreground hover:text-foreground hover:bg-accent',
+            className,
+          )}
         >
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
@@ -48,7 +51,10 @@ export function NotificationBell({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0 bg-popover border-border text-popover-foreground" align="end">
+      <PopoverContent
+        className="w-80 p-0 bg-popover border-border text-popover-foreground"
+        align="end"
+      >
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h4 className="font-medium">Notifications</h4>
           {unreadCount > 0 && (
@@ -74,12 +80,18 @@ export function NotificationBell({
                   key={notification.id}
                   className={cn(
                     'p-4 border-b border-border/50 last:border-0 hover:bg-accent/50 transition-colors',
-                    !notification.read && 'border-l-2 border-l-primary bg-accent/20'
+                    !notification.read &&
+                      'border-l-2 border-l-primary bg-accent/20',
                   )}
                 >
                   <div className="flex justify-between items-start gap-3">
                     <div className="space-y-1 min-w-0">
-                      <p className={cn('text-sm font-medium leading-none', !notification.read && 'text-foreground')}>
+                      <p
+                        className={cn(
+                          'text-sm font-medium leading-none',
+                          !notification.read && 'text-foreground',
+                        )}
+                      >
                         {notification.title}
                       </p>
                       <p className="text-xs text-muted-foreground line-clamp-2">

@@ -46,7 +46,11 @@ export function UserAvatar({
           className={cn(
             'absolute bottom-0 right-0 block rounded-full ring-2 ring-background',
             isOnline ? 'bg-primary' : 'bg-muted-foreground',
-            size === 'sm' ? 'w-2 h-2' : size === 'md' ? 'w-2.5 h-2.5' : 'w-3 h-3'
+            size === 'sm'
+              ? 'w-2 h-2'
+              : size === 'md'
+                ? 'w-2.5 h-2.5'
+                : 'w-3 h-3',
           )}
         />
       )}

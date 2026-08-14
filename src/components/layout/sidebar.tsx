@@ -64,10 +64,13 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton
                     asChild
-                    isActive={location.pathname === item.to || location.pathname.startsWith(item.to + '/')}
+                    isActive={
+                      location.pathname === item.to ||
+                      location.pathname.startsWith(item.to + '/')
+                    }
                     className={cn(
                       'text-muted-foreground hover:text-foreground hover:bg-accent',
-                      'data-[active=true]:bg-accent data-[active=true]:text-primary'
+                      'data-[active=true]:bg-accent data-[active=true]:text-primary',
                     )}
                   >
                     <Link to={item.to}>
@@ -104,8 +107,12 @@ export function AppSidebar() {
         <div className="flex items-center gap-3 px-3 py-2 group-data-[collapsible=icon]:hidden">
           <UserAvatar name="John Doe" size="sm" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">John Doe</p>
-            <p className="text-xs text-muted-foreground truncate">john@example.com</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">
+              John Doe
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              john@example.com
+            </p>
           </div>
         </div>
       </SidebarFooter>

@@ -1,16 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { 
-  Search, 
-  MoreVertical, 
-  Send, 
-  Bold, 
-  Italic, 
-  Code, 
+import {
+  Search,
+  MoreVertical,
+  Send,
+  Bold,
+  Italic,
+  Code,
   Smile,
   Paperclip,
   CheckCheck,
-  Check
+  Check,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +27,8 @@ const conversations = [
     id: '1',
     name: 'Nazmul Hossain',
     avatar: null,
-    lastMessage: 'মেসেজ এ সব serverless হবে যাবে, একটু কষ্ট করে ডিটেইলসে ও জানাবেন তাই',
+    lastMessage:
+      'মেসেজ এ সব serverless হবে যাবে, একটু কষ্ট করে ডিটেইলসে ও জানাবেন তাই',
     timestamp: '1 day',
     unread: 0,
     online: true,
@@ -37,7 +38,7 @@ const conversations = [
     id: '2',
     name: 'Sarah Johnson',
     avatar: null,
-    lastMessage: 'Thanks for the update! Let me know when you\'re ready.',
+    lastMessage: "Thanks for the update! Let me know when you're ready.",
     timestamp: '2 hours',
     unread: 3,
     online: true,
@@ -57,7 +58,7 @@ const conversations = [
     id: '4',
     name: 'Emily Rodriguez',
     avatar: null,
-    lastMessage: 'Perfect! I\'ll send you the files.',
+    lastMessage: "Perfect! I'll send you the files.",
     timestamp: '1 day',
     unread: 0,
     online: false,
@@ -70,7 +71,8 @@ const messages = [
     id: '1',
     senderId: '1',
     senderName: 'Nazmul Hossain',
-    content: 'মেসেজ এ সব serverless হবে যাবে, একটু কষ্ট করে ডিটেইলসে ও জানাবেন তাই',
+    content:
+      'মেসেজ এ সব serverless হবে যাবে, একটু কষ্ট করে ডিটেইলসে ও জানাবেন তাই',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
     seen: true,
     reactions: [],
@@ -79,7 +81,8 @@ const messages = [
     id: '2',
     senderId: '1',
     senderName: 'Nazmul Hossain',
-    content: 'Heh তাই, করতে পারবেনা আপনার যদি শুধু এভাবেই লাগে, তাহলে একটি প্রজেক্টে করতে পারেন। TanStack Start + TanStack Start Server Functions বা API methods দিয়ে করতে পারেন।\n\nDB যেটা ভাল লাগে ব্যবহার করতে পারেন। তবে Cloudflare-এ deploy + manage করার জন্য Wrangler সম্পর্কে একটু জেনে নিতে আপনার জন্য easy হবে।',
+    content:
+      'Heh তাই, করতে পারবেনা আপনার যদি শুধু এভাবেই লাগে, তাহলে একটি প্রজেক্টে করতে পারেন। TanStack Start + TanStack Start Server Functions বা API methods দিয়ে করতে পারেন।\n\nDB যেটা ভাল লাগে ব্যবহার করতে পারেন। তবে Cloudflare-এ deploy + manage করার জন্য Wrangler সম্পর্কে একটু জেনে নিতে আপনার জন্য easy হবে।',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
     seen: true,
     reactions: [{ emoji: '❤️', count: 1 }],
@@ -87,12 +90,14 @@ const messages = [
 ]
 
 function MessagesPage() {
-  const [selectedConversation, setSelectedConversation] = useState(conversations[0])
+  const [selectedConversation, setSelectedConversation] = useState(
+    conversations[0],
+  )
   const [messageText, setMessageText] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter((conv) =>
+    conv.name.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   return (
@@ -103,10 +108,10 @@ function MessagesPage() {
         <div className="h-16 border-b border-border flex items-center justify-between px-6 bg-card">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <UserAvatar 
-                name={selectedConversation.name} 
-                image={selectedConversation.avatar} 
-                size="md" 
+              <UserAvatar
+                name={selectedConversation.name}
+                image={selectedConversation.avatar}
+                size="md"
               />
               {selectedConversation.online && (
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-primary border-2 border-card rounded-full" />
@@ -122,7 +127,9 @@ function MessagesPage() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {selectedConversation.online ? 'Active about 4 hours ago' : 'Offline'}
+                {selectedConversation.online
+                  ? 'Active about 4 hours ago'
+                  : 'Offline'}
               </p>
             </div>
           </div>
@@ -136,7 +143,9 @@ function MessagesPage() {
           {/* Date Divider */}
           <div className="flex items-center justify-center">
             <div className="bg-muted px-3 py-1 rounded-full">
-              <span className="text-xs text-muted-foreground font-medium">Yesterday</span>
+              <span className="text-xs text-muted-foreground font-medium">
+                Yesterday
+              </span>
             </div>
           </div>
 
@@ -144,11 +153,9 @@ function MessagesPage() {
           {messages.map((message, index) => (
             <div key={message.id} className="flex items-start gap-3">
               {/* Avatar */}
-              {index === 0 || messages[index - 1].senderId !== message.senderId ? (
-                <UserAvatar 
-                  name={message.senderName} 
-                  size="sm" 
-                />
+              {index === 0 ||
+              messages[index - 1].senderId !== message.senderId ? (
+                <UserAvatar name={message.senderName} size="sm" />
               ) : (
                 <div className="w-8" />
               )}
@@ -156,16 +163,17 @@ function MessagesPage() {
               {/* Message Content */}
               <div className="flex-1 max-w-2xl">
                 {/* Sender name and timestamp */}
-                {(index === 0 || messages[index - 1].senderId !== message.senderId) && (
+                {(index === 0 ||
+                  messages[index - 1].senderId !== message.senderId) && (
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-sm text-foreground">
                       {message.senderName}
                     </span>
                     <CheckCheck className="w-4 h-4 text-primary" />
                     <span className="text-xs text-muted-foreground">
-                      {message.timestamp.toLocaleTimeString('en-US', { 
-                        hour: 'numeric', 
-                        minute: '2-digit' 
+                      {message.timestamp.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
                       })}
                     </span>
                   </div>
@@ -181,12 +189,14 @@ function MessagesPage() {
                 {/* Reactions and seen status */}
                 <div className="flex items-center gap-2 mt-1">
                   {message.reactions.map((reaction, idx) => (
-                    <div 
+                    <div
                       key={idx}
                       className="flex items-center gap-1 bg-muted px-2 py-0.5 rounded-full"
                     >
                       <span className="text-sm">{reaction.emoji}</span>
-                      <span className="text-xs text-muted-foreground">{reaction.count}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {reaction.count}
+                      </span>
                     </div>
                   ))}
                   {message.seen && (
@@ -210,7 +220,7 @@ function MessagesPage() {
               onChange={(e) => setMessageText(e.target.value)}
               className="border-0 focus-visible:ring-0 px-4 py-3"
             />
-            
+
             {/* Toolbar */}
             <div className="flex items-center justify-between px-3 py-2 border-t border-border">
               <div className="flex items-center gap-1">
@@ -231,7 +241,7 @@ function MessagesPage() {
                   <Paperclip className="w-4 h-4" />
                 </Button>
               </div>
-              
+
               <Button size="sm" className="gap-2">
                 <span>Send</span>
                 <Send className="w-4 h-4" />
@@ -264,15 +274,15 @@ function MessagesPage() {
               onClick={() => setSelectedConversation(conversation)}
               className={cn(
                 'w-full p-4 flex items-start gap-3 hover:bg-accent/50 transition-colors border-b border-border',
-                selectedConversation.id === conversation.id && 'bg-accent'
+                selectedConversation.id === conversation.id && 'bg-accent',
               )}
             >
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <UserAvatar 
-                  name={conversation.name} 
-                  image={conversation.avatar} 
-                  size="md" 
+                <UserAvatar
+                  name={conversation.name}
+                  image={conversation.avatar}
+                  size="md"
                 />
                 {conversation.online && (
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-primary border-2 border-card rounded-full" />

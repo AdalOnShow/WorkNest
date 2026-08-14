@@ -8,7 +8,7 @@ export function AnimatedDots() {
     { size: 70, top: '40%', right: '5%', delay: '2.5s', duration: '10s' },
     { size: 110, top: '85%', right: '15%', delay: '1s', duration: '13s' },
     { size: 50, top: '30%', left: '50%', delay: '3s', duration: '9s' },
-  ];
+  ]
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -28,5 +28,5 @@ export function AnimatedDots() {
         />
       ))}
     </div>
-  );
+  )
 }

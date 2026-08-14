@@ -30,11 +30,51 @@ export const Route = createFileRoute('/_authenticated/tasks')({
 })
 
 const MOCK_TASKS = [
-  { id: '1', title: 'Fix login bug', project: 'Website Redesign', assignee: 'John D.', status: 'IN_PROGRESS' as const, priority: 'HIGH' as const, due: 'Feb 20' },
-  { id: '2', title: 'Add tests', project: 'Website Redesign', assignee: 'Jane S.', status: 'TODO' as const, priority: 'MEDIUM' as const, due: 'Feb 25' },
-  { id: '3', title: 'Design UI', project: 'Mobile App', assignee: 'Mike R.', status: 'COMPLETED' as const, priority: 'LOW' as const, due: '—' },
-  { id: '4', title: 'Setup CI/CD', project: 'API Backend', assignee: 'John D.', status: 'IN_PROGRESS' as const, priority: 'HIGH' as const, due: 'Feb 22' },
-  { id: '5', title: 'Write docs', project: 'Dashboard', assignee: 'Jane S.', status: 'TODO' as const, priority: 'LOW' as const, due: 'Mar 01' },
+  {
+    id: '1',
+    title: 'Fix login bug',
+    project: 'Website Redesign',
+    assignee: 'John D.',
+    status: 'IN_PROGRESS' as const,
+    priority: 'HIGH' as const,
+    due: 'Feb 20',
+  },
+  {
+    id: '2',
+    title: 'Add tests',
+    project: 'Website Redesign',
+    assignee: 'Jane S.',
+    status: 'TODO' as const,
+    priority: 'MEDIUM' as const,
+    due: 'Feb 25',
+  },
+  {
+    id: '3',
+    title: 'Design UI',
+    project: 'Mobile App',
+    assignee: 'Mike R.',
+    status: 'COMPLETED' as const,
+    priority: 'LOW' as const,
+    due: '—',
+  },
+  {
+    id: '4',
+    title: 'Setup CI/CD',
+    project: 'API Backend',
+    assignee: 'John D.',
+    status: 'IN_PROGRESS' as const,
+    priority: 'HIGH' as const,
+    due: 'Feb 22',
+  },
+  {
+    id: '5',
+    title: 'Write docs',
+    project: 'Dashboard',
+    assignee: 'Jane S.',
+    status: 'TODO' as const,
+    priority: 'LOW' as const,
+    due: 'Mar 01',
+  },
 ]
 
 function TasksPage() {
@@ -49,7 +89,9 @@ function TasksPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="headline-sm text-foreground">Tasks</h1>
-            <p className="body-md text-muted-foreground mt-1">Manage all tasks across projects</p>
+            <p className="body-md text-muted-foreground mt-1">
+              Manage all tasks across projects
+            </p>
           </div>
           <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
             <Plus className="w-4 h-4" />
@@ -92,18 +134,35 @@ function TasksPage() {
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground font-medium">Title</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Project</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Assignee</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Status</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Priority</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Due</TableHead>
-                <TableHead className="text-muted-foreground font-medium text-right">Actions</TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Title
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Project
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Assignee
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Status
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Priority
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Due
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium text-right">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {MOCK_TASKS.map((task) => (
-                <TableRow key={task.id} className="border-border/50 hover:bg-accent/30">
+                <TableRow
+                  key={task.id}
+                  className="border-border/50 hover:bg-accent/30"
+                >
                   <TableCell>
                     <Link
                       to="/tasks/$taskId"
@@ -113,24 +172,45 @@ function TasksPage() {
                       {task.title}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-card-foreground">{task.project}</TableCell>
-                  <TableCell className="text-card-foreground">{task.assignee}</TableCell>
-                  <TableCell><StatusBadge status={task.status} /></TableCell>
+                  <TableCell className="text-card-foreground">
+                    {task.project}
+                  </TableCell>
+                  <TableCell className="text-card-foreground">
+                    {task.assignee}
+                  </TableCell>
                   <TableCell>
-                    <span className={`label-sm ${
-                      task.priority === 'HIGH' ? 'text-destructive' :
-                      task.priority === 'MEDIUM' ? 'text-[var(--color-status-on-hold)]' : 'text-muted-foreground'
-                    }`}>
+                    <StatusBadge status={task.status} />
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`label-sm ${
+                        task.priority === 'HIGH'
+                          ? 'text-destructive'
+                          : task.priority === 'MEDIUM'
+                            ? 'text-[var(--color-status-on-hold)]'
+                            : 'text-muted-foreground'
+                      }`}
+                    >
                       {task.priority}
                     </span>
                   </TableCell>
-                  <TableCell className="text-card-foreground">{task.due}</TableCell>
+                  <TableCell className="text-card-foreground">
+                    {task.due}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent"
+                      >
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -142,7 +222,11 @@ function TasksPage() {
         </div>
 
         <div className="flex justify-center">
-          <Pagination currentPage={page} totalPages={3} onPageChange={setPage} />
+          <Pagination
+            currentPage={page}
+            totalPages={3}
+            onPageChange={setPage}
+          />
         </div>
       </div>
     </PageContainer>

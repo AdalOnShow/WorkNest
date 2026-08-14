@@ -9,7 +9,12 @@ export interface PaginationProps {
   className?: string
 }
 
-export function Pagination({ currentPage, totalPages, onPageChange, className }: PaginationProps) {
+export function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className,
+}: PaginationProps) {
   const getPageNumbers = () => {
     const pages: (number | '...')[] = []
     if (totalPages <= 7) {
@@ -17,7 +22,11 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
     } else {
       pages.push(1)
       if (currentPage > 3) pages.push('...')
-      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      for (
+        let i = Math.max(2, currentPage - 1);
+        i <= Math.min(totalPages - 1, currentPage + 1);
+        i++
+      ) {
         pages.push(i)
       }
       if (currentPage < totalPages - 2) pages.push('...')
@@ -40,7 +49,9 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
 
       {getPageNumbers().map((page, i) =>
         page === '...' ? (
-          <span key={`dots-${i}`} className="px-2 text-muted-foreground">…</span>
+          <span key={`dots-${i}`} className="px-2 text-muted-foreground">
+            …
+          </span>
         ) : (
           <Button
             key={page}
@@ -50,13 +61,13 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
               'w-9 h-9',
               currentPage === page
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground'
+                : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground',
             )}
             onClick={() => onPageChange(page)}
           >
             {page}
           </Button>
-        )
+        ),
       )}
 
       <Button

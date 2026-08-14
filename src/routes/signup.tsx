@@ -1,6 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link  } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod/v4'
 import { Button } from '#/components/ui/button'
@@ -66,7 +65,8 @@ function SignupPage() {
             with your team
           </h1>
           <p className="text-xl text-muted-foreground max-w-md">
-            Create your account and start managing projects, tasks, and team collaboration in minutes.
+            Create your account and start managing projects, tasks, and team
+            collaboration in minutes.
           </p>
         </div>
 
@@ -156,7 +156,8 @@ function SignupPage() {
                 name="fullName"
                 validators={{
                   onChange: ({ value }) => {
-                    if (value.length < 2) return 'Name must be at least 2 characters'
+                    if (value.length < 2)
+                      return 'Name must be at least 2 characters'
                     return undefined
                   },
                 }}
@@ -170,7 +171,9 @@ function SignupPage() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className={
-                        field.state.meta.errors.length > 0 ? 'border-destructive' : ''
+                        field.state.meta.errors.length > 0
+                          ? 'border-destructive'
+                          : ''
                       }
                     />
                     {field.state.meta.errors.length > 0 && (
@@ -190,7 +193,9 @@ function SignupPage() {
                 validators={{
                   onChange: ({ value }) => {
                     const result = z.email().safeParse(value)
-                    return result.success ? undefined : result.error.issues[0]?.message
+                    return result.success
+                      ? undefined
+                      : result.error.issues[0]?.message
                   },
                 }}
               >
@@ -204,7 +209,9 @@ function SignupPage() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className={
-                        field.state.meta.errors.length > 0 ? 'border-destructive' : ''
+                        field.state.meta.errors.length > 0
+                          ? 'border-destructive'
+                          : ''
                       }
                     />
                     {field.state.meta.errors.length > 0 && (
@@ -223,10 +230,14 @@ function SignupPage() {
                 name="password"
                 validators={{
                   onChange: ({ value }) => {
-                    if (value.length < 8) return 'Password must be at least 8 characters'
-                    if (!/[A-Z]/.test(value)) return 'Password must contain at least one uppercase letter'
-                    if (!/[a-z]/.test(value)) return 'Password must contain at least one lowercase letter'
-                    if (!/[0-9]/.test(value)) return 'Password must contain at least one number'
+                    if (value.length < 8)
+                      return 'Password must be at least 8 characters'
+                    if (!/[A-Z]/.test(value))
+                      return 'Password must contain at least one uppercase letter'
+                    if (!/[a-z]/.test(value))
+                      return 'Password must contain at least one lowercase letter'
+                    if (!/[0-9]/.test(value))
+                      return 'Password must contain at least one number'
                     return undefined
                   },
                 }}
@@ -268,7 +279,8 @@ function SignupPage() {
                 )}
               </form.Field>
               <p className="text-xs text-muted-foreground">
-                Must contain at least 8 characters with uppercase, lowercase, and a number
+                Must contain at least 8 characters with uppercase, lowercase,
+                and a number
               </p>
             </div>
 
@@ -278,7 +290,8 @@ function SignupPage() {
                 name="confirmPassword"
                 validators={{
                   onChange: ({ value }) => {
-                    if (value !== form.state.values.password) return "Passwords don't match"
+                    if (value !== form.state.values.password)
+                      return "Passwords don't match"
                     return undefined
                   },
                 }}
@@ -293,7 +306,9 @@ function SignupPage() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className={
-                        field.state.meta.errors.length > 0 ? 'border-destructive' : ''
+                        field.state.meta.errors.length > 0
+                          ? 'border-destructive'
+                          : ''
                       }
                     />
                     {field.state.meta.errors.length > 0 && (
@@ -313,9 +328,10 @@ function SignupPage() {
                 className={`
                   mt-0.5 w-4 h-4 rounded border flex items-center justify-center
                   transition-colors
-                  ${agreed
-                    ? 'bg-primary border-primary text-black'
-                    : 'border-border hover:border-primary/50'
+                  ${
+                    agreed
+                      ? 'bg-primary border-primary text-black'
+                      : 'border-border hover:border-primary/50'
                   }
                 `}
               >

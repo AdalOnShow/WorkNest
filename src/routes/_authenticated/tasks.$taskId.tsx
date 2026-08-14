@@ -23,7 +23,8 @@ export const Route = createFileRoute('/_authenticated/tasks/$taskId')({
 const MOCK_TASK = {
   id: '1',
   title: 'Fix login bug',
-  description: 'Users are unable to log in when using special characters in their password. The authentication service is not properly sanitizing input before hashing.',
+  description:
+    'Users are unable to log in when using special characters in their password. The authentication service is not properly sanitizing input before hashing.',
   status: 'IN_PROGRESS' as const,
   priority: 'HIGH' as const,
   assignee: 'John D.',
@@ -36,8 +37,20 @@ const MOCK_ATTACHMENTS = [
 ]
 
 const MOCK_COMMENTS = [
-  { id: '1', author: 'John D.', text: 'Working on this now...', time: '2 hours ago', isOwn: false },
-  { id: '2', author: 'Jane S.', text: 'Looks good!', time: '1 hour ago', isOwn: false },
+  {
+    id: '1',
+    author: 'John D.',
+    text: 'Working on this now...',
+    time: '2 hours ago',
+    isOwn: false,
+  },
+  {
+    id: '2',
+    author: 'Jane S.',
+    text: 'Looks good!',
+    time: '1 hour ago',
+    isOwn: false,
+  },
 ]
 
 function TaskDetailPage() {
@@ -47,7 +60,10 @@ function TaskDetailPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <Link to="/tasks" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <Link
+          to="/tasks"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft className="w-4 h-4" />
           Back to Tasks
         </Link>
@@ -55,11 +71,19 @@ function TaskDetailPage() {
         <div className="flex items-start justify-between">
           <h1 className="headline-sm text-foreground">{MOCK_TASK.title}</h1>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="border-border text-card-foreground hover:bg-accent">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border text-card-foreground hover:bg-accent"
+            >
               <Pencil className="w-4 h-4" />
               Edit
             </Button>
-            <Button variant="outline" size="sm" className="border-border text-destructive hover:bg-destructive/10">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border text-destructive hover:bg-destructive/10"
+            >
               <Trash2 className="w-4 h-4" />
               Delete
             </Button>
@@ -72,7 +96,9 @@ function TaskDetailPage() {
             <div className="bg-card border border-border rounded-[14px] p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="label-sm text-muted-foreground block mb-2">Status</label>
+                  <label className="label-sm text-muted-foreground block mb-2">
+                    Status
+                  </label>
                   <Select defaultValue={MOCK_TASK.status}>
                     <SelectTrigger className="bg-background border-border text-foreground rounded-lg">
                       <SelectValue />
@@ -85,7 +111,9 @@ function TaskDetailPage() {
                   </Select>
                 </div>
                 <div>
-                  <label className="label-sm text-muted-foreground block mb-2">Priority</label>
+                  <label className="label-sm text-muted-foreground block mb-2">
+                    Priority
+                  </label>
                   <Select defaultValue={MOCK_TASK.priority}>
                     <SelectTrigger className="bg-background border-border text-foreground rounded-lg">
                       <SelectValue />
@@ -98,11 +126,17 @@ function TaskDetailPage() {
                   </Select>
                 </div>
                 <div>
-                  <label className="label-sm text-muted-foreground block mb-2">Assignee</label>
-                  <p className="body-sm text-foreground">{MOCK_TASK.assignee}</p>
+                  <label className="label-sm text-muted-foreground block mb-2">
+                    Assignee
+                  </label>
+                  <p className="body-sm text-foreground">
+                    {MOCK_TASK.assignee}
+                  </p>
                 </div>
                 <div>
-                  <label className="label-sm text-muted-foreground block mb-2">Due Date</label>
+                  <label className="label-sm text-muted-foreground block mb-2">
+                    Due Date
+                  </label>
                   <p className="body-sm text-foreground">{MOCK_TASK.due}</p>
                 </div>
               </div>
@@ -111,22 +145,32 @@ function TaskDetailPage() {
             {/* Description */}
             <div className="bg-card border border-border rounded-[14px] p-6">
               <h3 className="label-lg text-foreground mb-3">Description</h3>
-              <p className="body-md text-card-foreground leading-relaxed">{MOCK_TASK.description}</p>
+              <p className="body-md text-card-foreground leading-relaxed">
+                {MOCK_TASK.description}
+              </p>
             </div>
 
             {/* Comments */}
             <div className="bg-card border border-border rounded-[14px] p-6">
-              <h3 className="label-lg text-foreground mb-4">Comments ({MOCK_COMMENTS.length})</h3>
+              <h3 className="label-lg text-foreground mb-4">
+                Comments ({MOCK_COMMENTS.length})
+              </h3>
               <div className="space-y-4">
                 {MOCK_COMMENTS.map((c) => (
                   <div key={c.id} className="flex gap-3">
                     <UserAvatar name={c.author} size="sm" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="label-sm text-foreground">{c.author}</span>
-                        <span className="text-xs text-muted-foreground">· {c.time}</span>
+                        <span className="label-sm text-foreground">
+                          {c.author}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          · {c.time}
+                        </span>
                       </div>
-                      <p className="body-sm text-card-foreground mt-1">{c.text}</p>
+                      <p className="body-sm text-card-foreground mt-1">
+                        {c.text}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -142,7 +186,10 @@ function TaskDetailPage() {
                     onChange={(e) => setComment(e.target.value)}
                     className="flex-1 h-10 px-4 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
                   />
-                  <Button size="icon" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button
+                    size="icon"
+                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
@@ -155,24 +202,41 @@ function TaskDetailPage() {
             <div className="bg-card border border-border rounded-[14px] p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="label-lg text-foreground">Attachments</h3>
-                <Button variant="outline" size="sm" className="border-border text-card-foreground hover:bg-accent">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-border text-card-foreground hover:bg-accent"
+                >
                   <Upload className="w-4 h-4" />
                   Upload
                 </Button>
               </div>
               <div className="space-y-2">
                 {MOCK_ATTACHMENTS.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-3 rounded-lg bg-background border border-border/50">
+                  <div
+                    key={file.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-background border border-border/50"
+                  >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                        <span className="text-xs text-muted-foreground">📄</span>
+                        <span className="text-xs text-muted-foreground">
+                          📄
+                        </span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm text-foreground truncate">{file.name}</p>
-                        <p className="text-xs text-muted-foreground">{file.size}</p>
+                        <p className="text-sm text-foreground truncate">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {file.size}
+                        </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent shrink-0"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

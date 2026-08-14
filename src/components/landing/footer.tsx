@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router'
 
 export function Footer() {
   return (
@@ -7,7 +7,10 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand Column */}
           <div className="col-span-1 md:col-span-1">
-            <Link to="/" className="text-2xl font-headline font-bold text-foreground mb-4 block">
+            <Link
+              to="/"
+              className="text-2xl font-headline font-bold text-foreground mb-4 block"
+            >
               WorkNest
             </Link>
             <p className="text-muted-foreground text-sm">
@@ -22,8 +25,8 @@ export function Footer() {
               <li>
                 <button
                   onClick={() => {
-                    const element = document.getElementById('features');
-                    element?.scrollIntoView({ behavior: 'smooth' });
+                    const element = document.getElementById('features')
+                    element?.scrollIntoView({ behavior: 'smooth' })
                   }}
                   className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                 >
@@ -31,17 +34,26 @@ export function Footer() {
                 </button>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Changelog
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Docs
                 </Link>
               </li>
@@ -53,22 +65,34 @@ export function Footer() {
             <h3 className="font-semibold text-foreground mb-4">Company</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   About
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Blog
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Careers
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Contact
                 </Link>
               </li>
@@ -80,17 +104,26 @@ export function Footer() {
             <h3 className="font-semibold text-foreground mb-4">Legal</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Privacy
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Terms
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                <Link
+                  to="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
                   Security
                 </Link>
               </li>
@@ -106,5 +139,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

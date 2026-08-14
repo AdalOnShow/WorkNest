@@ -1,9 +1,9 @@
-import { Link, useRouterState } from '@tanstack/react-router';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { NotificationBell } from '@/components/ui/notification-bell';
-import { UserAvatar } from '@/components/ui/user-avatar';
+import { Link, useRouterState } from '@tanstack/react-router'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { NotificationBell } from '@/components/ui/notification-bell'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +11,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Sprout } from 'lucide-react';
+} from '@/components/ui/dropdown-menu'
+import { Sprout } from 'lucide-react'
 
 // Mock data - replace with real data from context/auth
 const MOCK_NOTIFICATIONS = [
@@ -30,35 +30,45 @@ const MOCK_NOTIFICATIONS = [
     read: true,
     createdAt: '5 hours ago',
   },
-];
+]
 
 interface NavbarProps {
-  isAuthenticated?: boolean;
-  userName?: string;
-  userImage?: string;
+  isAuthenticated?: boolean
+  userName?: string
+  userImage?: string
 }
 
-export function Navbar({ isAuthenticated = false, userName = 'John Doe', userImage }: NavbarProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const router = useRouterState();
-  const isLandingPage = router.location.pathname === '/';
+export function Navbar({
+  isAuthenticated = false,
+  userName = 'John Doe',
+  userImage,
+}: NavbarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const router = useRouterState()
+  const isLandingPage = router.location.pathname === '/'
 
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
+    const element = document.getElementById(id)
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsMobileMenuOpen(false);
+      element.scrollIntoView({ behavior: 'smooth' })
+      setIsMobileMenuOpen(false)
     }
-  };
+  }
 
   const handleLogout = () => {
     // Add logout logic here
-    console.log('Logout');
-  };
+    console.log('Logout')
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
-      <div className={isAuthenticated ? "px-4 sm:px-6 lg:px-8" : "container mx-auto px-4 sm:px-6 lg:px-8"}>
+      <div
+        className={
+          isAuthenticated
+            ? 'px-4 sm:px-6 lg:px-8'
+            : 'container mx-auto px-4 sm:px-6 lg:px-8'
+        }
+      >
         <div className="flex items-center justify-between h-16">
           {/* Logo - Only show on landing page */}
           {!isAuthenticated && (
@@ -109,8 +119,8 @@ export function Navbar({ isAuthenticated = false, userName = 'John Doe', userIma
               <>
                 <NotificationBell
                   notifications={MOCK_NOTIFICATIONS}
-                  onMarkRead={() => { }}
-                  onMarkAllRead={() => { }}
+                  onMarkRead={() => {}}
+                  onMarkAllRead={() => {}}
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -128,7 +138,10 @@ export function Navbar({ isAuthenticated = false, userName = 'John Doe', userIma
                       <Link to="/notifications">Notifications</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-destructive"
+                    >
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -185,5 +198,5 @@ export function Navbar({ isAuthenticated = false, userName = 'John Doe', userIma
         )}
       </div>
     </nav>
-  );
+  )
 }

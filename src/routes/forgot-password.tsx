@@ -62,7 +62,9 @@ export default function ForgotPasswordPage() {
               validators={{
                 onChange: ({ value }) => {
                   const result = z.email().safeParse(value)
-                  return result.success ? undefined : result.error.issues[0]?.message
+                  return result.success
+                    ? undefined
+                    : result.error.issues[0]?.message
                 },
               }}
             >
@@ -76,7 +78,9 @@ export default function ForgotPasswordPage() {
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     className={
-                      field.state.meta.errors.length > 0 ? 'border-destructive' : ''
+                      field.state.meta.errors.length > 0
+                        ? 'border-destructive'
+                        : ''
                     }
                   />
                   {field.state.meta.errors.length > 0 && (

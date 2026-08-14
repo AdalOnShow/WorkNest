@@ -1,14 +1,14 @@
-import { Link } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
-import { AnimatedDots } from './animated-dots';
+import { Link } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
+import { AnimatedDots } from './animated-dots'
 
 export function Hero() {
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
+    const element = document.getElementById(id)
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: 'smooth' })
     }
-  };
+  }
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -50,5 +50,5 @@ export function Hero() {
       {/* Bottom Gradient Fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
-  );
+  )
 }

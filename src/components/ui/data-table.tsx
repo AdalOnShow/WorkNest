@@ -1,12 +1,13 @@
 import React from 'react'
 import {
-  type ColumnDef,
+  
   flexRender,
   getCoreRowModel,
   useReactTable,
-  getSortedRowModel,
-  type SortingState,
+  getSortedRowModel
+  
 } from '@tanstack/react-table'
+import type {ColumnDef, SortingState} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -42,16 +43,30 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div className={cn('rounded-xl border border-[#2D3B2A] bg-[#172318] overflow-hidden', className)}>
+    <div
+      className={cn(
+        'rounded-xl border border-[#2D3B2A] bg-[#172318] overflow-hidden',
+        className,
+      )}
+    >
       <Table>
         <TableHeader className="bg-[#1F331D]">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-b-[#2D3B2A] hover:bg-transparent">
+            <TableRow
+              key={headerGroup.id}
+              className="border-b-[#2D3B2A] hover:bg-transparent"
+            >
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="text-[#B8C0B5] font-medium h-12">
+                <TableHead
+                  key={header.id}
+                  className="text-[#B8C0B5] font-medium h-12"
+                >
                   {header.isPlaceholder
                     ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                 </TableHead>
               ))}
             </TableRow>
@@ -65,7 +80,7 @@ export function DataTable<TData, TValue>({
                 data-state={row.getIsSelected() && 'selected'}
                 className={cn(
                   'border-b-[#2D3B2A] hover:bg-[#1F331D]/50 transition-colors',
-                  onRowClick && 'cursor-pointer'
+                  onRowClick && 'cursor-pointer',
                 )}
                 onClick={() => onRowClick?.(row.original)}
               >
@@ -78,7 +93,10 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-[#B8C0B5]">
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-[#B8C0B5]"
+              >
                 No results.
               </TableCell>
             </TableRow>

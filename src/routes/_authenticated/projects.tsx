@@ -30,10 +30,34 @@ export const Route = createFileRoute('/_authenticated/projects')({
 })
 
 const MOCK_PROJECTS = [
-  { id: '1', name: 'Website Redesign', status: 'ACTIVE' as const, deadline: 'Mar 15', taskCount: 12 },
-  { id: '2', name: 'Mobile App', status: 'COMPLETED' as const, deadline: '—', taskCount: 24 },
-  { id: '3', name: 'API Backend', status: 'ON_HOLD' as const, deadline: 'Apr 01', taskCount: 8 },
-  { id: '4', name: 'Dashboard', status: 'ACTIVE' as const, deadline: 'Feb 28', taskCount: 6 },
+  {
+    id: '1',
+    name: 'Website Redesign',
+    status: 'ACTIVE' as const,
+    deadline: 'Mar 15',
+    taskCount: 12,
+  },
+  {
+    id: '2',
+    name: 'Mobile App',
+    status: 'COMPLETED' as const,
+    deadline: '—',
+    taskCount: 24,
+  },
+  {
+    id: '3',
+    name: 'API Backend',
+    status: 'ON_HOLD' as const,
+    deadline: 'Apr 01',
+    taskCount: 8,
+  },
+  {
+    id: '4',
+    name: 'Dashboard',
+    status: 'ACTIVE' as const,
+    deadline: 'Feb 28',
+    taskCount: 6,
+  },
 ]
 
 function ProjectsPage() {
@@ -47,7 +71,9 @@ function ProjectsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="headline-sm text-foreground">Projects</h1>
-            <p className="body-md text-muted-foreground mt-1">Manage your team projects</p>
+            <p className="body-md text-muted-foreground mt-1">
+              Manage your team projects
+            </p>
           </div>
           <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
             <Plus className="w-4 h-4" />
@@ -79,16 +105,29 @@ function ProjectsPage() {
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground font-medium">Name</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Status</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Tasks</TableHead>
-                <TableHead className="text-muted-foreground font-medium">Deadline</TableHead>
-                <TableHead className="text-muted-foreground font-medium text-right">Actions</TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Name
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Status
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Tasks
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium">
+                  Deadline
+                </TableHead>
+                <TableHead className="text-muted-foreground font-medium text-right">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {MOCK_PROJECTS.map((project) => (
-                <TableRow key={project.id} className="border-border/50 hover:bg-accent/30">
+                <TableRow
+                  key={project.id}
+                  className="border-border/50 hover:bg-accent/30"
+                >
                   <TableCell>
                     <Link
                       to="/projects/$projectId"
@@ -101,14 +140,26 @@ function ProjectsPage() {
                   <TableCell>
                     <StatusBadge status={project.status} />
                   </TableCell>
-                  <TableCell className="text-card-foreground">{project.taskCount}</TableCell>
-                  <TableCell className="text-card-foreground">{project.deadline}</TableCell>
+                  <TableCell className="text-card-foreground">
+                    {project.taskCount}
+                  </TableCell>
+                  <TableCell className="text-card-foreground">
+                    {project.deadline}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent"
+                      >
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -120,7 +171,11 @@ function ProjectsPage() {
         </div>
 
         <div className="flex justify-center">
-          <Pagination currentPage={page} totalPages={3} onPageChange={setPage} />
+          <Pagination
+            currentPage={page}
+            totalPages={3}
+            onPageChange={setPage}
+          />
         </div>
       </div>
     </PageContainer>

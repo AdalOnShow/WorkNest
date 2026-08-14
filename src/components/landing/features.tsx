@@ -1,10 +1,17 @@
-import { useScrollAnimation } from '@/hooks/use-scroll-animation';
-import { FolderKanban, CheckSquare, MessageSquare, LayoutDashboard, type LucideIcon } from 'lucide-react';
+import { useScrollAnimation } from '@/hooks/use-scroll-animation'
+import {
+  FolderKanban,
+  CheckSquare,
+  MessageSquare,
+  LayoutDashboard
+  
+} from 'lucide-react'
+import type {LucideIcon} from 'lucide-react';
 
 const features: Array<{
-  icon: LucideIcon;
-  title: string;
-  description: string;
+  icon: LucideIcon
+  title: string
+  description: string
 }> = [
   {
     icon: FolderKanban,
@@ -26,28 +33,26 @@ const features: Array<{
     title: 'Dashboard',
     description: 'Monitor progress and team performance',
   },
-];
+]
 
-function FeatureCard({ 
-  icon: Icon, 
-  title, 
-  description, 
-  index 
-}: { 
-  icon: LucideIcon; 
-  title: string; 
-  description: string; 
-  index: number;
+function FeatureCard({
+  icon: Icon,
+  title,
+  description,
+  index,
+}: {
+  icon: LucideIcon
+  title: string
+  description: string
+  index: number
 }) {
-  const { ref, isVisible } = useScrollAnimation<HTMLDivElement>();
+  const { ref, isVisible } = useScrollAnimation<HTMLDivElement>()
 
   return (
     <div
       ref={ref}
       className={`bg-card border border-border rounded-lg p-6 transition-all duration-700 ${
-        isVisible 
-          ? 'opacity-100 translate-y-0' 
-          : 'opacity-0 translate-y-6'
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
       }`}
       style={{ transitionDelay: `${index * 100}ms` }}
     >
@@ -57,35 +62,37 @@ function FeatureCard({
       <h3 className="text-xl font-semibold mb-2 text-foreground">{title}</h3>
       <p className="text-muted-foreground">{description}</p>
     </div>
-  );
+  )
 }
 
 export function Features() {
-  const { ref, isVisible } = useScrollAnimation<HTMLDivElement>();
+  const { ref, isVisible } = useScrollAnimation<HTMLDivElement>()
 
   return (
-    <section id="features" className="py-24 relative overflow-hidden bg-gradient-to-b from-accent/10 via-background to-accent/10 dark:from-background dark:via-background dark:to-background">
+    <section
+      id="features"
+      className="py-24 relative overflow-hidden bg-gradient-to-b from-accent/10 via-background to-accent/10 dark:from-background dark:via-background dark:to-background"
+    >
       {/* Background Decorations for light mode */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-0 w-96 h-96 bg-primary/8 dark:bg-primary/3 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-blue-500/8 dark:bg-blue-500/3 rounded-full blur-3xl" />
       </div>
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Title */}
         <div
           ref={ref}
           className={`text-center mb-16 transition-all duration-700 ${
-            isVisible 
-              ? 'opacity-100 translate-y-0' 
-              : 'opacity-0 translate-y-6'
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             Everything your team needs
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Built for modern teams who want to collaborate without the complexity
+            Built for modern teams who want to collaborate without the
+            complexity
           </p>
         </div>
 
@@ -103,5 +110,5 @@ export function Features() {
         </div>
       </div>
     </section>
-  );
+  )
 }

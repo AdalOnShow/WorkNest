@@ -49,7 +49,8 @@ export default function ResetPasswordPage() {
             Password reset!
           </h2>
           <p className="text-muted-foreground mb-8">
-            Your password has been successfully reset. You can now sign in with your new password.
+            Your password has been successfully reset. You can now sign in with
+            your new password.
           </p>
           <Link to="/login">
             <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
@@ -102,10 +103,14 @@ export default function ResetPasswordPage() {
               name="password"
               validators={{
                 onChange: ({ value }) => {
-                  if (value.length < 8) return 'Password must be at least 8 characters'
-                  if (!/[A-Z]/.test(value)) return 'Password must contain at least one uppercase letter'
-                  if (!/[a-z]/.test(value)) return 'Password must contain at least one lowercase letter'
-                  if (!/[0-9]/.test(value)) return 'Password must contain at least one number'
+                  if (value.length < 8)
+                    return 'Password must be at least 8 characters'
+                  if (!/[A-Z]/.test(value))
+                    return 'Password must contain at least one uppercase letter'
+                  if (!/[a-z]/.test(value))
+                    return 'Password must contain at least one lowercase letter'
+                  if (!/[0-9]/.test(value))
+                    return 'Password must contain at least one number'
                   return undefined
                 },
               }}
@@ -154,7 +159,8 @@ export default function ResetPasswordPage() {
               name="confirmPassword"
               validators={{
                 onChange: ({ value }) => {
-                  if (value !== form.state.values.password) return "Passwords don't match"
+                  if (value !== form.state.values.password)
+                    return "Passwords don't match"
                   return undefined
                 },
               }}
@@ -177,7 +183,9 @@ export default function ResetPasswordPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showConfirmPassword ? (
