@@ -1,13 +1,11 @@
 'use client'
 
-import * as React from 'react'
 import type { Label as LabelPrimitive } from 'radix-ui'
 import { Slot } from 'radix-ui'
-import { useField } from '@tanstack/react-form'
-import type { FieldApi } from '@tanstack/react-form'
+import * as React from 'react'
 
-import { cn } from '#/lib/utils.ts'
 import { Label } from '#/components/ui/label.tsx'
+import { cn } from '#/lib/utils.ts'
 
 type FormFieldContextValue = {
   name: string
@@ -134,9 +132,13 @@ function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
 
 function FormField({
   name,
+  isInvalid = false,
+  errors = [],
   children,
 }: {
   name: string
+  isInvalid?: boolean
+  errors?: string[]
   children: React.ReactNode
 }) {
   const id = React.useId()
@@ -150,10 +152,10 @@ function FormField({
       formItemId,
       formDescriptionId,
       formMessageId,
-      isInvalid: false,
-      errors: [],
+      isInvalid,
+      errors,
     }),
-    [name, formItemId, formDescriptionId, formMessageId],
+    [name, formItemId, formDescriptionId, formMessageId, isInvalid, errors],
   )
 
   return (
@@ -165,25 +167,44 @@ function FormField({
 
 function Form({
   onSubmit,
+  isPending = false,
+  pendingLabel = 'Submitting...',
   children,
 }: {
   onSubmit: (e: React.FormEvent) => void
+  isPending?: boolean
+  pendingLabel?: string
   children: React.ReactNode
 }) {
+  const pendingStatusId = React.useId()
+
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      {children}
+    <form
+      onSubmit={onSubmit}
+      className="space-y-6"
+      aria-busy={isPending}
+      aria-describedby={isPending ? pendingStatusId : undefined}
+    >
+      <fieldset disabled={isPending} className="space-y-6">
+        {children}
+      </fieldset>
+      {isPending && (
+        <p
+          id={pendingStatusId}
+          role="status"
+          aria-live="polite"
+          className="text-sm text-muted-foreground"
+        >
+          {pendingLabel}
+        </p>
+      )}
     </form>
   )
 }
 
 export {
-  useFormField,
-  Form,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-  FormField,
+  Form, FormControl,
+  FormDescription, FormField, FormItem,
+  FormLabel, FormMessage, useFormField
 }
+

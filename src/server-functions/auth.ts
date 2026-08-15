@@ -6,8 +6,7 @@ import { getCloudflareEnv } from '#/lib/request-context'
 export const getSession = createServerFn({ method: 'GET' }).handler(
   async () => {
     const request = getRequest()
-    const env = getCloudflareEnv() as { DB: D1Database }
-    const auth = createAuth(env)
+    const auth = createAuth(getCloudflareEnv())
     return auth.api.getSession({ headers: request.headers })
   },
 )

@@ -16,6 +16,7 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -76,7 +77,7 @@ function ProjectsPage() {
             </p>
           </div>
           <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
-            <Plus className="w-4 h-4" />
+            <Plus data-icon="inline-start" className="w-4 h-4" />
             New Project
           </Button>
         </div>
@@ -89,14 +90,19 @@ function ProjectsPage() {
             className="max-w-sm"
           />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px] bg-card border-border text-foreground rounded-lg">
+            <SelectTrigger
+              aria-label="Filter projects by status"
+              className="w-[140px] bg-card border-border text-foreground rounded-lg"
+            >
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border">
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-              <SelectItem value="ON_HOLD">On Hold</SelectItem>
+              <SelectGroup>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="ON_HOLD">On Hold</SelectItem>
+              </SelectGroup>
             </SelectContent>
           </Select>
         </div>
@@ -151,6 +157,7 @@ function ProjectsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Edit ${project.name}`}
                         className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent"
                       >
                         <Pencil className="w-4 h-4" />
@@ -158,6 +165,7 @@ function ProjectsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Delete ${project.name}`}
                         className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
                       >
                         <Trash2 className="w-4 h-4" />

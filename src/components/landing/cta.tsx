@@ -27,7 +27,7 @@ export function CTA() {
             and ship faster
           </p>
           <Button size="lg" asChild>
-            <Link to="/signup">Get Started Free</Link>
+            <Link to="/login">Get Started Free</Link>
           </Button>
         </div>
       </div>

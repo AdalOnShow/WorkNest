@@ -1,17 +1,17 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
-import { ArrowLeft, Pencil, Trash2, Upload, Send } from 'lucide-react'
 import { PageContainer } from '#/components/layout/page-container'
 import { Button } from '#/components/ui/button'
-import { StatusBadge } from '#/components/ui/status-badge'
-import { UserAvatar } from '#/components/ui/user-avatar'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { UserAvatar } from '#/components/ui/user-avatar'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { ArrowLeft, Pencil, Send, Trash2, Upload } from 'lucide-react'
+import { useId, useState } from 'react'
 
 export const Route = createFileRoute('/_authenticated/tasks/$taskId')({
   component: TaskDetailPage,
@@ -56,6 +56,8 @@ const MOCK_COMMENTS = [
 function TaskDetailPage() {
   const { taskId } = Route.useParams()
   const [comment, setComment] = useState('')
+  const statusLabelId = useId()
+  const priorityLabelId = useId()
 
   return (
     <PageContainer>
@@ -76,7 +78,7 @@ function TaskDetailPage() {
               size="sm"
               className="border-border text-card-foreground hover:bg-accent"
             >
-              <Pencil className="w-4 h-4" />
+              <Pencil data-icon="inline-start" className="w-4 h-4" />
               Edit
             </Button>
             <Button
@@ -84,7 +86,7 @@ function TaskDetailPage() {
               size="sm"
               className="border-border text-destructive hover:bg-destructive/10"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 data-icon="inline-start" className="w-4 h-4" />
               Delete
             </Button>
           </div>
@@ -96,32 +98,48 @@ function TaskDetailPage() {
             <div className="bg-card border border-border rounded-[14px] p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="label-sm text-muted-foreground block mb-2">
+                  <label
+                    id={statusLabelId}
+                    className="label-sm text-muted-foreground block mb-2"
+                  >
                     Status
                   </label>
                   <Select defaultValue={MOCK_TASK.status}>
-                    <SelectTrigger className="bg-background border-border text-foreground rounded-lg">
+                    <SelectTrigger
+                      aria-labelledby={statusLabelId}
+                      className="bg-background border-border text-foreground rounded-lg"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border">
-                      <SelectItem value="TODO">To Do</SelectItem>
-                      <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                      <SelectItem value="COMPLETED">Completed</SelectItem>
+                      <SelectGroup>
+                        <SelectItem value="TODO">To Do</SelectItem>
+                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="label-sm text-muted-foreground block mb-2">
+                  <label
+                    id={priorityLabelId}
+                    className="label-sm text-muted-foreground block mb-2"
+                  >
                     Priority
                   </label>
                   <Select defaultValue={MOCK_TASK.priority}>
-                    <SelectTrigger className="bg-background border-border text-foreground rounded-lg">
+                    <SelectTrigger
+                      aria-labelledby={priorityLabelId}
+                      className="bg-background border-border text-foreground rounded-lg"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border">
-                      <SelectItem value="HIGH">High</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="LOW">Low</SelectItem>
+                      <SelectGroup>
+                        <SelectItem value="HIGH">High</SelectItem>
+                        <SelectItem value="MEDIUM">Medium</SelectItem>
+                        <SelectItem value="LOW">Low</SelectItem>
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
@@ -181,6 +199,7 @@ function TaskDetailPage() {
                 <div className="flex-1 flex gap-2">
                   <input
                     type="text"
+                    aria-label={`Comment on ${MOCK_TASK.title}`}
                     placeholder="Write a comment..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
@@ -188,6 +207,7 @@ function TaskDetailPage() {
                   />
                   <Button
                     size="icon"
+                    aria-label="Send comment"
                     className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <Send className="w-4 h-4" />
@@ -207,7 +227,7 @@ function TaskDetailPage() {
                   size="sm"
                   className="border-border text-card-foreground hover:bg-accent"
                 >
-                  <Upload className="w-4 h-4" />
+                  <Upload data-icon="inline-start" className="w-4 h-4" />
                   Upload
                 </Button>
               </div>
@@ -235,6 +255,7 @@ function TaskDetailPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={`Delete attachment ${file.name}`}
                       className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />

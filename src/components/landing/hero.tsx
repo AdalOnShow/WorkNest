@@ -33,7 +33,7 @@ export function Hero() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
             <Button size="lg" asChild className="w-full sm:w-auto">
-              <Link to="/signup">Get Started Free</Link>
+              <Link to="/login">Get Started Free</Link>
             </Button>
             <Button
               size="lg"
