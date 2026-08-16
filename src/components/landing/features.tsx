@@ -3,10 +3,9 @@ import {
   FolderKanban,
   CheckSquare,
   MessageSquare,
-  LayoutDashboard
-  
+  LayoutDashboard,
 } from 'lucide-react'
-import type {LucideIcon} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react'
 
 const features: Array<{
   icon: LucideIcon

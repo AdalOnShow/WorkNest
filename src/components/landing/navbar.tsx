@@ -1,4 +1,4 @@
-import { Link, useRouterState } from '@tanstack/react-router'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -12,7 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Menu, Sprout, X } from 'lucide-react'
+import { Menu, Sprout, X, Loader2 } from 'lucide-react'
+import { authClient } from '#/lib/auth-client'
 
 // Mock data - replace with real data from context/auth
 const MOCK_NOTIFICATIONS = [
@@ -38,6 +39,27 @@ interface NavbarProps {
   userImage?: string
 }
 
+function AuthAwareAction({ className }: { className?: string }) {
+  const { data: session, isPending } = authClient.useSession()
+  const isLoggedIn = Boolean(session?.user)
+
+  if (isPending) {
+    return (
+      <Button variant="outline" disabled className={className}>
+        <Loader2 className="w-4 h-4 animate-spin" />
+      </Button>
+    )
+  }
+
+  return (
+    <Button asChild className={className}>
+      <Link to={isLoggedIn ? '/dashboard' : '/login'}>
+        {isLoggedIn ? 'Dashboard' : 'Login'}
+      </Link>
+    </Button>
+  )
+}
+
 export function Navbar({
   isAuthenticated = false,
   userName = 'John Doe',
@@ -45,6 +67,7 @@ export function Navbar({
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const router = useRouterState()
+  const navigate = useNavigate()
   const isLandingPage = router.location.pathname === '/'
 
   const scrollToSection = (id: string) => {
@@ -55,9 +78,9 @@ export function Navbar({
     }
   }
 
-  const handleLogout = () => {
-    // Add logout logic here
-    console.log('Logout')
+  const handleLogout = async () => {
+    await authClient.signOut()
+    await navigate({ to: '/' })
   }
 
   return (
@@ -179,9 +202,7 @@ export function Navbar({
                   </Button>
                 )}
                 <div className="hidden md:flex items-center space-x-2">
-                  <Button asChild>
-                    <Link to="/login">Login</Link>
-                  </Button>
+                  <AuthAwareAction />
                 </div>
               </>
             )}
@@ -219,9 +240,7 @@ export function Navbar({
                 <span className="text-sm text-muted-foreground">Theme</span>
                 <ThemeToggle />
               </div>
-              <Button asChild className="w-full">
-                <Link to="/login">Login</Link>
-              </Button>
+              <AuthAwareAction className="w-full" />
             </div>
           </div>
         )}

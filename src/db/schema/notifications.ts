@@ -5,7 +5,9 @@ export const notification = sqliteTable(
   'notification',
   {
     id: text('id').primaryKey(),
-    recipientId: text('recipient_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+    recipientId: text('recipient_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
     type: text('type', {
       enum: ['TASK_ASSIGNED', 'TASK_STATUS_UPDATED', 'TASK_DUE_SOON'],
     }).notNull(),

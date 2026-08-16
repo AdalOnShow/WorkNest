@@ -143,8 +143,8 @@ function AppErrorBoundary({ error: _error }: { error: Error }) {
           share this message with your workspace admin.
         </p>
         <p className="rounded-lg border border-border bg-card px-4 py-3 text-left text-sm text-muted-foreground">
-          We could not complete that request. Please try again or go back to
-          the dashboard.
+          We could not complete that request. Please try again or go back to the
+          dashboard.
         </p>
         <div className="flex justify-center gap-3">
           <Button asChild>

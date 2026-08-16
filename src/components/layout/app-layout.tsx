@@ -5,12 +5,17 @@ import { MobileNav } from '#/components/layout/mobile-nav'
 
 interface AppLayoutProps {
   children: React.ReactNode
+  user?: {
+    name?: string | null
+    email?: string | null
+    image?: string | null
+  } | null
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, user }: AppLayoutProps) {
   return (
     <SidebarProvider>
-      <Header />
+      <Header user={user} />
       <AppSidebar />
       <SidebarInset>
         <main className="flex-1 overflow-auto pb-16 md:pb-0 pt-16">
