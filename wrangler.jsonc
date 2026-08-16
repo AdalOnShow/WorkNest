@@ -9,17 +9,38 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
   "observability": {
-    "enabled": true
+    "enabled": true,
   },
   "upload_source_maps": true,
+  "routes": [
+    {
+      "pattern": "worknest.sadal.dev",
+      "zone_name": "sadal.dev",
+      "custom_domain": true,
+      "enabled": true,
+      "previews_enabled": false,
+    },
+  ],
+  "vars": {
+    "BETTER_AUTH_URL": "https://worknest.sadal.dev",
+  },
+  "secrets": {
+    "required": [
+      "BETTER_AUTH_SECRET",
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
+      "GITHUB_CLIENT_ID",
+      "GITHUB_CLIENT_SECRET",
+    ],
+  },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "worknest-db",
       "database_id": "e1fe6dd5-45b6-429f-a7e4-6eefac320f47",
-      "migrations_dir": "migrations"
-    }
-  ]
+      "migrations_dir": "migrations",
+    },
+  ],
   /**
    * Smart Placement
    * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

@@ -12,7 +12,6 @@ export function Header({ user }: HeaderProps) {
   const userName = user?.name ?? 'Account'
   const userImage = user?.image ?? undefined
 
-
   return (
     <Navbar isAuthenticated={true} userName={userName} userImage={userImage} />
   )

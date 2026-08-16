@@ -38,10 +38,7 @@ function LoginPage() {
     'google' | 'github' | null
   >(null)
 
-  const handleSocialLogin = (
-    provider: 'google' | 'github',
-    target: string,
-  ) => {
+  const handleSocialLogin = (provider: 'google' | 'github', target: string) => {
     setLoadingProvider(provider)
     authClient.signIn.social({ provider, callbackURL: target })
   }
