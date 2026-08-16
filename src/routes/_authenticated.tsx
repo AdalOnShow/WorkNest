@@ -19,8 +19,9 @@ export const Route = createFileRoute('/_authenticated')({
 })
 
 function AuthenticatedLayout() {
+  const { user } = Route.useRouteContext()
   return (
-    <AppLayout>
+    <AppLayout user={user}>
       <Outlet />
     </AppLayout>
   )

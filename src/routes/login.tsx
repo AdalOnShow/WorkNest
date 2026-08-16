@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Sprout, Github, ArrowLeft, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { authClient } from '#/lib/auth-client'
+import { getSession } from '#/server-functions/auth'
 
 function isSafeRedirect(path: string): boolean {
   if (!path.startsWith('/')) return false
@@ -17,6 +18,12 @@ function isSafeRedirect(path: string): boolean {
 }
 
 export const Route = createFileRoute('/login')({
+  beforeLoad: async () => {
+    const session = await getSession()
+    if (session) {
+      throw redirect({ to: '/dashboard' })
+    }
+  },
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
     const raw = (search.redirect as string) || ''
     return { redirect: isSafeRedirect(raw) ? raw : undefined }
@@ -25,18 +32,18 @@ export const Route = createFileRoute('/login')({
 })
 
 function LoginPage() {
-  const { redirect } = Route.useSearch()
-  const callbackURL = redirect ?? '/dashboard'
+  const { redirect: redirectTo } = Route.useSearch()
+  const callbackURL = redirectTo ?? '/dashboard'
   const [loadingProvider, setLoadingProvider] = useState<
     'google' | 'github' | null
   >(null)
 
   const handleSocialLogin = (
     provider: 'google' | 'github',
-    callbackURL: string,
+    target: string,
   ) => {
     setLoadingProvider(provider)
-    authClient.signIn.social({ provider, callbackURL })
+    authClient.signIn.social({ provider, callbackURL: target })
   }
 
   return (
