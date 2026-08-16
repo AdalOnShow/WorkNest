@@ -1,4 +1,10 @@
-import { sqliteTable, text, integer, index, unique } from 'drizzle-orm/sqlite-core'
+import {
+  sqliteTable,
+  text,
+  integer,
+  index,
+  unique,
+} from 'drizzle-orm/sqlite-core'
 import { user } from './auth'
 
 export const project = sqliteTable(
@@ -11,7 +17,9 @@ export const project = sqliteTable(
       .notNull()
       .default('ACTIVE'),
     deadline: integer('deadline', { mode: 'timestamp' }),
-    creatorId: text('creator_id').references(() => user.id, { onDelete: 'set null' }),
+    creatorId: text('creator_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   },
@@ -24,7 +32,9 @@ export const projectMember = sqliteTable(
   'project_member',
   {
     id: text('id').primaryKey(),
-    projectId: text('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
     userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
     role: text('role', { enum: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER'] })
       .notNull()

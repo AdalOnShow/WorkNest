@@ -1,4 +1,10 @@
-import { sqliteTable, text, integer, index, unique } from 'drizzle-orm/sqlite-core'
+import {
+  sqliteTable,
+  text,
+  integer,
+  index,
+  unique,
+} from 'drizzle-orm/sqlite-core'
 import { project } from './projects'
 import { user } from './auth'
 
@@ -6,7 +12,9 @@ export const task = sqliteTable(
   'task',
   {
     id: text('id').primaryKey(),
-    projectId: text('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
     title: text('title').notNull(),
     description: text('description'),
     status: text('status', { enum: ['TODO', 'IN_PROGRESS', 'COMPLETED'] })
@@ -15,8 +23,12 @@ export const task = sqliteTable(
     priority: text('priority', { enum: ['HIGH', 'MEDIUM', 'LOW'] })
       .notNull()
       .default('MEDIUM'),
-    assigneeId: text('assignee_id').references(() => user.id, { onDelete: 'set null' }),
-    creatorId: text('creator_id').references(() => user.id, { onDelete: 'set null' }),
+    assigneeId: text('assignee_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    creatorId: text('creator_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
     deadline: integer('deadline', { mode: 'timestamp' }),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),

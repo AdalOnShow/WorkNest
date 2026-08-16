@@ -92,7 +92,7 @@ export function createAuth(env: AuthEnv) {
     session: {
       cookieCache: {
         enabled: true,
-        maxAge: 5,
+        maxAge: 60 * 2,
       },
     },
     socialProviders:
