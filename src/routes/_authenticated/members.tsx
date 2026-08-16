@@ -68,7 +68,7 @@ function MembersPage() {
             </p>
           </div>
           <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
-            <Plus className="w-4 h-4" />
+            <Plus data-icon="inline-start" className="w-4 h-4" />
             Add Member
           </Button>
         </div>
@@ -147,6 +147,7 @@ function MembersPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={`Remove ${member.name}`}
                       className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
                     >
                       <Trash2 className="w-4 h-4" />

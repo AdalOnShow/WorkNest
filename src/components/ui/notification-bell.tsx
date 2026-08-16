@@ -37,6 +37,11 @@ export function NotificationBell({
         <Button
           variant="ghost"
           size="icon"
+          aria-label={
+            unreadCount > 0
+              ? `Open notifications, ${unreadCount} unread`
+              : 'Open notifications'
+          }
           className={cn(
             'relative text-muted-foreground hover:text-foreground hover:bg-accent',
             className,
@@ -105,6 +110,7 @@ export function NotificationBell({
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Mark ${notification.title} as read`}
                         onClick={() => onMarkRead(notification.id)}
                         className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent shrink-0"
                       >

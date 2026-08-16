@@ -8,5 +8,5 @@ export const userProfile = sqliteTable('user_profile', {
   role: text('role', { enum: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER'] })
     .notNull()
     .default('TEAM_MEMBER'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
 })

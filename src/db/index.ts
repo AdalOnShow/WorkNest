@@ -1,9 +1,15 @@
 import { drizzle } from 'drizzle-orm/d1'
-import * as schema from './schema'
-import * as relations from './relations'
 
-export function createDb(env: { DB: D1Database }) {
-  return drizzle(env.DB, { schema: { ...schema, ...relations } })
+import * as relations from './relations'
+import * as schema from './schema'
+
+const dbSchema = {
+  ...schema,
+  ...relations,
+}
+
+export function createDb(database: D1Database) {
+  return drizzle(database, { schema: dbSchema })
 }
 
 export type Database = ReturnType<typeof createDb>

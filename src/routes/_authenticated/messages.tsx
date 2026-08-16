@@ -133,7 +133,7 @@ function MessagesPage() {
               </p>
             </div>
           </div>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Open message menu">
             <MoreVertical className="w-5 h-5" />
           </Button>
         </div>
@@ -215,6 +215,7 @@ function MessagesPage() {
         <div className="border-t border-border bg-card p-4">
           <div className="bg-background rounded-lg border border-border">
             <Input
+              aria-label={`Message ${selectedConversation.name}`}
               placeholder={`Message ${selectedConversation.name}...`}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
@@ -224,27 +225,52 @@ function MessagesPage() {
             {/* Toolbar */}
             <div className="flex items-center justify-between px-3 py-2 border-t border-border">
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Bold"
+                  className="h-8 w-8"
+                >
                   <Bold className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Italic"
+                  className="h-8 w-8"
+                >
                   <Italic className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Format as code"
+                  className="h-8 w-8"
+                >
                   <Code className="w-4 h-4" />
                 </Button>
                 <div className="w-px h-4 bg-border mx-1" />
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Add emoji"
+                  className="h-8 w-8"
+                >
                   <Smile className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Attach file"
+                  className="h-8 w-8"
+                >
                   <Paperclip className="w-4 h-4" />
                 </Button>
               </div>
 
               <Button size="sm" className="gap-2">
                 <span>Send</span>
-                <Send className="w-4 h-4" />
+                <Send data-icon="inline-end" className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -258,6 +284,7 @@ function MessagesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
+              aria-label="Search conversations"
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

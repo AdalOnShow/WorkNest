@@ -1,6 +1,7 @@
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -33,19 +34,24 @@ export function FilterControls({ filters, className }: FilterControlsProps) {
           value={filter.value}
           onValueChange={filter.onChange}
         >
-          <SelectTrigger className="w-[160px] h-10 bg-[#172318] border-[#2D3B2A] text-white text-sm focus:ring-[#68EF3F]/40">
+          <SelectTrigger
+            aria-label={filter.label}
+            className="w-[160px] h-10 bg-[#172318] border-[#2D3B2A] text-white text-sm focus:ring-[#68EF3F]/40"
+          >
             <SelectValue placeholder={filter.label} />
           </SelectTrigger>
           <SelectContent className="bg-[#172318] border-[#2D3B2A] text-white">
-            {filter.options.map((opt) => (
-              <SelectItem
-                key={opt.value}
-                value={opt.value}
-                className="focus:bg-[#1F331D] focus:text-white"
-              >
-                {opt.label}
-              </SelectItem>
-            ))}
+            <SelectGroup>
+              {filter.options.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="focus:bg-[#1F331D] focus:text-white"
+                >
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
       ))}

@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Sprout } from 'lucide-react'
+import { Menu, Sprout, X } from 'lucide-react'
 
 // Mock data - replace with real data from context/auth
 const MOCK_NOTIFICATIONS = [
@@ -61,7 +61,10 @@ export function Navbar({
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
+    <nav
+      aria-label="Primary"
+      className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border"
+    >
       <div
         className={
           isAuthenticated
@@ -124,7 +127,11 @@ export function Navbar({
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full">
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full"
+                    >
                       <UserAvatar name={userName} image={userImage} size="sm" />
                     </button>
                   </DropdownMenuTrigger>
@@ -148,21 +155,46 @@ export function Navbar({
                 </DropdownMenu>
               </>
             ) : (
-              <div className="hidden md:flex items-center space-x-2">
-                <Button variant="ghost" asChild>
-                  <Link to="/login">Login</Link>
-                </Button>
-                <Button asChild>
-                  <Link to="/signup">Sign Up</Link>
-                </Button>
-              </div>
+              <>
+                {isLandingPage && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={
+                      isMobileMenuOpen
+                        ? 'Close navigation menu'
+                        : 'Open navigation menu'
+                    }
+                    aria-expanded={isMobileMenuOpen}
+                    aria-controls="mobile-navigation"
+                    onClick={() => setIsMobileMenuOpen((open) => !open)}
+                    className="md:hidden"
+                  >
+                    {isMobileMenuOpen ? (
+                      <X className="w-5 h-5" />
+                    ) : (
+                      <Menu className="w-5 h-5" />
+                    )}
+                  </Button>
+                )}
+                <div className="hidden md:flex items-center space-x-2">
+                  <Button asChild>
+                    <Link to="/login">Login</Link>
+                  </Button>
+                </div>
+              </>
             )}
           </div>
         </div>
 
         {/* Mobile Menu - Landing Page Only */}
-        {!isAuthenticated && isMobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-4">
+        {!isAuthenticated && (
+          <div
+            id="mobile-navigation"
+            hidden={!isMobileMenuOpen}
+            className="md:hidden py-4 space-y-4"
+          >
             <button
               onClick={() => scrollToSection('features')}
               className="block w-full text-left px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
@@ -187,11 +219,8 @@ export function Navbar({
                 <span className="text-sm text-muted-foreground">Theme</span>
                 <ThemeToggle />
               </div>
-              <Button variant="ghost" asChild className="w-full">
-                <Link to="/login">Login</Link>
-              </Button>
               <Button asChild className="w-full">
-                <Link to="/signup">Sign Up</Link>
+                <Link to="/login">Login</Link>
               </Button>
             </div>
           </div>

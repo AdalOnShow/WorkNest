@@ -6,12 +6,17 @@ import { HowItWorks } from '@/components/landing/how-it-works'
 import { Testimonials } from '@/components/landing/testimonials'
 import { CTA } from '@/components/landing/cta'
 import { Footer } from '@/components/landing/footer'
+import { getSession } from '#/server-functions/auth'
 
 export const Route = createFileRoute('/')({
-  beforeLoad: async ({ context }) => {
-    // If user is logged in, redirect to dashboard
-    if (context.auth?.user) {
-      throw redirect({ to: '/dashboard' })
+  beforeLoad: async () => {
+    try {
+      const session = await getSession()
+      if (session) {
+        throw redirect({ to: '/dashboard' })
+      }
+    } catch (e) {
+      if (e && typeof e === 'object' && 'to' in e) throw e
     }
   },
   component: LandingPage,

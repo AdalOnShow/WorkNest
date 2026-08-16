@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="WorkNest collaboration workspace">
+  <rect width="1200" height="630" fill="#121212"/>
+  <rect x="72" y="70" width="1056" height="490" rx="36" fill="#172318" stroke="#2D3B2A" stroke-width="2"/>
+  <circle cx="148" cy="146" r="34" fill="#68EF3F"/>
+  <path d="M151 170c0-32 2-60 34-82-3 36-17 55-34 68v14Z" fill="#121212"/>
+  <path d="M145 170c0-27-3-50-34-66 4 30 17 47 34 58v8Z" fill="#121212"/>
+  <text x="210" y="158" fill="#F5F7F2" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="700">WorkNest</text>
+  <text x="120" y="282" fill="#F5F7F2" font-family="Inter, Arial, sans-serif" font-size="76" font-weight="700">Serverless team collaboration</text>
+  <text x="120" y="360" fill="#B8C0B5" font-family="Inter, Arial, sans-serif" font-size="34">Projects, tasks, messages, and members in one Cloudflare-native workspace.</text>
+  <rect x="120" y="432" width="206" height="58" rx="29" fill="#68EF3F"/>
+  <text x="154" y="470" fill="#121212" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">Plan together</text>
+</svg>
