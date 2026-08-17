@@ -16,7 +16,7 @@ export function AppLayout({ children, user }: AppLayoutProps) {
   return (
     <SidebarProvider>
       <Header user={user} />
-      <AppSidebar />
+      <AppSidebar user={user} />
       <SidebarInset>
         <main className="flex-1 overflow-auto pb-16 md:pb-0 pt-16">
           {children}
