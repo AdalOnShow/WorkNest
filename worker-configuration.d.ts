@@ -9,6 +9,9 @@ interface __BaseEnv_Env {
 	GOOGLE_CLIENT_SECRET: string;
 	GITHUB_CLIENT_ID: string;
 	GITHUB_CLIENT_SECRET: string;
+	CLOUDINARY_CLOUD_NAME: string;
+	CLOUDINARY_API_KEY: string;
+	CLOUDINARY_API_SECRET: string;
 }
 declare namespace Cloudflare {
 	interface Env extends __BaseEnv_Env {}

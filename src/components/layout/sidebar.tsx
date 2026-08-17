@@ -24,6 +24,14 @@ import {
 } from '#/components/ui/sidebar'
 import { UserAvatar } from '#/components/ui/user-avatar'
 
+interface AppSidebarProps {
+  user?: {
+    name?: string | null
+    email?: string | null
+    image?: string | null
+  } | null
+}
+
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/projects', label: 'Projects', icon: FolderKanban },
@@ -37,7 +45,7 @@ const BOTTOM_NAV_ITEMS = [
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
-export function AppSidebar() {
+export function AppSidebar({ user }: AppSidebarProps) {
   const location = useLocation()
 
   return (
@@ -105,13 +113,13 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
         <div className="flex items-center gap-3 px-3 py-2 group-data-[collapsible=icon]:hidden">
-          <UserAvatar name="John Doe" size="sm" />
+          <UserAvatar name={user?.name ?? 'U'} image={user?.image ?? undefined} size="sm" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">
-              John Doe
+              {user?.name ?? 'Account'}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              john@example.com
+              {user?.email ?? ''}
             </p>
           </div>
         </div>

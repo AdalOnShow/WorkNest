@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Menu, Sprout, X, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { authClient } from '#/lib/auth-client'
 
 // Mock data - replace with real data from context/auth
@@ -79,7 +80,11 @@ export function Navbar({
   }
 
   const handleLogout = async () => {
-    await authClient.signOut()
+    const { error } = await authClient.signOut()
+    if (error) {
+      toast.error(error.message)
+      return
+    }
     await navigate({ to: '/' })
   }
 
@@ -145,8 +150,8 @@ export function Navbar({
               <>
                 <NotificationBell
                   notifications={MOCK_NOTIFICATIONS}
-                  onMarkRead={() => {}}
-                  onMarkAllRead={() => {}}
+                  onMarkRead={() => { }}
+                  onMarkAllRead={() => { }}
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
