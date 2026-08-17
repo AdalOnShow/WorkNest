@@ -1,11 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageContainer } from '#/components/layout/page-container'
+import { LoadingState } from '#/components/ui/loading-state'
 import {
   FolderKanban,
   CheckSquare,
   CheckCircle2,
   AlertTriangle,
 } from 'lucide-react'
+import { getDashboardData } from '#/server-functions/dashboard'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,
@@ -14,59 +17,69 @@ export const Route = createFileRoute('/_authenticated/dashboard')({
   }),
 })
 
-const KPI_CARDS = [
-  {
-    label: 'Total Projects',
-    value: '12',
-    icon: FolderKanban,
-    color: 'var(--color-primary)',
-  },
-  {
-    label: 'Total Tasks',
-    value: '48',
-    icon: CheckSquare,
-    color: 'var(--color-status-in-progress)',
-  },
-  {
-    label: 'Completed Tasks',
-    value: '32',
-    icon: CheckCircle2,
-    color: 'var(--color-muted)',
-  },
-  {
-    label: 'Overdue Tasks',
-    value: '5',
-    icon: AlertTriangle,
-    color: 'var(--color-error)',
-  },
-]
-
-const RECENT_ACTIVITY = [
-  {
-    id: '1',
-    text: 'Task "Fix login bug" marked as completed',
-    time: '2 hours ago',
-  },
-  {
-    id: '2',
-    text: 'Mike R. joined Website Redesign project',
-    time: '4 hours ago',
-  },
-  { id: '3', text: 'New comment on "Add tests" task', time: '6 hours ago' },
-  {
-    id: '4',
-    text: 'Project "API Backend" moved to On Hold',
-    time: '1 day ago',
-  },
-]
-
-const UPCOMING_DEADLINES = [
-  { id: '1', project: 'Website Redesign', deadline: 'Feb 28', tasks: 3 },
-  { id: '2', project: 'Mobile App', deadline: 'Mar 10', tasks: 5 },
-  { id: '3', project: 'Dashboard', deadline: 'Mar 15', tasks: 2 },
-]
-
 function DashboardPage() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: () => getDashboardData(),
+  })
+
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <LoadingState variant="detail" />
+      </PageContainer>
+    )
+  }
+
+  const kpi = data?.kpi || {
+    totalProjects: 0,
+    totalTasks: 0,
+    completedTasks: 0,
+    overdueTasks: 0,
+  }
+  const tasksByStatus = data?.tasksByStatus || {
+    COMPLETED: 0,
+    IN_PROGRESS: 0,
+    TODO: 0,
+  }
+  const tasksByPriority = data?.tasksByPriority || {
+    HIGH: 0,
+    MEDIUM: 0,
+    LOW: 0,
+  }
+  const recentActivities = data?.recentActivities || []
+  const upcomingDeadlines = data?.upcomingDeadlines || []
+
+  const kpiCards = [
+    {
+      label: 'Total Projects',
+      value: kpi.totalProjects,
+      icon: FolderKanban,
+      color: 'var(--color-primary)',
+    },
+    {
+      label: 'Total Tasks',
+      value: kpi.totalTasks,
+      icon: CheckSquare,
+      color: 'var(--color-status-in-progress)',
+    },
+    {
+      label: 'Completed Tasks',
+      value: kpi.completedTasks,
+      icon: CheckCircle2,
+      color: 'var(--color-muted)',
+    },
+    {
+      label: 'Overdue Tasks',
+      value: kpi.overdueTasks,
+      icon: AlertTriangle,
+      color: 'var(--color-error)',
+    },
+  ]
+
+  const statusTotal =
+    tasksByStatus.COMPLETED + tasksByStatus.IN_PROGRESS + tasksByStatus.TODO
+
   return (
     <PageContainer>
       <div className="space-y-8">
@@ -77,9 +90,8 @@ function DashboardPage() {
           </p>
         </div>
 
-        {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {KPI_CARDS.map((card) => (
+          {kpiCards.map((card) => (
             <div
               key={card.label}
               className="bg-card border border-border rounded-[14px] p-5"
@@ -97,111 +109,151 @@ function DashboardPage() {
           ))}
         </div>
 
-        {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-card border border-border rounded-[14px] p-6">
             <h3 className="label-lg text-foreground mb-4">Tasks by Status</h3>
             <div className="flex items-center justify-center h-48">
-              <div className="flex gap-6 text-sm">
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-active)] flex items-center justify-center">
-                    <span className="text-foreground font-bold">32</span>
+              {statusTotal === 0 ? (
+                <p className="text-sm text-muted-foreground">No tasks yet</p>
+              ) : (
+                <div className="flex gap-6 text-sm">
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-active)] flex items-center justify-center">
+                      <span className="text-foreground font-bold">
+                        {tasksByStatus.COMPLETED}
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground mt-2 block">
+                      Done
+                    </span>
                   </div>
-                  <span className="text-muted-foreground mt-2 block">Done</span>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-in-progress)] flex items-center justify-center">
-                    <span className="text-foreground font-bold">8</span>
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-in-progress)] flex items-center justify-center">
+                      <span className="text-foreground font-bold">
+                        {tasksByStatus.IN_PROGRESS}
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground mt-2 block">
+                      In Progress
+                    </span>
                   </div>
-                  <span className="text-muted-foreground mt-2 block">
-                    In Progress
-                  </span>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-todo)] flex items-center justify-center">
-                    <span className="text-foreground font-bold">8</span>
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-todo)] flex items-center justify-center">
+                      <span className="text-foreground font-bold">
+                        {tasksByStatus.TODO}
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground mt-2 block">
+                      To Do
+                    </span>
                   </div>
-                  <span className="text-muted-foreground mt-2 block">
-                    To Do
-                  </span>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
           <div className="bg-card border border-border rounded-[14px] p-6">
             <h3 className="label-lg text-foreground mb-4">Tasks by Priority</h3>
             <div className="flex items-end justify-center h-48 gap-6 px-4">
-              <div className="flex flex-col items-center gap-2">
-                <div
-                  className="w-12 bg-[var(--color-priority-high)] rounded-t-md"
-                  style={{ height: '40px' }}
-                />
-                <span className="text-xs text-muted-foreground">High</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div
-                  className="w-12 bg-[var(--color-priority-medium)] rounded-t-md"
-                  style={{ height: '80px' }}
-                />
-                <span className="text-xs text-muted-foreground">Medium</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div
-                  className="w-12 bg-[var(--color-priority-low)] rounded-t-md"
-                  style={{ height: '60px' }}
-                />
-                <span className="text-xs text-muted-foreground">Low</span>
-              </div>
+              {statusTotal === 0 ? (
+                <p className="text-sm text-muted-foreground">No tasks yet</p>
+              ) : (
+                <>
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      className="w-12 bg-[var(--color-priority-high)] rounded-t-md"
+                      style={{
+                        height: `${Math.max(20, (tasksByPriority.HIGH / statusTotal) * 160)}px`,
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      High ({tasksByPriority.HIGH})
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      className="w-12 bg-[var(--color-priority-medium)] rounded-t-md"
+                      style={{
+                        height: `${Math.max(20, (tasksByPriority.MEDIUM / statusTotal) * 160)}px`,
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Medium ({tasksByPriority.MEDIUM})
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      className="w-12 bg-[var(--color-priority-low)] rounded-t-md"
+                      style={{
+                        height: `${Math.max(20, (tasksByPriority.LOW / statusTotal) * 160)}px`,
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Low ({tasksByPriority.LOW})
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Activity + Deadlines */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-card border border-border rounded-[14px] p-6">
             <h3 className="label-lg text-foreground mb-4">Recent Activity</h3>
-            <div className="space-y-4">
-              {RECENT_ACTIVITY.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="body-sm text-card-foreground">
-                      {activity.text}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {activity.time}
-                    </p>
+            {recentActivities.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No recent activity
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {recentActivities.map((activity) => (
+                  <div key={activity.id} className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="body-sm text-card-foreground">
+                        {activity.action} {activity.entityType}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {activity.timeAgo}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="bg-card border border-border rounded-[14px] p-6">
             <h3 className="label-lg text-foreground mb-4">
               Upcoming Deadlines
             </h3>
-            <div className="space-y-3">
-              {UPCOMING_DEADLINES.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50"
-                >
-                  <div>
-                    <p className="body-sm text-foreground font-medium">
-                      {item.project}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.tasks} tasks remaining
-                    </p>
+            {upcomingDeadlines.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No upcoming deadlines
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {upcomingDeadlines.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50"
+                  >
+                    <div>
+                      <p className="body-sm text-foreground font-medium">
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.taskCount} tasks remaining
+                      </p>
+                    </div>
+                    <span className="label-sm text-[var(--color-status-on-hold)]">
+                      {item.deadlineFormatted}
+                    </span>
                   </div>
-                  <span className="label-sm text-[var(--color-status-on-hold)]">
-                    {item.deadline}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

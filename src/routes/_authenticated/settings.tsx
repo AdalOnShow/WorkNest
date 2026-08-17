@@ -1,19 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState, useRef, useCallback } from 'react'
-import { useTheme } from 'next-themes'
-import { toast } from 'sonner'
-import { Camera, Pencil, Loader2, Save, X } from 'lucide-react'
 import { PageContainer } from '#/components/layout/page-container'
-import { UserAvatar } from '#/components/ui/user-avatar'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Separator } from '#/components/ui/separator'
+import { UserAvatar } from '#/components/ui/user-avatar'
 import {
+  deleteProfilePhoto,
   updateProfile,
   uploadProfilePhoto,
-  deleteProfilePhoto,
 } from '#/server-functions/profile'
+import { createFileRoute } from '@tanstack/react-router'
+import { Camera, Loader2, Pencil, Save, X } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { useCallback, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/settings')({
   component: SettingsPage,
@@ -130,11 +130,7 @@ function SettingsPage() {
           {/* Avatar */}
           <div className="flex items-center gap-4">
             <div className="relative group">
-              <UserAvatar
-                name={user.name}
-                image={avatarImage}
-                size="lg"
-              />
+              <UserAvatar name={user.name} image={avatarImage} size="lg" />
               {isUploading && (
                 <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50">
                   <Loader2 className="w-6 h-6 text-white animate-spin" />
@@ -225,9 +221,7 @@ function SettingsPage() {
                 <label className="label-sm text-muted-foreground block mb-1">
                   Role
                 </label>
-                <p className="body-sm text-foreground">
-                  {user.role ?? 'Team Member'}
-                </p>
+                <p className="body-sm text-foreground">{'Team Member'}</p>
               </div>
               <div>
                 <label className="label-sm text-muted-foreground block mb-1">

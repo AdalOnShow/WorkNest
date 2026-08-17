@@ -4,6 +4,14 @@ interface CloudinaryEnv {
   CLOUDINARY_API_SECRET?: string
 }
 
+interface CloudinaryErrorResponse {
+  error?: {
+    message?: string
+  }
+}
+
+const CLOUDINARY_TIMEOUT_MS = 30_000
+
 function getCloudinaryConfig(env: CloudinaryEnv) {
   const cloudName = env.CLOUDINARY_CLOUD_NAME
   const apiKey = env.CLOUDINARY_API_KEY
@@ -53,15 +61,6 @@ export async function uploadToCloudinary(
 ): Promise<CloudinaryUploadResult> {
   const { cloudName, apiKey, apiSecret } = getCloudinaryConfig(env)
 
-  const arrayBuffer = await file.arrayBuffer()
-  const base64 = btoa(
-    new Uint8Array(arrayBuffer).reduce(
-      (data, byte) => data + String.fromCharCode(byte),
-      '',
-    ),
-  )
-  const dataUri = `data:${file.type};base64,${base64}`
-
   const timestamp = Math.floor(Date.now() / 1000)
   const paramsToSign: Record<string, string | number> = {
     folder,
@@ -70,7 +69,7 @@ export async function uploadToCloudinary(
   const signature = await sha1(generateSignature(paramsToSign, apiSecret))
 
   const formData = new FormData()
-  formData.append('file', dataUri)
+  formData.append('file', file, file.name)
   formData.append('api_key', apiKey)
   formData.append('timestamp', String(timestamp))
   formData.append('signature', signature)
@@ -78,17 +77,24 @@ export async function uploadToCloudinary(
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    { method: 'POST', body: formData },
+    {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(CLOUDINARY_TIMEOUT_MS),
+    },
   )
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
+    const error = (await response
+      .json()
+      .catch(() => ({}))) as CloudinaryErrorResponse
     throw new Error(
       `[cloudinary] Upload failed: ${error.error?.message || response.statusText}`,
     )
   }
 
-  return response.json()
+  const uploadResult: CloudinaryUploadResult = await response.json()
+  return uploadResult
 }
 
 export async function deleteFromCloudinary(
@@ -110,11 +116,17 @@ export async function deleteFromCloudinary(
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
-    { method: 'POST', body: formData },
+    {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(CLOUDINARY_TIMEOUT_MS),
+    },
   )
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
+    const error = (await response
+      .json()
+      .catch(() => ({}))) as CloudinaryErrorResponse
     throw new Error(
       `[cloudinary] Delete failed: ${error.error?.message || response.statusText}`,
     )
@@ -122,8 +134,23 @@ export async function deleteFromCloudinary(
 }
 
 export function getCloudinaryPublicId(imageUrl: string): string | null {
-  // Extract public_id from Cloudinary URL
-  // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{format}
-  const match = imageUrl.match(/\/image\/upload\/(?:v\d+\/)?(.+?)\.[^.]+$/)
-  return match ? match[1] : null
+  try {
+    const url = new URL(imageUrl)
+    const isCloudinaryHost =
+      url.hostname === 'res.cloudinary.com' ||
+      url.hostname.endsWith('.cloudinary.com')
+
+    if (!isCloudinaryHost) {
+      return null
+    }
+
+    // Extract public_id from Cloudinary URL
+    // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{format}
+    const match = url.pathname.match(
+      /\/image\/upload\/(?:v\d+\/)?(.+?)\.[^.]+$/,
+    )
+    return match ? match[1] : null
+  } catch {
+    return null
+  }
 }

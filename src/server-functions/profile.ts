@@ -1,12 +1,12 @@
-import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { createAuth } from '#/lib/auth'
 import {
-  uploadToCloudinary,
   deleteFromCloudinary,
   getCloudinaryPublicId,
+  uploadToCloudinary,
 } from '#/lib/cloudinary'
 import { getCloudflareEnv } from '#/lib/request-context'
+import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -28,9 +28,17 @@ export const getProfile = createServerFn({ method: 'GET' }).handler(
       return null
     }
 
+    const { id, expiresAt, createdAt, updatedAt, userId } = session.session
+
     return {
       user: session.user,
-      session: session.session,
+      session: {
+        id,
+        expiresAt,
+        createdAt,
+        updatedAt,
+        userId,
+      },
     }
   },
 )
@@ -88,7 +96,6 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
     }
 
     const { file } = data
-    const userId = session.user.id
 
     // Delete old photo from Cloudinary if exists
     if (session.user.image) {

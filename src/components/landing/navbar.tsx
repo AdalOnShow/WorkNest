@@ -150,8 +150,8 @@ export function Navbar({
               <>
                 <NotificationBell
                   notifications={MOCK_NOTIFICATIONS}
-                  onMarkRead={() => { }}
-                  onMarkAllRead={() => { }}
+                  onMarkRead={() => {}}
+                  onMarkAllRead={() => {}}
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

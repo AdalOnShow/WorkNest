@@ -113,7 +113,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
           ))}
         </SidebarMenu>
         <div className="flex items-center gap-3 px-3 py-2 group-data-[collapsible=icon]:hidden">
-          <UserAvatar name={user?.name ?? 'U'} image={user?.image ?? undefined} size="sm" />
+          <UserAvatar
+            name={user?.name ?? 'U'}
+            image={user?.image ?? undefined}
+            size="sm"
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">
               {user?.name ?? 'Account'}
