@@ -170,7 +170,7 @@ function DashboardPage() {
           <div className="bg-card border border-border rounded-[14px] p-6">
             <h3 className="label-lg text-foreground mb-4">Tasks by Priority</h3>
             <div className="flex items-end justify-center h-48 gap-6 px-4">
-              {statusTotal === 0 ? (
+              {priorityTotal === 0 ? (
                 <p className="text-sm text-muted-foreground">No tasks yet</p>
               ) : (
                 <>

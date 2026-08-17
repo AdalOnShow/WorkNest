@@ -75,7 +75,13 @@ function RouteComponent() {
           <div className="rounded-[14px] border border-border bg-card p-6">
             <p className="label-sm text-muted-foreground">Deadline</p>
             <p className="headline-xs text-foreground">
-              {project.deadlineFormatted}
+              {project.deadline
+                ? new Date(project.deadline).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : '—'}
             </p>
           </div>
         </div>

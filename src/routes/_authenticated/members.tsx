@@ -150,7 +150,8 @@ function MembersPage() {
                           variant="ghost"
                           size="icon"
                           aria-label={`Remove ${member.name}`}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
+                          disabled
+                          className="h-8 w-8 text-muted-foreground"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

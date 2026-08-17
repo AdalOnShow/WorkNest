@@ -96,6 +96,8 @@ function NotificationsPage() {
               {items.map((notification) => (
                 <div
                   key={notification.id}
+                  role="button"
+                  tabIndex={0}
                   className={cn(
                     'flex items-start gap-4 p-5 border-b border-border/50 last:border-0 hover:bg-accent/30 transition-colors cursor-pointer',
                     !notification.read &&
@@ -103,6 +105,15 @@ function NotificationsPage() {
                   )}
                   onClick={() => {
                     if (!notification.read) {
+                      markReadMutation.mutate(notification.id)
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (
+                      (e.key === 'Enter' || e.key === ' ') &&
+                      !notification.read
+                    ) {
+                      e.preventDefault()
                       markReadMutation.mutate(notification.id)
                     }
                   }}

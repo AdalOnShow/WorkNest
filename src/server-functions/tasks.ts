@@ -233,13 +233,17 @@ export const createTask = createServerFn({ method: 'POST' })
     if (membership.length === 0) {
       throw new Error('Project not found or access denied')
     }
+    const trimmedTitle = data.title.trim()
+    if (trimmedTitle.length === 0) {
+      throw new Error('Task title cannot be empty')
+    }
     const taskId = crypto.randomUUID()
     const now = new Date()
 
     await db.insert(task).values({
       id: taskId,
       projectId: data.projectId,
-      title: data.title.trim(),
+      title: trimmedTitle,
       description: data.description?.trim() || null,
       status: 'TODO',
       priority: data.priority || 'MEDIUM',
@@ -268,7 +272,7 @@ export const updateTask = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
-    await requireTaskAccess(data.taskId, userId)
+    const projectId = await requireTaskAccess(data.taskId, userId)
 
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (data.title !== undefined) updates.title = data.title.trim()
@@ -293,10 +297,7 @@ export const updateTask = createServerFn({ method: 'POST' })
         .from(projectMember)
         .where(
           and(
-            eq(
-              projectMember.projectId,
-              await requireTaskAccess(data.taskId, userId),
-            ),
+            eq(projectMember.projectId, projectId),
             eq(projectMember.userId, data.assigneeId),
           ),
         )
@@ -317,7 +318,40 @@ export const deleteTask = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
-    await requireTaskAccess(data.taskId, userId)
+    const projectId = await requireTaskAccess(data.taskId, userId)
+
+    const [taskRow] = await db
+      .select({
+        creatorId: task.creatorId,
+        assigneeId: task.assigneeId,
+      })
+      .from(task)
+      .where(eq(task.id, data.taskId))
+      .limit(1)
+
+    if (!taskRow) {
+      throw new Error('Task not found')
+    }
+
+    const isOwner =
+      taskRow.creatorId === userId || taskRow.assigneeId === userId
+
+    if (!isOwner) {
+      const [membership] = await db
+        .select({ role: projectMember.role })
+        .from(projectMember)
+        .where(
+          and(
+            eq(projectMember.projectId, projectId),
+            eq(projectMember.userId, userId),
+          ),
+        )
+        .limit(1)
+
+      if (!membership || !['ADMIN', 'PROJECT_MANAGER'].includes(membership.role)) {
+        throw new Error('Only the task creator, assignee, or project admins can delete this task')
+      }
+    }
 
     await db.delete(task).where(eq(task.id, data.taskId))
     return { success: true }
@@ -409,13 +443,17 @@ export const addTaskComment = createServerFn({ method: 'POST' })
     const userId = await requireUserId()
     const db = getDb()
     await requireTaskAccess(data.taskId, userId)
+    const trimmedContent = data.content.trim()
+    if (trimmedContent.length === 0) {
+      throw new Error('Comment content cannot be empty')
+    }
     const now = new Date()
 
     await db.insert(comment).values({
       id: crypto.randomUUID(),
       taskId: data.taskId,
       authorId: userId,
-      content: data.content.trim(),
+      content: trimmedContent,
       createdAt: now,
       updatedAt: now,
     })

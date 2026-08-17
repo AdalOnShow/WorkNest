@@ -69,7 +69,9 @@ function ProjectsPage() {
   const isRecoveringPage = Boolean(data && page > totalPages)
 
   useEffect(() => {
-    if (data?.totalPages && page > data.totalPages) {
+    if (data && data.totalPages < 1 && page > 0) {
+      setPage(0)
+    } else if (data && data.totalPages >= 1 && page > data.totalPages) {
       setPage(data.totalPages)
     }
   }, [data?.totalPages, page])
@@ -191,7 +193,12 @@ function ProjectsPage() {
                         {project.taskCount}
                       </TableCell>
                       <TableCell className="text-card-foreground">
-                        {project.deadlineFormatted}
+                        {project.deadline
+                          ? new Date(project.deadline).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : '—'}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">

@@ -69,7 +69,10 @@ function TaskDetailPage() {
     mutationFn: (status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED') =>
       changeTaskStatus({ data: { taskId, status } }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', taskId] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+      ])
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update status')
@@ -81,7 +84,10 @@ function TaskDetailPage() {
     mutationFn: (priority: 'HIGH' | 'MEDIUM' | 'LOW') =>
       updateTask({ data: { taskId, priority } }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task', taskId] }),
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+      ])
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update priority')
@@ -262,7 +268,6 @@ function TaskDetailPage() {
                             day: 'numeric',
                             hour: 'numeric',
                             minute: '2-digit',
-                            timeZone: 'UTC',
                           })}
                         </span>
                       </div>

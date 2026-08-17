@@ -4,7 +4,7 @@ import { createAuth } from '#/lib/auth'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
 
 function escapeLikePattern(value: string) {
   return value
@@ -46,8 +46,8 @@ export const listProjects = createServerFn({ method: 'GET' })
     const { db } = getDb()
     const search = data.search || ''
     const status = data.status || 'all'
-    const page = data.page || 1
-    const pageSize = data.pageSize || 10
+    const page = Math.max(1, Math.floor(data.page || 1))
+    const pageSize = Math.min(100, Math.max(1, Math.floor(data.pageSize || 10)))
     const escapedSearch = escapeLikePattern(search)
 
     const conditions = [
@@ -93,7 +93,7 @@ export const listProjects = createServerFn({ method: 'GET' })
           taskCount: count(),
         })
         .from(task)
-        .where(sql`${task.projectId} IN ${projectIds}`)
+        .where(inArray(task.projectId, projectIds))
         .groupBy(task.projectId)
     }
 
@@ -104,12 +104,6 @@ export const listProjects = createServerFn({ method: 'GET' })
     const items = projectRows.map((p) => ({
       ...p,
       taskCount: taskCountMap.get(p.id) || 0,
-      deadlineFormatted: p.deadline
-        ? new Date(p.deadline).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-          })
-        : '—',
     }))
 
     const total = countResult[0]?.count || 0
@@ -157,13 +151,6 @@ export const getProject = createServerFn({ method: 'GET' })
     return {
       ...projectRow,
       taskCount: taskCountResult.count || 0,
-      deadlineFormatted: projectRow.deadline
-        ? new Date(projectRow.deadline).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })
-        : '—',
     }
   })
 
@@ -174,13 +161,17 @@ export const createProject = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const { db } = getDb()
+    const trimmedName = data.name.trim()
+    if (trimmedName.length === 0) {
+      throw new Error('Project name cannot be empty')
+    }
     const projectId = crypto.randomUUID()
     const now = new Date()
 
     await db.batch([
       db.insert(project).values({
         id: projectId,
-        name: data.name.trim(),
+        name: trimmedName,
         description: data.description?.trim() || null,
         status: 'ACTIVE',
         deadline: data.deadline ? new Date(data.deadline) : null,
@@ -313,11 +304,19 @@ export const addProjectMember = createServerFn({ method: 'POST' })
       throw new Error('Member already exists')
     }
 
+    const requestedRole = data.role || 'TEAM_MEMBER'
+    if (
+      membership[0].role === 'PROJECT_MANAGER' &&
+      requestedRole === 'ADMIN'
+    ) {
+      throw new Error('Only project admins can assign ADMIN role')
+    }
+
     await db.insert(projectMember).values({
       id: crypto.randomUUID(),
       projectId: data.projectId,
       userId: data.userId,
-      role: data.role || 'TEAM_MEMBER',
+      role: requestedRole,
       createdAt: new Date(),
     })
 

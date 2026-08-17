@@ -114,11 +114,21 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
     // Upload new photo to Cloudinary
     const result = await uploadToCloudinary(env, file, CLOUDINARY_FOLDER)
 
-    // Use Better Auth's updateUser to update DB + refresh session cookie
-    await auth.api.updateUser({
-      body: { image: result.secure_url },
-      headers: request.headers,
-    })
+    try {
+      // Use Better Auth's updateUser to update DB + refresh session cookie
+      await auth.api.updateUser({
+        body: { image: result.secure_url },
+        headers: request.headers,
+      })
+    } catch {
+      // Cleanup uploaded asset if DB update fails
+      try {
+        await deleteFromCloudinary(env, result.public_id)
+      } catch {
+        // Ignore cleanup errors
+      }
+      throw new Error('Failed to update profile photo')
+    }
 
     if (oldPublicId) {
       try {
@@ -146,11 +156,7 @@ export const deleteProfilePhoto = createServerFn({ method: 'POST' }).handler(
     if (session.user.image) {
       const publicId = getCloudinaryPublicId(session.user.image)
       if (publicId) {
-        try {
-          await deleteFromCloudinary(env, publicId)
-        } catch {
-          // Ignore delete errors
-        }
+        await deleteFromCloudinary(env, publicId)
       }
     }
 

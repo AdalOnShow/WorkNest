@@ -137,7 +137,7 @@ function SettingsPage() {
                   <Loader2 className="w-6 h-6 text-white animate-spin" />
                 </div>
               )}
-              {!isUploading && (
+              {!isUploading && !isDeleting && (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -169,7 +169,7 @@ function SettingsPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleDeletePhoto}
-                disabled={isDeleting}
+                disabled={isUploading || isDeleting}
                 className="border-border text-muted-foreground hover:text-destructive hover:border-destructive"
               >
                 {isDeleting ? (

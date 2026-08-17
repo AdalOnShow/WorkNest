@@ -2,6 +2,7 @@ import { PageContainer } from '#/components/layout/page-container'
 import { Button } from '#/components/ui/button'
 import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { EmptyState } from '#/components/ui/empty-state'
+import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
 import { Pagination } from '#/components/ui/pagination-controls'
 import { SearchInput } from '#/components/ui/search-input'
@@ -25,7 +26,7 @@ import { deleteTask, listTasks } from '#/server-functions/tasks'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { CheckSquare, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/tasks')({
@@ -43,7 +44,7 @@ function TasksPage() {
   const [page, setPage] = useState(1)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['tasks', search, statusFilter, priorityFilter, page],
     queryFn: () =>
       listTasks({
@@ -71,6 +72,16 @@ function TasksPage() {
 
   const items = data?.items || []
   const totalPages = data?.totalPages || 1
+  const isRecoveringPage = Boolean(data && page > totalPages)
+
+  useEffect(() => {
+    if (data?.totalPages !== undefined && page > data.totalPages && data.totalPages > 0) {
+      setPage(data.totalPages)
+    }
+  }, [data?.totalPages, page])
+
+  const shouldShowEmptyState =
+    !isLoading && !isError && !isRecoveringPage && items.length === 0
 
   return (
     <PageContainer>
@@ -140,9 +151,15 @@ function TasksPage() {
           </Select>
         </div>
 
-        {isLoading ? (
+        {isLoading || isRecoveringPage ? (
           <LoadingState variant="table" />
-        ) : items.length === 0 ? (
+        ) : isError ? (
+          <ErrorState
+            title="Tasks unavailable"
+            message="We couldn't load your tasks."
+            onRetry={() => void refetch()}
+          />
+        ) : shouldShowEmptyState ? (
           <EmptyState
             icon={CheckSquare}
             title="No tasks found"
@@ -239,13 +256,15 @@ function TasksPage() {
               </Table>
             </div>
 
-            <div className="flex justify-center">
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-              />
-            </div>
+            {totalPages > 1 && (
+              <div className="flex justify-center">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                />
+              </div>
+            )}
           </>
         )}
       </div>

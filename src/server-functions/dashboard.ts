@@ -54,7 +54,7 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
         .where(
           and(
             sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
-            sql`${task.deadline} IS NOT NULL AND ${task.deadline} < ${Date.now()} AND ${task.completedAt} IS NULL`,
+            sql`${task.deadline} IS NOT NULL AND ${task.deadline} < ${new Date().toISOString()} AND ${task.completedAt} IS NULL`,
           ),
         ),
       db
@@ -110,7 +110,7 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
         .where(
           and(
             memberCondition,
-            sql`${project.deadline} IS NOT NULL AND ${project.deadline} > ${Date.now()}`,
+            sql`${project.deadline} IS NOT NULL AND ${project.deadline} > ${new Date().toISOString()}`,
           ),
         )
         .groupBy(project.id)
@@ -118,18 +118,26 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
         .limit(5),
     ])
 
-    const statusMap: Record<string, number> = {
+    const statusMap: Record<'COMPLETED' | 'IN_PROGRESS' | 'TODO', number> = {
       COMPLETED: 0,
       IN_PROGRESS: 0,
       TODO: 0,
     }
     for (const row of tasksByStatus) {
-      statusMap[row.status] = row.count
+      if (row.status in statusMap) {
+        statusMap[row.status as keyof typeof statusMap] = row.count
+      }
     }
 
-    const priorityMap: Record<string, number> = { HIGH: 0, MEDIUM: 0, LOW: 0 }
+    const priorityMap: Record<'HIGH' | 'MEDIUM' | 'LOW', number> = {
+      HIGH: 0,
+      MEDIUM: 0,
+      LOW: 0,
+    }
     for (const row of tasksByPriority) {
-      priorityMap[row.priority] = row.count
+      if (row.priority in priorityMap) {
+        priorityMap[row.priority as keyof typeof priorityMap] = row.count
+      }
     }
 
     return {

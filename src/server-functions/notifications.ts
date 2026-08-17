@@ -42,7 +42,7 @@ export const listNotifications = createServerFn({ method: 'GET' })
         .select()
         .from(notification)
         .where(where)
-        .orderBy(desc(notification.createdAt))
+        .orderBy(desc(notification.createdAt), desc(notification.id))
         .limit(pageSize)
         .offset((page - 1) * pageSize),
       db.select({ count: count() }).from(notification).where(where),
