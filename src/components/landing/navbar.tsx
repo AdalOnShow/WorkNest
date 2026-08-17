@@ -1,9 +1,5 @@
-import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
-import { useState } from 'react'
+import { authClient } from '#/lib/auth-client'
 import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { NotificationBell } from '@/components/ui/notification-bell'
-import { UserAvatar } from '@/components/ui/user-avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,9 +8,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Menu, Sprout, X, Loader2 } from 'lucide-react'
+import { NotificationBell } from '@/components/ui/notification-bell'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { UserAvatar } from '@/components/ui/user-avatar'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
+import { Loader2, Menu, Sprout, X } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
-import { authClient } from '#/lib/auth-client'
 
 // Mock data - replace with real data from context/auth
 const MOCK_NOTIFICATIONS = [
@@ -80,12 +80,20 @@ export function Navbar({
   }
 
   const handleLogout = async () => {
-    const { error } = await authClient.signOut()
-    if (error) {
-      toast.error(error.message)
-      return
+    try {
+      const { error } = await authClient.signOut()
+      if (error) {
+        toast.error(error.message || 'Failed to sign out')
+        return
+      }
+      await navigate({ to: '/' })
+    } catch (error) {
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Failed to sign out',
+      )
     }
-    await navigate({ to: '/' })
   }
 
   return (
@@ -150,8 +158,8 @@ export function Navbar({
               <>
                 <NotificationBell
                   notifications={MOCK_NOTIFICATIONS}
-                  onMarkRead={() => {}}
-                  onMarkAllRead={() => {}}
+                  onMarkRead={() => { }}
+                  onMarkAllRead={() => { }}
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

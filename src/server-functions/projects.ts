@@ -1,10 +1,17 @@
+import { createDb } from '#/db'
+import { project, projectMember, task } from '#/db/schema'
+import { createAuth } from '#/lib/auth'
+import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { eq, and, sql, desc, like, count } from 'drizzle-orm'
-import { createAuth } from '#/lib/auth'
-import { createDb } from '#/db'
-import { getCloudflareEnv } from '#/lib/request-context'
-import { project, projectMember, task } from '#/db/schema'
+import { and, count, desc, eq, sql } from 'drizzle-orm'
+
+function escapeLikePattern(value: string) {
+  return value
+    .replaceAll('\\', '\\\\')
+    .replaceAll('%', '\\%')
+    .replaceAll('_', '\\_')
+}
 
 function getDb() {
   const env = getCloudflareEnv()
@@ -41,12 +48,15 @@ export const listProjects = createServerFn({ method: 'GET' })
     const status = data.status || 'all'
     const page = data.page || 1
     const pageSize = data.pageSize || 10
+    const escapedSearch = escapeLikePattern(search)
 
     const conditions = [
       sql`${project.id} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
     ]
     if (search) {
-      conditions.push(like(project.name, `%${search}%`))
+      conditions.push(
+        sql`${project.name} LIKE ${`%${escapedSearch}%`} ESCAPE '\\'`,
+      )
     }
     if (status && status !== 'all') {
       conditions.push(
@@ -114,8 +124,8 @@ export const getProject = createServerFn({ method: 'GET' })
     const userId = await requireUserId()
     const { db } = getDb()
 
-    const membership = await db
-      .select()
+    const [membershipResult] = await db
+      .select({ count: count() })
       .from(projectMember)
       .where(
         and(
@@ -125,7 +135,7 @@ export const getProject = createServerFn({ method: 'GET' })
       )
       .limit(1)
 
-    if (membership.length === 0) {
+    if (membershipResult.count === 0) {
       throw new Error('Project not found or access denied')
     }
 
@@ -146,7 +156,7 @@ export const getProject = createServerFn({ method: 'GET' })
 
     return {
       ...projectRow,
-      taskCount: taskCountResult?.count || 0,
+      taskCount: taskCountResult.count || 0,
       deadlineFormatted: projectRow.deadline
         ? new Date(projectRow.deadline).toLocaleDateString('en-US', {
             month: 'short',
@@ -167,24 +177,25 @@ export const createProject = createServerFn({ method: 'POST' })
     const projectId = crypto.randomUUID()
     const now = new Date()
 
-    await db.insert(project).values({
-      id: projectId,
-      name: data.name.trim(),
-      description: data.description?.trim() || null,
-      status: 'ACTIVE',
-      deadline: data.deadline ? new Date(data.deadline) : null,
-      creatorId: userId,
-      createdAt: now,
-      updatedAt: now,
-    })
-
-    await db.insert(projectMember).values({
-      id: crypto.randomUUID(),
-      projectId,
-      userId,
-      role: 'ADMIN',
-      createdAt: now,
-    })
+    await db.batch([
+      db.insert(project).values({
+        id: projectId,
+        name: data.name.trim(),
+        description: data.description?.trim() || null,
+        status: 'ACTIVE',
+        deadline: data.deadline ? new Date(data.deadline) : null,
+        creatorId: userId,
+        createdAt: now,
+        updatedAt: now,
+      }),
+      db.insert(projectMember).values({
+        id: crypto.randomUUID(),
+        projectId,
+        userId,
+        role: 'ADMIN',
+        createdAt: now,
+      }),
+    ])
 
     return { id: projectId }
   })
@@ -214,7 +225,7 @@ export const updateProject = createServerFn({ method: 'POST' })
       )
       .limit(1)
 
-    if (membership.length === 0) {
+    if (membership.length === 0 || membership[0].role !== 'ADMIN') {
       throw new Error('Project not found or access denied')
     }
 
@@ -280,8 +291,26 @@ export const addProjectMember = createServerFn({ method: 'POST' })
       )
       .limit(1)
 
-    if (membership.length === 0) {
+    if (
+      membership.length === 0 ||
+      !['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
+    ) {
       throw new Error('Project not found or access denied')
+    }
+
+    const existingMembership = await db
+      .select()
+      .from(projectMember)
+      .where(
+        and(
+          eq(projectMember.projectId, data.projectId),
+          eq(projectMember.userId, data.userId),
+        ),
+      )
+      .limit(1)
+
+    if (existingMembership.length > 0) {
+      throw new Error('Member already exists')
     }
 
     await db.insert(projectMember).values({
@@ -314,6 +343,42 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
 
     if (membership.length === 0) {
       throw new Error('Project not found or access denied')
+    }
+
+    const targetMembership = await db
+      .select()
+      .from(projectMember)
+      .where(
+        and(
+          eq(projectMember.projectId, data.projectId),
+          eq(projectMember.userId, data.userId),
+        ),
+      )
+      .limit(1)
+
+    if (targetMembership.length === 0) {
+      throw new Error('Member not found')
+    }
+
+    const adminCount = await db
+      .select({ count: count() })
+      .from(projectMember)
+      .where(
+        and(
+          eq(projectMember.projectId, data.projectId),
+          eq(projectMember.role, 'ADMIN'),
+        ),
+      )
+
+    if (data.userId !== requesterId && membership[0].role !== 'ADMIN') {
+      throw new Error('Only project admins can remove other members')
+    }
+
+    if (
+      targetMembership[0].role === 'ADMIN' &&
+      (adminCount[0]?.count || 0) <= 1
+    ) {
+      throw new Error('Cannot remove the last project admin')
     }
 
     await db

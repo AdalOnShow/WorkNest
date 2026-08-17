@@ -1,14 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import { PageContainer } from '#/components/layout/page-container'
+import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
-import {
-  FolderKanban,
-  CheckSquare,
-  CheckCircle2,
-  AlertTriangle,
-} from 'lucide-react'
 import { getDashboardData } from '#/server-functions/dashboard'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CheckSquare,
+  FolderKanban,
+} from 'lucide-react'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,
@@ -18,7 +19,7 @@ export const Route = createFileRoute('/_authenticated/dashboard')({
 })
 
 function DashboardPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => getDashboardData(),
   })
@@ -27,6 +28,18 @@ function DashboardPage() {
     return (
       <PageContainer>
         <LoadingState variant="detail" />
+      </PageContainer>
+    )
+  }
+
+  if (isError) {
+    return (
+      <PageContainer>
+        <ErrorState
+          title="Dashboard unavailable"
+          message="We couldn't load your dashboard data."
+          onRetry={() => void refetch()}
+        />
       </PageContainer>
     )
   }
@@ -47,6 +60,8 @@ function DashboardPage() {
     MEDIUM: 0,
     LOW: 0,
   }
+  const priorityTotal =
+    tasksByPriority.HIGH + tasksByPriority.MEDIUM + tasksByPriority.LOW
   const recentActivities = data?.recentActivities || []
   const upcomingDeadlines = data?.upcomingDeadlines || []
 
@@ -118,7 +133,7 @@ function DashboardPage() {
               ) : (
                 <div className="flex gap-6 text-sm">
                   <div className="text-center">
-                    <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-active)] flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-4 border-(--color-status-active) flex items-center justify-center">
                       <span className="text-foreground font-bold">
                         {tasksByStatus.COMPLETED}
                       </span>
@@ -128,7 +143,7 @@ function DashboardPage() {
                     </span>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-in-progress)] flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-4 border-(--color-status-in-progress) flex items-center justify-center">
                       <span className="text-foreground font-bold">
                         {tasksByStatus.IN_PROGRESS}
                       </span>
@@ -138,7 +153,7 @@ function DashboardPage() {
                     </span>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 rounded-full border-4 border-[var(--color-status-todo)] flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-4 border-(--color-status-todo) flex items-center justify-center">
                       <span className="text-foreground font-bold">
                         {tasksByStatus.TODO}
                       </span>
@@ -161,9 +176,9 @@ function DashboardPage() {
                 <>
                   <div className="flex flex-col items-center gap-2">
                     <div
-                      className="w-12 bg-[var(--color-priority-high)] rounded-t-md"
+                      className="w-12 bg-(--color-priority-high) rounded-t-md"
                       style={{
-                        height: `${Math.max(20, (tasksByPriority.HIGH / statusTotal) * 160)}px`,
+                        height: `${Math.max(20, (tasksByPriority.HIGH / priorityTotal) * 160)}px`,
                       }}
                     />
                     <span className="text-xs text-muted-foreground">
@@ -172,9 +187,9 @@ function DashboardPage() {
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <div
-                      className="w-12 bg-[var(--color-priority-medium)] rounded-t-md"
+                      className="w-12 bg-(--color-priority-medium) rounded-t-md"
                       style={{
-                        height: `${Math.max(20, (tasksByPriority.MEDIUM / statusTotal) * 160)}px`,
+                        height: `${Math.max(20, (tasksByPriority.MEDIUM / priorityTotal) * 160)}px`,
                       }}
                     />
                     <span className="text-xs text-muted-foreground">
@@ -183,9 +198,9 @@ function DashboardPage() {
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <div
-                      className="w-12 bg-[var(--color-priority-low)] rounded-t-md"
+                      className="w-12 bg-(--color-priority-low) rounded-t-md"
                       style={{
-                        height: `${Math.max(20, (tasksByPriority.LOW / statusTotal) * 160)}px`,
+                        height: `${Math.max(20, (tasksByPriority.LOW / priorityTotal) * 160)}px`,
                       }}
                     />
                     <span className="text-xs text-muted-foreground">
@@ -247,7 +262,7 @@ function DashboardPage() {
                         {item.taskCount} tasks remaining
                       </p>
                     </div>
-                    <span className="label-sm text-[var(--color-status-on-hold)]">
+                    <span className="label-sm text-(--color-status-on-hold)">
                       {item.deadlineFormatted}
                     </span>
                   </div>

@@ -1,19 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Check, Bell } from 'lucide-react'
-import { toast } from 'sonner'
 import { PageContainer } from '#/components/layout/page-container'
 import { Button } from '#/components/ui/button'
-import { Pagination } from '#/components/ui/pagination-controls'
-import { LoadingState } from '#/components/ui/loading-state'
 import { EmptyState } from '#/components/ui/empty-state'
+import { LoadingState } from '#/components/ui/loading-state'
+import { Pagination } from '#/components/ui/pagination-controls'
 import { cn } from '#/lib/utils'
 import {
   listNotifications,
-  markNotificationRead,
   markAllNotificationsRead,
+  markNotificationRead,
 } from '#/server-functions/notifications'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Bell, Check } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/notifications')({
   component: NotificationsPage,
@@ -37,6 +37,9 @@ function NotificationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to mark notification as read')
+    },
   })
 
   const markAllReadMutation = useMutation({
@@ -44,6 +47,9 @@ function NotificationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
       toast.success('All notifications marked as read')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to mark all notifications as read')
     },
   })
 
@@ -93,7 +99,7 @@ function NotificationsPage() {
                   className={cn(
                     'flex items-start gap-4 p-5 border-b border-border/50 last:border-0 hover:bg-accent/30 transition-colors cursor-pointer',
                     !notification.read &&
-                      'border-l-2 border-l-primary bg-accent/20',
+                    'border-l-2 border-l-primary bg-accent/20',
                   )}
                   onClick={() => {
                     if (!notification.read) {

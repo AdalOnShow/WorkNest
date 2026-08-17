@@ -1,23 +1,40 @@
-import { createServerFn } from '@tanstack/react-start'
-import { eq, count, and, sql } from 'drizzle-orm'
 import { createDb } from '#/db'
-import { getCloudflareEnv } from '#/lib/request-context'
 import { user, userProfile } from '#/db/schema'
+import { createAuth } from '#/lib/auth'
+import { getCloudflareEnv } from '#/lib/request-context'
+import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
+import { and, count, eq, sql } from 'drizzle-orm'
 
 function getDb() {
   const env = getCloudflareEnv()
   return createDb(env.DB)
 }
 
+function getAuth() {
+  const env = getCloudflareEnv()
+  return createAuth(env)
+}
+
+async function requireSession() {
+  const request = getRequest()
+  const auth = getAuth()
+  const session = await auth.api.getSession({ headers: request.headers })
+  if (!session) throw new Error('Unauthorized')
+}
+
 export const listMembers = createServerFn({ method: 'GET' })
-  .validator(
-    (data: { search?: string; page?: number; pageSize?: number }) => data,
-  )
+  .validator((data: { search?: string; page?: number; pageSize?: number }) => ({
+    search: data.search,
+    page: Math.max(1, Math.floor(data.page || 1)),
+    pageSize: Math.min(100, Math.max(1, Math.floor(data.pageSize || 10))),
+  }))
   .handler(async ({ data }) => {
+    await requireSession()
     const db = getDb()
     const search = data.search || ''
-    const page = data.page || 1
-    const pageSize = data.pageSize || 10
+    const page = data.page
+    const pageSize = data.pageSize
 
     const conditions = []
     if (search) {

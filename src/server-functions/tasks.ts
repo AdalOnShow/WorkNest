@@ -1,10 +1,20 @@
+import { createDb } from '#/db'
+import { comment, project, projectMember, task, user } from '#/db/schema'
+import { createAuth } from '#/lib/auth'
+import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { eq, and, sql, desc, like, count } from 'drizzle-orm'
-import { createAuth } from '#/lib/auth'
-import { createDb } from '#/db'
-import { getCloudflareEnv } from '#/lib/request-context'
-import { task, project, projectMember, user } from '#/db/schema'
+import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/sqlite-core'
+
+const creator = alias(user, 'creator')
+
+function escapeLikePattern(value: string) {
+  return value
+    .replaceAll('\\', '\\\\')
+    .replaceAll('%', '\\%')
+    .replaceAll('_', '\\_')
+}
 
 function getDb() {
   const env = getCloudflareEnv()
@@ -22,6 +32,33 @@ async function requireUserId() {
   const session = await auth.api.getSession({ headers: request.headers })
   if (!session) throw new Error('Unauthorized')
   return session.user.id
+}
+
+async function requireTaskAccess(taskId: string, userId: string) {
+  const db = getDb()
+  const [taskAccess] = await db
+    .select({ count: count() })
+    .from(task)
+    .innerJoin(
+      projectMember,
+      and(
+        eq(projectMember.projectId, task.projectId),
+        eq(projectMember.userId, userId),
+      ),
+    )
+    .where(eq(task.id, taskId))
+
+  if (taskAccess.count === 0) {
+    throw new Error('Task not found')
+  }
+
+  const [projectRow] = await db
+    .select({ projectId: task.projectId })
+    .from(task)
+    .where(eq(task.id, taskId))
+    .limit(1)
+
+  return projectRow.projectId
 }
 
 export const listTasks = createServerFn({ method: 'GET' })
@@ -44,12 +81,15 @@ export const listTasks = createServerFn({ method: 'GET' })
     const projectId = data.projectId || ''
     const page = data.page || 1
     const pageSize = data.pageSize || 10
+    const escapedSearch = escapeLikePattern(search)
 
     const conditions = [
       sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
     ]
     if (search) {
-      conditions.push(like(task.title, `%${search}%`))
+      conditions.push(
+        sql`${task.title} LIKE ${`%${escapedSearch}%`} ESCAPE '\\'`,
+      )
     }
     if (status && status !== 'all') {
       conditions.push(
@@ -77,11 +117,13 @@ export const listTasks = createServerFn({ method: 'GET' })
           projectName: project.name,
           assigneeId: task.assigneeId,
           assigneeName: user.name,
+          creatorName: creator.name,
           createdAt: task.createdAt,
         })
         .from(task)
         .leftJoin(project, eq(task.projectId, project.id))
         .leftJoin(user, eq(task.assigneeId, user.id))
+        .leftJoin(creator, eq(task.creatorId, creator.id))
         .where(where)
         .orderBy(desc(task.createdAt))
         .limit(pageSize)
@@ -114,8 +156,9 @@ export const listTasks = createServerFn({ method: 'GET' })
 export const getTask = createServerFn({ method: 'GET' })
   .validator((data: { taskId: string }) => data)
   .handler(async ({ data }) => {
-    await requireUserId()
+    const userId = await requireUserId()
     const db = getDb()
+    await requireTaskAccess(data.taskId, userId)
 
     const [taskRow] = await db
       .select({
@@ -130,7 +173,7 @@ export const getTask = createServerFn({ method: 'GET' })
         assigneeId: task.assigneeId,
         assigneeName: user.name,
         creatorId: task.creatorId,
-        creatorName: user.name,
+        creatorName: creator.name,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
         completedAt: task.completedAt,
@@ -138,7 +181,13 @@ export const getTask = createServerFn({ method: 'GET' })
       .from(task)
       .leftJoin(project, eq(task.projectId, project.id))
       .leftJoin(user, eq(task.assigneeId, user.id))
-      .where(eq(task.id, data.taskId))
+      .leftJoin(creator, eq(task.creatorId, creator.id))
+      .where(
+        and(
+          eq(task.id, data.taskId),
+          sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
+        ),
+      )
       .limit(1)
 
     if (!taskRow) {
@@ -170,6 +219,20 @@ export const createTask = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
+    const membership = await db
+      .select({ id: projectMember.id })
+      .from(projectMember)
+      .where(
+        and(
+          eq(projectMember.projectId, data.projectId),
+          eq(projectMember.userId, userId),
+        ),
+      )
+      .limit(1)
+
+    if (membership.length === 0) {
+      throw new Error('Project not found or access denied')
+    }
     const taskId = crypto.randomUUID()
     const now = new Date()
 
@@ -203,8 +266,9 @@ export const updateTask = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
-    await requireUserId()
+    const userId = await requireUserId()
     const db = getDb()
+    await requireTaskAccess(data.taskId, userId)
 
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (data.title !== undefined) updates.title = data.title.trim()
@@ -223,6 +287,26 @@ export const updateTask = createServerFn({ method: 'POST' })
     if (data.deadline !== undefined)
       updates.deadline = data.deadline ? new Date(data.deadline) : null
 
+    if (data.assigneeId !== undefined && data.assigneeId !== null) {
+      const assigneeMembership = await db
+        .select({ id: projectMember.id })
+        .from(projectMember)
+        .where(
+          and(
+            eq(
+              projectMember.projectId,
+              await requireTaskAccess(data.taskId, userId),
+            ),
+            eq(projectMember.userId, data.assigneeId),
+          ),
+        )
+        .limit(1)
+
+      if (assigneeMembership.length === 0) {
+        throw new Error('Assignee must belong to the task project')
+      }
+    }
+
     await db.update(task).set(updates).where(eq(task.id, data.taskId))
 
     return { success: true }
@@ -231,8 +315,9 @@ export const updateTask = createServerFn({ method: 'POST' })
 export const deleteTask = createServerFn({ method: 'POST' })
   .validator((data: { taskId: string }) => data)
   .handler(async ({ data }) => {
-    await requireUserId()
+    const userId = await requireUserId()
     const db = getDb()
+    await requireTaskAccess(data.taskId, userId)
 
     await db.delete(task).where(eq(task.id, data.taskId))
     return { success: true }
@@ -241,8 +326,27 @@ export const deleteTask = createServerFn({ method: 'POST' })
 export const assignTask = createServerFn({ method: 'POST' })
   .validator((data: { taskId: string; assigneeId: string | null }) => data)
   .handler(async ({ data }) => {
-    await requireUserId()
+    const userId = await requireUserId()
     const db = getDb()
+
+    const projectId = await requireTaskAccess(data.taskId, userId)
+
+    if (data.assigneeId !== null) {
+      const assigneeMembership = await db
+        .select({ id: projectMember.id })
+        .from(projectMember)
+        .where(
+          and(
+            eq(projectMember.projectId, projectId),
+            eq(projectMember.userId, data.assigneeId),
+          ),
+        )
+        .limit(1)
+
+      if (assigneeMembership.length === 0) {
+        throw new Error('Assignee must belong to the task project')
+      }
+    }
 
     await db
       .update(task)
@@ -258,8 +362,9 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
       data,
   )
   .handler(async ({ data }) => {
-    await requireUserId()
+    const userId = await requireUserId()
     const db = getDb()
+    await requireTaskAccess(data.taskId, userId)
 
     const updates: Record<string, unknown> = {
       status: data.status,
@@ -278,10 +383,9 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
 export const getTaskComments = createServerFn({ method: 'GET' })
   .validator((data: { taskId: string }) => data)
   .handler(async ({ data }) => {
-    await requireUserId()
+    const userId = await requireUserId()
     const db = getDb()
-
-    const { comment } = await import('#/db/schema')
+    await requireTaskAccess(data.taskId, userId)
     const comments = await db
       .select({
         id: comment.id,
@@ -304,8 +408,7 @@ export const addTaskComment = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
-
-    const { comment } = await import('#/db/schema')
+    await requireTaskAccess(data.taskId, userId)
     const now = new Date()
 
     await db.insert(comment).values({

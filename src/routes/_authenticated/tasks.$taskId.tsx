@@ -1,5 +1,7 @@
 import { PageContainer } from '#/components/layout/page-container'
 import { Button } from '#/components/ui/button'
+import { ErrorState } from '#/components/ui/error-state'
+import { LoadingState } from '#/components/ui/loading-state'
 import {
   Select,
   SelectContent,
@@ -9,13 +11,22 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { UserAvatar } from '#/components/ui/user-avatar'
-import { LoadingState } from '#/components/ui/loading-state'
-import { ErrorState } from '#/components/ui/error-state'
+import {
+  addTaskComment,
+  changeTaskStatus,
+  getTask,
+  getTaskComments,
+  updateTask,
+} from '#/server-functions/tasks'
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, Send, Trash2, Upload } from 'lucide-react'
-import { useId, useState } from 'react'
-import { getTask, getTaskComments } from '#/server-functions/tasks'
+import { ArrowLeft, Send, Trash2, Upload } from 'lucide-react'
+import { useEffect, useId, useState } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/tasks/$taskId')({
   component: TaskDetailPage,
@@ -26,7 +37,10 @@ export const Route = createFileRoute('/_authenticated/tasks/$taskId')({
 
 function TaskDetailPage() {
   const { taskId } = Route.useParams()
+  const queryClient = useQueryClient()
   const [comment, setComment] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+  const [selectedPriority, setSelectedPriority] = useState<string | null>(null)
   const statusLabelId = useId()
   const priorityLabelId = useId()
 
@@ -42,6 +56,48 @@ function TaskDetailPage() {
   const { data: comments = [] } = useQuery({
     queryKey: ['taskComments', taskId],
     queryFn: () => getTaskComments({ data: { taskId } }),
+  })
+
+  useEffect(() => {
+    if (task) {
+      setSelectedStatus(task.status)
+      setSelectedPriority(task.priority)
+    }
+  }, [task])
+
+  const statusMutation = useMutation({
+    mutationFn: (status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED') =>
+      changeTaskStatus({ data: { taskId, status } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update status')
+      if (task) setSelectedStatus(task.status)
+    },
+  })
+
+  const priorityMutation = useMutation({
+    mutationFn: (priority: 'HIGH' | 'MEDIUM' | 'LOW') =>
+      updateTask({ data: { taskId, priority } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update priority')
+      if (task) setSelectedPriority(task.priority)
+    },
+  })
+
+  const addCommentMutation = useMutation({
+    mutationFn: () => addTaskComment({ data: { taskId, content: comment } }),
+    onSuccess: async () => {
+      setComment('')
+      await queryClient.invalidateQueries({ queryKey: ['taskComments', taskId] })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to send comment')
+    },
   })
 
   if (isLoading) {
@@ -81,14 +137,7 @@ function TaskDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              className="border-border text-card-foreground hover:bg-accent"
-            >
-              <Pencil data-icon="inline-start" className="w-4 h-4" />
-              Edit
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+              aria-label={`Delete ${task.title}`}
               className="border-border text-destructive hover:bg-destructive/10"
             >
               <Trash2 data-icon="inline-start" className="w-4 h-4" />
@@ -108,7 +157,15 @@ function TaskDetailPage() {
                   >
                     Status
                   </label>
-                  <Select defaultValue={task.status}>
+                  <Select
+                    value={selectedStatus || task.status}
+                    onValueChange={(value) => {
+                      setSelectedStatus(value)
+                      void statusMutation.mutateAsync(
+                        value as 'TODO' | 'IN_PROGRESS' | 'COMPLETED',
+                      )
+                    }}
+                  >
                     <SelectTrigger
                       aria-labelledby={statusLabelId}
                       className="bg-background border-border text-foreground rounded-lg"
@@ -131,7 +188,15 @@ function TaskDetailPage() {
                   >
                     Priority
                   </label>
-                  <Select defaultValue={task.priority}>
+                  <Select
+                    value={selectedPriority || task.priority}
+                    onValueChange={(value) => {
+                      setSelectedPriority(value)
+                      void priorityMutation.mutateAsync(
+                        value as 'HIGH' | 'MEDIUM' | 'LOW',
+                      )
+                    }}
+                  >
                     <SelectTrigger
                       aria-labelledby={priorityLabelId}
                       className="bg-background border-border text-foreground rounded-lg"
@@ -197,6 +262,7 @@ function TaskDetailPage() {
                             day: 'numeric',
                             hour: 'numeric',
                             minute: '2-digit',
+                            timeZone: 'UTC',
                           })}
                         </span>
                       </div>
@@ -222,6 +288,8 @@ function TaskDetailPage() {
                   <Button
                     size="icon"
                     aria-label="Send comment"
+                    onClick={() => void addCommentMutation.mutateAsync()}
+                    disabled={!comment.trim() || addCommentMutation.isPending}
                     className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <Send className="w-4 h-4" />

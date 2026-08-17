@@ -23,8 +23,6 @@
   ],
   "vars": {
     "BETTER_AUTH_URL": "https://worknest.sadal.dev",
-    "CLOUDINARY_CLOUD_NAME": "",
-    "CLOUDINARY_API_KEY": "",
   },
   "secrets": {
     "required": [

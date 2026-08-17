@@ -1,11 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Plus, Trash2, Users } from 'lucide-react'
 import { PageContainer } from '#/components/layout/page-container'
 import { Button } from '#/components/ui/button'
+import { EmptyState } from '#/components/ui/empty-state'
+import { LoadingState } from '#/components/ui/loading-state'
+import { Pagination } from '#/components/ui/pagination-controls'
 import { SearchInput } from '#/components/ui/search-input'
-import { UserAvatar } from '#/components/ui/user-avatar'
 import {
   Table,
   TableBody,
@@ -14,10 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
-import { Pagination } from '#/components/ui/pagination-controls'
-import { LoadingState } from '#/components/ui/loading-state'
-import { EmptyState } from '#/components/ui/empty-state'
+import { UserAvatar } from '#/components/ui/user-avatar'
 import { listMembers } from '#/server-functions/members'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Plus, Trash2, Users } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/_authenticated/members')({
   component: MembersPage,
@@ -28,11 +28,22 @@ export const Route = createFileRoute('/_authenticated/members')({
 
 function MembersPage() {
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 300)
+
+    return () => window.clearTimeout(timeout)
+  }, [search])
+
   const { data, isLoading } = useQuery({
-    queryKey: ['members', search, page],
-    queryFn: () => listMembers({ data: { search, page, pageSize: 10 } }),
+    queryKey: ['members', debouncedSearch, page],
+    queryFn: () =>
+      listMembers({ data: { search: debouncedSearch, page, pageSize: 10 } }),
+    placeholderData: keepPreviousData,
   })
 
   const items = data?.items || []
@@ -117,17 +128,21 @@ function MembersPage() {
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`label-sm ${
-                            member.role === 'ADMIN'
+                          style={
+                            member.role === 'PROJECT_MANAGER'
+                              ? { color: 'var(--color-status-in-progress)' }
+                              : undefined
+                          }
+                          className={`label-sm ${member.role === 'ADMIN'
                               ? 'text-primary'
-                              : member.role === 'PROJECT_MANAGER'
-                                ? 'text-[var(--color-status-in-progress)]'
-                                : 'text-card-foreground'
-                          }`}
+                              : 'text-card-foreground'
+                            }`}
                         >
-                          {member.role === 'PROJECT_MANAGER'
-                            ? 'PM'
-                            : member.role}
+                          {member.role === null
+                            ? 'No role'
+                            : member.role === 'PROJECT_MANAGER'
+                              ? 'PM'
+                              : member.role}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">

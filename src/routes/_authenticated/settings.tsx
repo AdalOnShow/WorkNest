@@ -110,6 +110,7 @@ function SettingsPage() {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'UTC',
     })
   }
 
@@ -216,21 +217,13 @@ function SettingsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="label-sm text-muted-foreground block mb-1">
-                  Role
-                </label>
-                <p className="body-sm text-foreground">{'Team Member'}</p>
-              </div>
-              <div>
-                <label className="label-sm text-muted-foreground block mb-1">
-                  Joined
-                </label>
-                <p className="body-sm text-foreground">
-                  {formatDate(user.createdAt)}
-                </p>
-              </div>
+            <div>
+              <label className="label-sm text-muted-foreground block mb-1">
+                Joined
+              </label>
+              <p className="body-sm text-foreground">
+                {formatDate(user.createdAt)}
+              </p>
             </div>
 
             <div className="flex gap-2 pt-2">
@@ -283,11 +276,10 @@ function SettingsPage() {
               {(['dark', 'light', 'system'] as const).map((t) => (
                 <label
                   key={t}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
-                    theme === t
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${theme === t
                       ? 'border-primary bg-accent'
                       : 'border-border hover:bg-accent/50'
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -298,9 +290,8 @@ function SettingsPage() {
                     className="sr-only"
                   />
                   <div
-                    className={`w-3 h-3 rounded-full ${
-                      theme === t ? 'bg-primary' : 'bg-muted-foreground'
-                    }`}
+                    className={`w-3 h-3 rounded-full ${theme === t ? 'bg-primary' : 'bg-muted-foreground'
+                      }`}
                   />
                   <span className="text-sm text-foreground capitalize">
                     {t}

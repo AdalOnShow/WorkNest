@@ -1,11 +1,19 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, FolderKanban } from 'lucide-react'
-import { toast } from 'sonner'
 import { PageContainer } from '#/components/layout/page-container'
 import { Button } from '#/components/ui/button'
+import { ConfirmDialog } from '#/components/ui/confirm-dialog'
+import { EmptyState } from '#/components/ui/empty-state'
+import { ErrorState } from '#/components/ui/error-state'
+import { LoadingState } from '#/components/ui/loading-state'
+import { Pagination } from '#/components/ui/pagination-controls'
 import { SearchInput } from '#/components/ui/search-input'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
 import { StatusBadge } from '#/components/ui/status-badge'
 import {
   Table,
@@ -15,19 +23,12 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '#/components/ui/select'
-import { Pagination } from '#/components/ui/pagination-controls'
-import { LoadingState } from '#/components/ui/loading-state'
-import { EmptyState } from '#/components/ui/empty-state'
-import { ConfirmDialog } from '#/components/ui/confirm-dialog'
-import { listProjects, deleteProject } from '#/server-functions/projects'
+import { deleteProject, listProjects } from '#/server-functions/projects'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { FolderKanban, Plus, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/projects')({
   component: ProjectsPage,
@@ -43,7 +44,7 @@ function ProjectsPage() {
   const [page, setPage] = useState(1)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['projects', search, statusFilter, page],
     queryFn: () =>
       listProjects({
@@ -65,6 +66,16 @@ function ProjectsPage() {
 
   const items = data?.items || []
   const totalPages = data?.totalPages || 1
+  const isRecoveringPage = Boolean(data && page > totalPages)
+
+  useEffect(() => {
+    if (data?.totalPages && page > data.totalPages) {
+      setPage(data.totalPages)
+    }
+  }, [data?.totalPages, page])
+
+  const shouldShowEmptyState =
+    !isLoading && !isError && !isRecoveringPage && items.length === 0
 
   return (
     <PageContainer>
@@ -101,7 +112,8 @@ function ProjectsPage() {
           >
             <SelectTrigger
               aria-label="Filter projects by status"
-              className="w-[140px] bg-card border-border text-foreground rounded-lg"
+              style={{ width: '140px' }}
+              className="bg-card border-border text-foreground rounded-lg"
             >
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -116,9 +128,15 @@ function ProjectsPage() {
           </Select>
         </div>
 
-        {isLoading ? (
+        {isLoading || isRecoveringPage ? (
           <LoadingState variant="table" />
-        ) : items.length === 0 ? (
+        ) : isError ? (
+          <ErrorState
+            title="Projects unavailable"
+            message="We couldn't load your projects."
+            onRetry={() => void refetch()}
+          />
+        ) : shouldShowEmptyState ? (
           <EmptyState
             icon={FolderKanban}
             title="No projects found"
@@ -180,14 +198,6 @@ function ProjectsPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label={`Edit ${project.name}`}
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
                             aria-label={`Delete ${project.name}`}
                             onClick={() => setDeleteId(project.id)}
                             className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
@@ -202,13 +212,15 @@ function ProjectsPage() {
               </Table>
             </div>
 
-            <div className="flex justify-center">
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-              />
-            </div>
+            {totalPages > 1 && (
+              <div className="flex justify-center">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                />
+              </div>
+            )}
           </>
         )}
       </div>

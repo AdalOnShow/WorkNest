@@ -1,8 +1,8 @@
-import { createServerFn } from '@tanstack/react-start'
-import { eq, and, sql, desc, count } from 'drizzle-orm'
 import { createDb } from '#/db'
+import { activity, project, projectMember, task } from '#/db/schema'
 import { getCloudflareEnv } from '#/lib/request-context'
-import { project, projectMember, task, activity } from '#/db/schema'
+import { createServerFn } from '@tanstack/react-start'
+import { and, count, desc, eq, sql } from 'drizzle-orm'
 
 function getDb() {
   const env = getCloudflareEnv()
@@ -54,7 +54,6 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
         .where(
           and(
             sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
-            eq(task.status, 'COMPLETED'),
             sql`${task.deadline} IS NOT NULL AND ${task.deadline} < ${Date.now()} AND ${task.completedAt} IS NULL`,
           ),
         ),

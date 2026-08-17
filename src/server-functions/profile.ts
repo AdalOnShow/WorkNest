@@ -44,7 +44,17 @@ export const getProfile = createServerFn({ method: 'GET' }).handler(
 )
 
 export const updateProfile = createServerFn({ method: 'POST' })
-  .validator((data: { name: string }) => data)
+  .validator((data: unknown) => {
+    if (
+      typeof data !== 'object' ||
+      data === null ||
+      typeof (data as { name?: unknown }).name !== 'string'
+    ) {
+      throw new Error('Name is required')
+    }
+
+    return data as { name: string }
+  })
   .handler(async ({ data }) => {
     const request = getRequest()
     const env = getCloudflareEnv()
@@ -97,17 +107,9 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
 
     const { file } = data
 
-    // Delete old photo from Cloudinary if exists
-    if (session.user.image) {
-      const oldPublicId = getCloudinaryPublicId(session.user.image)
-      if (oldPublicId) {
-        try {
-          await deleteFromCloudinary(env, oldPublicId)
-        } catch {
-          // Ignore delete errors
-        }
-      }
-    }
+    const oldPublicId = session.user.image
+      ? getCloudinaryPublicId(session.user.image)
+      : null
 
     // Upload new photo to Cloudinary
     const result = await uploadToCloudinary(env, file, CLOUDINARY_FOLDER)
@@ -117,6 +119,14 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
       body: { image: result.secure_url },
       headers: request.headers,
     })
+
+    if (oldPublicId) {
+      try {
+        await deleteFromCloudinary(env, oldPublicId)
+      } catch {
+        // Ignore delete errors
+      }
+    }
 
     return { success: true }
   })

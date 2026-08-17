@@ -1,10 +1,10 @@
+import { createDb } from '#/db'
+import { notification } from '#/db/schema'
+import { createAuth } from '#/lib/auth'
+import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { eq, and, desc, count } from 'drizzle-orm'
-import { createAuth } from '#/lib/auth'
-import { createDb } from '#/db'
-import { getCloudflareEnv } from '#/lib/request-context'
-import { notification } from '#/db/schema'
+import { and, count, desc, eq } from 'drizzle-orm'
 
 function getDb() {
   const env = getCloudflareEnv()
@@ -25,12 +25,15 @@ async function requireUserId() {
 }
 
 export const listNotifications = createServerFn({ method: 'GET' })
-  .validator((data: { page?: number; pageSize?: number }) => data)
+  .validator((data: { page?: number; pageSize?: number }) => ({
+    page: Math.max(1, Math.floor(data.page || 1)),
+    pageSize: Math.min(100, Math.max(1, Math.floor(data.pageSize || 20))),
+  }))
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
-    const page = data.page || 1
-    const pageSize = data.pageSize || 20
+    const page = data.page
+    const pageSize = data.pageSize
 
     const where = eq(notification.recipientId, userId)
 

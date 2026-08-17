@@ -1,11 +1,17 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, CheckSquare } from 'lucide-react'
-import { toast } from 'sonner'
 import { PageContainer } from '#/components/layout/page-container'
 import { Button } from '#/components/ui/button'
+import { ConfirmDialog } from '#/components/ui/confirm-dialog'
+import { EmptyState } from '#/components/ui/empty-state'
+import { LoadingState } from '#/components/ui/loading-state'
+import { Pagination } from '#/components/ui/pagination-controls'
 import { SearchInput } from '#/components/ui/search-input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
 import { StatusBadge } from '#/components/ui/status-badge'
 import {
   Table,
@@ -15,18 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '#/components/ui/select'
-import { Pagination } from '#/components/ui/pagination-controls'
-import { LoadingState } from '#/components/ui/loading-state'
-import { EmptyState } from '#/components/ui/empty-state'
-import { ConfirmDialog } from '#/components/ui/confirm-dialog'
-import { listTasks, deleteTask } from '#/server-functions/tasks'
+import { deleteTask, listTasks } from '#/server-functions/tasks'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { CheckSquare, Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/tasks')({
   component: TasksPage,
@@ -105,7 +105,10 @@ function TasksPage() {
               setPage(1)
             }}
           >
-            <SelectTrigger className="w-[140px] bg-card border-border text-foreground rounded-lg">
+            <SelectTrigger
+              aria-label="Filter tasks by status"
+              className="w-35 bg-card border-border text-foreground rounded-lg"
+            >
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border">
@@ -122,7 +125,10 @@ function TasksPage() {
               setPage(1)
             }}
           >
-            <SelectTrigger className="w-[140px] bg-card border-border text-foreground rounded-lg">
+            <SelectTrigger
+              aria-label="Filter tasks by priority"
+              className="w-35 bg-card border-border text-foreground rounded-lg"
+            >
               <SelectValue placeholder="Priority" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border">
@@ -201,13 +207,12 @@ function TasksPage() {
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`label-sm ${
-                            task.priority === 'HIGH'
+                          className={`label-sm ${task.priority === 'HIGH'
                               ? 'text-destructive'
                               : task.priority === 'MEDIUM'
-                                ? 'text-[var(--color-status-on-hold)]'
+                                ? 'text-(--color-status-on-hold)'
                                 : 'text-muted-foreground'
-                          }`}
+                            }`}
                         >
                           {task.priority}
                         </span>
@@ -220,13 +225,7 @@ function TasksPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
+                            aria-label={`Delete ${task.title}`}
                             onClick={() => setDeleteId(task.id)}
                             className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
                           >
