@@ -125,7 +125,7 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
     }
     for (const row of tasksByStatus) {
       if (row.status in statusMap) {
-        statusMap[row.status as keyof typeof statusMap] = row.count
+        statusMap[row.status] = row.count
       }
     }
 
@@ -136,7 +136,7 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
     }
     for (const row of tasksByPriority) {
       if (row.priority in priorityMap) {
-        priorityMap[row.priority as keyof typeof priorityMap] = row.count
+        priorityMap[row.priority] = row.count
       }
     }
 

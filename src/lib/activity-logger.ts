@@ -1,4 +1,4 @@
-import { createDb } from '#/db'
+import type { createDb } from '#/db'
 import { activity } from '#/db/schema'
 
 export type ActivityAction =

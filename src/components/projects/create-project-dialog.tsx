@@ -12,6 +12,7 @@ import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Textarea } from '#/components/ui/textarea'
 import { createProject } from '#/server-functions/projects'
+import { parseLocalDate } from '#/lib/date-utils'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
@@ -36,7 +37,7 @@ export function CreateProjectDialog({
         data: {
           name,
           description: description || undefined,
-          deadline: deadline ? new Date(deadline).getTime() : undefined,
+          deadline: deadline ? parseLocalDate(deadline).getTime() : undefined,
         },
       }),
     onSuccess: () => {
@@ -69,28 +70,25 @@ export function CreateProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-[#172318] border-[#2D3B2A] text-white sm:max-w-[500px]">
+      <DialogContent className="bg-card border-border text-foreground sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-xl">Create Project</DialogTitle>
-          <DialogDescription className="text-[#B8C0B5]">
+          <DialogDescription className="text-muted-foreground">
             Add a new project to your workspace.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
-            <Label
-              htmlFor="project-name"
-              className="text-sm text-[#B8C0B5]"
-            >
-              Name <span className="text-[#FF5A5F]">*</span>
+            <Label htmlFor="project-name" className="text-sm text-muted-foreground">
+              Name <span className="text-destructive">*</span>
             </Label>
             <Input
               id="project-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Website Redesign"
-              className="bg-[#121212] border-[#2D3B2A] text-white placeholder:text-[#6B7280] rounded-lg h-10 focus-visible:ring-[#68EF3F]/40"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg h-10 focus-visible:ring-primary/40"
               autoFocus
             />
           </div>
@@ -98,7 +96,7 @@ export function CreateProjectDialog({
           <div className="space-y-2">
             <Label
               htmlFor="project-description"
-              className="text-sm text-[#B8C0B5]"
+              className="text-sm text-muted-foreground"
             >
               Description
             </Label>
@@ -107,14 +105,14 @@ export function CreateProjectDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of the project..."
-              className="bg-[#121212] border-[#2D3B2A] text-white placeholder:text-[#6B7280] rounded-lg min-h-[80px] focus-visible:ring-[#68EF3F]/40"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg min-h-[80px] focus-visible:ring-primary/40"
             />
           </div>
 
           <div className="space-y-2">
             <Label
               htmlFor="project-deadline"
-              className="text-sm text-[#B8C0B5]"
+              className="text-sm text-muted-foreground"
             >
               Deadline
             </Label>
@@ -123,7 +121,7 @@ export function CreateProjectDialog({
               type="date"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className="bg-[#121212] border-[#2D3B2A] text-white rounded-lg h-10 focus-visible:ring-[#68EF3F]/40"
+              className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40"
             />
           </div>
 
@@ -133,14 +131,14 @@ export function CreateProjectDialog({
               variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={createMutation.isPending}
-              className="border-[#2D3B2A] bg-transparent text-white hover:bg-[#1F331D] rounded-full"
+              className="border-border bg-transparent text-foreground hover:bg-accent rounded-full"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={!name.trim() || createMutation.isPending}
-              className="bg-[#68EF3F] text-[#273F2B] hover:bg-[#5BE337] rounded-full font-medium"
+              className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-medium"
             >
               {createMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

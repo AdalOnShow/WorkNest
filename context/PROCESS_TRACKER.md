@@ -138,15 +138,15 @@ Track high-level development phases and milestones.
 
 **Goal:** Comments, activity logs, notifications.
 
-| #   | Task                               | Status | Notes                               |
-| --- | ---------------------------------- | ------ | ----------------------------------- |
-| 72  | Add comment                        | [x]    | addTaskComment server function      |
-| 73  | Edit comment                       | [ ]    |                                     |
-| 74  | Delete comment                     | [ ]    |                                     |
-| 75  | Activity logging (server)          | [x]    | logActivity helper integrated into project & task mutations |
+| #   | Task                               | Status | Notes                                                                       |
+| --- | ---------------------------------- | ------ | --------------------------------------------------------------------------- |
+| 72  | Add comment                        | [x]    | addTaskComment server function                                              |
+| 73  | Edit comment                       | [ ]    |                                                                             |
+| 74  | Delete comment                     | [ ]    |                                                                             |
+| 75  | Activity logging (server)          | [x]    | logActivity helper integrated into project & task mutations                 |
 | 76  | Notification creation (server)     | [x]    | createNotification helper integrated into task assign/status/comment events |
-| 77  | Notification UI (bell, list, read) | [x]    | Real D1 data + mark read mutations  |
-| 78  | Notifications page                 | [x]    | Real D1 data with mark-all-read     |
+| 77  | Notification UI (bell, list, read) | [x]    | Real D1 data + mark read mutations                                          |
+| 78  | Notifications page                 | [x]    | Real D1 data with mark-all-read                                             |
 
 ---
 
@@ -168,15 +168,15 @@ Track high-level development phases and milestones.
 
 **Goal:** Durable Object-based real-time notifications and activity broadcasting via WebSockets.
 
-| #   | Task                              | Status | Notes                              |
-| --- | --------------------------------- | ------ | ---------------------------------- |
-| 97  | Durable Object (Notification)     | [ ]    | WebSocket hibernation, push to user|
-| 98  | Durable Object (Activity)         | [ ]    | Broadcast activities to project    |
-| 99  | Real-time notification delivery   | [ ]    | Push NOTIFICATION_CREATED events   |
-| 100 | Real-time activity broadcasting   | [ ]    | Push activity events to project    |
-| 101 | WebSocket connection management   | [ ]    | Auth, accept, close, error handlers|
-| 102 | Client WebSocket hook             | [ ]    | useWebSocket for notifications     |
-| 103 | Notification bell real-time update| [ ]    | Badge count updates via WS         |
+| #   | Task                               | Status | Notes                               |
+| --- | ---------------------------------- | ------ | ----------------------------------- |
+| 97  | Durable Object (Notification)      | [ ]    | WebSocket hibernation, push to user |
+| 98  | Durable Object (Activity)          | [ ]    | Broadcast activities to project     |
+| 99  | Real-time notification delivery    | [ ]    | Push NOTIFICATION_CREATED events    |
+| 100 | Real-time activity broadcasting    | [ ]    | Push activity events to project     |
+| 101 | WebSocket connection management    | [ ]    | Auth, accept, close, error handlers |
+| 102 | Client WebSocket hook              | [ ]    | useWebSocket for notifications      |
+| 103 | Notification bell real-time update | [ ]    | Badge count updates via WS          |
 
 ---
 
@@ -228,7 +228,7 @@ Track high-level development phases and milestones.
 | Landing page  | [x]    | Hero, Features, HowItWorks, Testimonials, CTA, Footer |
 | Members page  | [x]    | Real D1 data via TanStack Query                       |
 | Settings page | [x]    | Profile (name/photo), theme toggle, account mgmt      |
-| Messages page | [x]    | Chat UI (to be refactored for real-time) |
+| Messages page | [x]    | Chat UI (to be refactored for real-time)              |
 
 ---
 
@@ -310,20 +310,20 @@ Track high-level development phases and milestones.
 
 ## Summary
 
-| Phase              | Tasks   | Complete | In Progress | Not Started |
-| ------------------ | ------- | -------- | ----------- | ----------- |
-| 1. Infrastructure  | 9       | 8        | 0           | 1           |
-| 2. Database Schema | 15      | 15       | 0           | 0           |
-| 3. Authentication  | 12      | 9        | 1           | 2           |
-| 4. Projects        | 13      | 11       | 0           | 2           |
-| 5. Tasks           | 13      | 10       | 0           | 3           |
-| 6. Dashboard       | 9       | 5        | 0           | 4           |
-| 7. Collaboration   | 7       | 3        | 0           | 4           |
-| 8. Attachments     | 5       | 2        | 0           | 3           |
+| Phase                  | Tasks   | Complete | In Progress | Not Started |
+| ---------------------- | ------- | -------- | ----------- | ----------- |
+| 1. Infrastructure      | 9       | 8        | 0           | 1           |
+| 2. Database Schema     | 15      | 15       | 0           | 0           |
+| 3. Authentication      | 12      | 9        | 1           | 2           |
+| 4. Projects            | 13      | 11       | 0           | 2           |
+| 5. Tasks               | 13      | 10       | 0           | 3           |
+| 6. Dashboard           | 9       | 5        | 0           | 4           |
+| 7. Collaboration       | 7       | 3        | 0           | 4           |
+| 8. Attachments         | 5       | 2        | 0           | 3           |
 | 9. Real-Time Notif/Act | 7       | 1        | 0           | 6           |
-| 10. Polish         | 13      | 10       | 1           | 2           |
-| 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **117** | **65**   | **7**       | **45**      |
+| 10. Polish             | 13      | 10       | 1           | 2           |
+| 11. Deployment         | 10      | 1        | 2           | 7           |
+| **Total**              | **117** | **65**   | **7**       | **45**      |
 
 ---
 

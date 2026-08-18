@@ -9,7 +9,7 @@ export const notification = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     type: text('type', {
-      enum: ['TASK_ASSIGNED', 'TASK_STATUS_UPDATED', 'TASK_DUE_SOON'],
+      enum: ['TASK_ASSIGNED', 'TASK_STATUS_UPDATED', 'TASK_DUE_SOON', 'TASK_COMMENT_ADDED'],
     }).notNull(),
     title: text('title').notNull(),
     message: text('message').notNull(),

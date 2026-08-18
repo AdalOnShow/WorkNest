@@ -12,11 +12,10 @@ function MessagesPage() {
         <MessageSquare className="w-8 h-8 text-muted-foreground" />
       </div>
       <h2 className="text-xl font-semibold text-foreground mb-2">
-        Real-Time Notifications
+        Messages
       </h2>
       <p className="text-muted-foreground max-w-md">
-        Live notifications and activity updates will appear here via WebSocket
-        connections powered by Cloudflare Durable Objects.
+        Real-time messaging between team members is coming soon. Stay tuned for direct and group conversations.
       </p>
     </div>
   )

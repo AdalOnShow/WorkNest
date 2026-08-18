@@ -329,10 +329,7 @@ export const addProjectMember = createServerFn({ method: 'POST' })
     }
 
     const requestedRole = data.role || 'TEAM_MEMBER'
-    if (
-      membership[0].role === 'PROJECT_MANAGER' &&
-      requestedRole === 'ADMIN'
-    ) {
+    if (membership[0].role === 'PROJECT_MANAGER' && requestedRole === 'ADMIN') {
       throw new Error('Only project admins can assign ADMIN role')
     }
 

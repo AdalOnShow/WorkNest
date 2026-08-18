@@ -199,10 +199,13 @@ function ProjectsPage() {
                       </TableCell>
                       <TableCell className="text-card-foreground">
                         {project.deadline
-                          ? new Date(project.deadline).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
+                          ? new Date(project.deadline).toLocaleDateString(
+                              'en-US',
+                              {
+                                month: 'short',
+                                day: 'numeric',
+                              },
+                            )
                           : '—'}
                       </TableCell>
                       <TableCell className="text-right">

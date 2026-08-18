@@ -101,7 +101,7 @@ function NotificationsPage() {
                   className={cn(
                     'flex items-start gap-4 p-5 border-b border-border/50 last:border-0 hover:bg-accent/30 transition-colors cursor-pointer',
                     !notification.read &&
-                    'border-l-2 border-l-primary bg-accent/20',
+                      'border-l-2 border-l-primary bg-accent/20',
                   )}
                   onClick={() => {
                     if (!notification.read) {

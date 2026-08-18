@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { updateProject } from '#/server-functions/projects'
+import { parseLocalDate, timestampToLocalDateString } from '#/lib/date-utils'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
@@ -47,8 +48,7 @@ export function EditProjectDialog({
   const [status, setStatus] = useState(project.status)
   const [deadline, setDeadline] = useState(() => {
     if (!project.deadline) return ''
-    const d = new Date(project.deadline)
-    return d.toISOString().split('T')[0]
+    return timestampToLocalDateString(project.deadline)
   })
 
   useEffect(() => {
@@ -58,21 +58,20 @@ export function EditProjectDialog({
       setStatus(project.status)
       setDeadline(() => {
         if (!project.deadline) return ''
-        const d = new Date(project.deadline)
-        return d.toISOString().split('T')[0]
+        return timestampToLocalDateString(project.deadline)
       })
     }
-  }, [open, project])
+  }, [open, project.id, project.name, project.description, project.status, project.deadline])
 
   const updateMutation = useMutation({
     mutationFn: () =>
       updateProject({
         data: {
           projectId: project.id,
-          name: name.trim() || project.name,
-          description: description || undefined,
+          name: name.trim(),
+          description: description,
           status,
-          deadline: deadline ? new Date(deadline).getTime() : null,
+          deadline: deadline ? parseLocalDate(deadline).getTime() : null,
         },
       }),
     onSuccess: () => {
@@ -94,10 +93,10 @@ export function EditProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#172318] border-[#2D3B2A] text-white sm:max-w-[500px]">
+      <DialogContent className="bg-card border-border text-foreground sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-xl">Edit Project</DialogTitle>
-          <DialogDescription className="text-[#B8C0B5]">
+          <DialogDescription className="text-muted-foreground">
             Update your project details.
           </DialogDescription>
         </DialogHeader>
@@ -106,16 +105,16 @@ export function EditProjectDialog({
           <div className="space-y-2">
             <Label
               htmlFor="edit-project-name"
-              className="text-sm text-[#B8C0B5]"
+              className="text-sm text-muted-foreground"
             >
-              Name <span className="text-[#FF5A5F]">*</span>
+              Name <span className="text-destructive">*</span>
             </Label>
             <Input
               id="edit-project-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Website Redesign"
-              className="bg-[#121212] border-[#2D3B2A] text-white placeholder:text-[#6B7280] rounded-lg h-10 focus-visible:ring-[#68EF3F]/40"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg h-10 focus-visible:ring-primary/40"
               autoFocus
             />
           </div>
@@ -123,7 +122,7 @@ export function EditProjectDialog({
           <div className="space-y-2">
             <Label
               htmlFor="edit-project-description"
-              className="text-sm text-[#B8C0B5]"
+              className="text-sm text-muted-foreground"
             >
               Description
             </Label>
@@ -132,40 +131,38 @@ export function EditProjectDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of the project..."
-              className="bg-[#121212] border-[#2D3B2A] text-white placeholder:text-[#6B7280] rounded-lg min-h-[80px] focus-visible:ring-[#68EF3F]/40"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg min-h-[80px] focus-visible:ring-primary/40"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm text-[#B8C0B5]">Status</Label>
+            <Label className="text-sm text-muted-foreground">Status</Label>
             <Select
               value={status}
               onValueChange={(v) =>
                 setStatus(v as 'ACTIVE' | 'COMPLETED' | 'ON_HOLD')
               }
             >
-              <SelectTrigger
-                className="w-full bg-[#121212] border-[#2D3B2A] text-white rounded-lg h-10 focus-visible:ring-[#68EF3F]/40"
-              >
+              <SelectTrigger className="w-full bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#172318] border-[#2D3B2A]">
+              <SelectContent className="bg-card border-border">
                 <SelectGroup>
                   <SelectItem
                     value="ACTIVE"
-                    className="text-white focus:bg-[#1F331D] focus:text-white"
+                    className="text-foreground focus:bg-accent focus:text-accent-foreground"
                   >
                     Active
                   </SelectItem>
                   <SelectItem
                     value="ON_HOLD"
-                    className="text-white focus:bg-[#1F331D] focus:text-white"
+                    className="text-foreground focus:bg-accent focus:text-accent-foreground"
                   >
                     On Hold
                   </SelectItem>
                   <SelectItem
                     value="COMPLETED"
-                    className="text-white focus:bg-[#1F331D] focus:text-white"
+                    className="text-foreground focus:bg-accent focus:text-accent-foreground"
                   >
                     Completed
                   </SelectItem>
@@ -177,7 +174,7 @@ export function EditProjectDialog({
           <div className="space-y-2">
             <Label
               htmlFor="edit-project-deadline"
-              className="text-sm text-[#B8C0B5]"
+              className="text-sm text-muted-foreground"
             >
               Deadline
             </Label>
@@ -186,7 +183,7 @@ export function EditProjectDialog({
               type="date"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className="bg-[#121212] border-[#2D3B2A] text-white rounded-lg h-10 focus-visible:ring-[#68EF3F]/40"
+              className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40"
             />
           </div>
 
@@ -196,14 +193,14 @@ export function EditProjectDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={updateMutation.isPending}
-              className="border-[#2D3B2A] bg-transparent text-white hover:bg-[#1F331D] rounded-full"
+              className="border-border bg-transparent text-foreground hover:bg-accent rounded-full"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={!name.trim() || updateMutation.isPending}
-              className="bg-[#68EF3F] text-[#273F2B] hover:bg-[#5BE337] rounded-full font-medium"
+              className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-medium"
             >
               {updateMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

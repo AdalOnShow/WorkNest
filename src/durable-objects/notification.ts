@@ -1,4 +1,5 @@
 import { DurableObject } from 'cloudflare:workers'
+import { createAuth, type AuthEnv } from '#/lib/auth'
 
 interface NotificationEvent {
   type: 'NOTIFICATION_CREATED' | 'NOTIFICATION_READ' | 'NOTIFICATION_READ_ALL'
@@ -29,6 +30,16 @@ export class NotificationDO extends DurableObject<Env> {
     const url = new URL(req.url)
 
     if (url.pathname === '/ws') {
+      if (req.headers.get('Upgrade') !== 'websocket') {
+        return new Response('Expected WebSocket upgrade', { status: 426 })
+      }
+
+      const auth = createAuth(this.env as AuthEnv)
+      const session = await auth.api.getSession({ headers: req.headers })
+      if (!session) {
+        return new Response('Unauthorized', { status: 401 })
+      }
+
       const pair = new WebSocketPair()
       const [client, server] = Object.values(pair)
 
@@ -39,38 +50,38 @@ export class NotificationDO extends DurableObject<Env> {
     return new Response('NotificationDO', { status: 200 })
   }
 
-
   async sendNotification(event: NotificationEvent): Promise<void> {
     const data = JSON.stringify(event)
     const sockets = this.ctx.getWebSockets('notifications')
     for (const ws of sockets) {
       try {
         ws.send(data)
-      } catch {
-      }
+      } catch {}
     }
   }
 
-
-  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+  async webSocketMessage(
+    ws: WebSocket,
+    message: string | ArrayBuffer,
+  ): Promise<void> {
     try {
-      const data = JSON.parse(typeof message === 'string' ? message : new TextDecoder().decode(message))
+      const data = JSON.parse(
+        typeof message === 'string'
+          ? message
+          : new TextDecoder().decode(message),
+      )
 
       if (data.type === 'MARK_READ') {
       }
-    } catch {
-    }
+    } catch {}
   }
-
 
   async webSocketClose(
     ws: WebSocket,
     code: number,
     reason: string,
     wasClean: boolean,
-  ): Promise<void> {
-  }
-
+  ): Promise<void> {}
 
   async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
     console.error('[NotificationDO] WebSocket error:', error)

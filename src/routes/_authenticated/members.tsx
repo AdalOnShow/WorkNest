@@ -133,10 +133,11 @@ function MembersPage() {
                               ? { color: 'var(--color-status-in-progress)' }
                               : undefined
                           }
-                          className={`label-sm ${member.role === 'ADMIN'
+                          className={`label-sm ${
+                            member.role === 'ADMIN'
                               ? 'text-primary'
                               : 'text-card-foreground'
-                            }`}
+                          }`}
                         >
                           {member.role === null
                             ? 'No role'

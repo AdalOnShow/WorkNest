@@ -239,6 +239,24 @@ export const createTask = createServerFn({ method: 'POST' })
     if (trimmedTitle.length === 0) {
       throw new Error('Task title cannot be empty')
     }
+
+    if (data.assigneeId) {
+      const assigneeMembership = await db
+        .select({ id: projectMember.id })
+        .from(projectMember)
+        .where(
+          and(
+            eq(projectMember.projectId, data.projectId),
+            eq(projectMember.userId, data.assigneeId),
+          ),
+        )
+        .limit(1)
+
+      if (assigneeMembership.length === 0) {
+        throw new Error('Assignee must belong to the project')
+      }
+    }
+
     const taskId = crypto.randomUUID()
     const now = new Date()
 
@@ -348,7 +366,10 @@ export const updateTask = createServerFn({ method: 'POST' })
       db,
       actorId: userId,
       projectId,
-      action: data.status && data.status !== existingTask?.status ? 'TASK_STATUS_UPDATED' : 'TASK_UPDATED',
+      action:
+        data.status && data.status !== existingTask?.status
+          ? 'TASK_STATUS_UPDATED'
+          : 'TASK_UPDATED',
       entityType: 'task',
       entityId: data.taskId,
       metadata: {
@@ -372,11 +393,7 @@ export const updateTask = createServerFn({ method: 'POST' })
       })
     }
 
-    if (
-      data.status &&
-      existingTask &&
-      data.status !== existingTask.status
-    ) {
+    if (data.status && existingTask && data.status !== existingTask.status) {
       const notifyUsers = new Set<string>()
       if (existingTask.assigneeId && existingTask.assigneeId !== userId) {
         notifyUsers.add(existingTask.assigneeId)
@@ -436,8 +453,13 @@ export const deleteTask = createServerFn({ method: 'POST' })
         )
         .limit(1)
 
-      if (!membership || !['ADMIN', 'PROJECT_MANAGER'].includes(membership.role)) {
-        throw new Error('Only the task creator, assignee, or project admins can delete this task')
+      if (
+        !membership ||
+        !['ADMIN', 'PROJECT_MANAGER'].includes(membership.role)
+      ) {
+        throw new Error(
+          'Only the task creator, assignee, or project admins can delete this task',
+        )
       }
     }
 
@@ -559,18 +581,20 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
 
     await db.update(task).set(updates).where(eq(task.id, data.taskId))
 
-    await logActivity({
-      db,
-      actorId: userId,
-      projectId,
-      action: 'TASK_STATUS_UPDATED',
-      entityType: 'task',
-      entityId: data.taskId,
-      metadata: {
-        title: taskRow?.title,
-        status: data.status,
-      },
-    })
+    if (taskRow && data.status !== taskRow.status) {
+      await logActivity({
+        db,
+        actorId: userId,
+        projectId,
+        action: 'TASK_STATUS_UPDATED',
+        entityType: 'task',
+        entityId: data.taskId,
+        metadata: {
+          title: taskRow.title,
+          status: data.status,
+        },
+      })
+    }
 
     if (taskRow && data.status !== taskRow.status) {
       const notifyUsers = new Set<string>()
@@ -677,7 +701,7 @@ export const addTaskComment = createServerFn({ method: 'POST' })
         await createNotification({
           db,
           recipientId,
-          type: 'TASK_STATUS_UPDATED',
+          type: 'TASK_COMMENT_ADDED',
           title: 'New Task Comment',
           message: `New comment on "${taskRow.title}"`,
           referenceId: data.taskId,

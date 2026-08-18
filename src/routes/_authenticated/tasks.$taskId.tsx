@@ -18,11 +18,7 @@ import {
   getTaskComments,
   updateTask,
 } from '#/server-functions/tasks'
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowLeft, Send, Trash2, Upload } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
@@ -99,7 +95,9 @@ function TaskDetailPage() {
     mutationFn: () => addTaskComment({ data: { taskId, content: comment } }),
     onSuccess: async () => {
       setComment('')
-      await queryClient.invalidateQueries({ queryKey: ['taskComments', taskId] })
+      await queryClient.invalidateQueries({
+        queryKey: ['taskComments', taskId],
+      })
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to send comment')

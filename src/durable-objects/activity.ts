@@ -28,7 +28,6 @@ export class ActivityDO extends DurableObject<Env> {
     super(ctx, env)
   }
 
-
   async fetch(req: Request): Promise<Response> {
     const url = new URL(req.url)
 
@@ -43,32 +42,27 @@ export class ActivityDO extends DurableObject<Env> {
     return new Response('ActivityDO', { status: 200 })
   }
 
-
   async broadcastActivity(event: ActivityEvent): Promise<void> {
     const data = JSON.stringify(event)
     const sockets = this.ctx.getWebSockets('activities')
     for (const ws of sockets) {
       try {
         ws.send(data)
-      } catch {
-      }
+      } catch {}
     }
   }
 
-
-  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
-
-  }
-
+  async webSocketMessage(
+    ws: WebSocket,
+    message: string | ArrayBuffer,
+  ): Promise<void> {}
 
   async webSocketClose(
     ws: WebSocket,
     code: number,
     reason: string,
     wasClean: boolean,
-  ): Promise<void> {
-  }
-
+  ): Promise<void> {}
 
   async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
     console.error('[ActivityDO] WebSocket error:', error)

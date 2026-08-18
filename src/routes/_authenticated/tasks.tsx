@@ -75,7 +75,11 @@ function TasksPage() {
   const isRecoveringPage = Boolean(data && page > totalPages)
 
   useEffect(() => {
-    if (data?.totalPages !== undefined && page > data.totalPages && data.totalPages > 0) {
+    if (
+      data?.totalPages !== undefined &&
+      page > data.totalPages &&
+      data.totalPages > 0
+    ) {
       setPage(data.totalPages)
     }
   }, [data?.totalPages, page])
@@ -224,12 +228,13 @@ function TasksPage() {
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`label-sm ${task.priority === 'HIGH'
+                          className={`label-sm ${
+                            task.priority === 'HIGH'
                               ? 'text-destructive'
                               : task.priority === 'MEDIUM'
                                 ? 'text-(--color-status-on-hold)'
                                 : 'text-muted-foreground'
-                            }`}
+                          }`}
                         >
                           {task.priority}
                         </span>
