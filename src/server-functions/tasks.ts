@@ -1,6 +1,8 @@
 import { createDb } from '#/db'
 import { comment, project, projectMember, task, user } from '#/db/schema'
+import { logActivity } from '#/lib/activity-logger'
 import { createAuth } from '#/lib/auth'
+import { createNotification } from '#/lib/notification-service'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
@@ -254,6 +256,27 @@ export const createTask = createServerFn({ method: 'POST' })
       updatedAt: now,
     })
 
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId: data.projectId,
+      action: 'TASK_CREATED',
+      entityType: 'task',
+      entityId: taskId,
+      metadata: { title: trimmedTitle, priority: data.priority || 'MEDIUM' },
+    })
+
+    if (data.assigneeId && data.assigneeId !== userId) {
+      await createNotification({
+        db,
+        recipientId: data.assigneeId,
+        type: 'TASK_ASSIGNED',
+        title: 'New Task Assigned',
+        message: `You were assigned to "${trimmedTitle}"`,
+        referenceId: taskId,
+      })
+    }
+
     return { id: taskId }
   })
 
@@ -308,7 +331,71 @@ export const updateTask = createServerFn({ method: 'POST' })
       }
     }
 
+    const [existingTask] = await db
+      .select({
+        title: task.title,
+        status: task.status,
+        assigneeId: task.assigneeId,
+        creatorId: task.creatorId,
+      })
+      .from(task)
+      .where(eq(task.id, data.taskId))
+      .limit(1)
+
     await db.update(task).set(updates).where(eq(task.id, data.taskId))
+
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId,
+      action: data.status && data.status !== existingTask?.status ? 'TASK_STATUS_UPDATED' : 'TASK_UPDATED',
+      entityType: 'task',
+      entityId: data.taskId,
+      metadata: {
+        title: data.title || existingTask?.title,
+        ...(data.status ? { status: data.status } : {}),
+      },
+    })
+
+    if (
+      data.assigneeId &&
+      data.assigneeId !== existingTask?.assigneeId &&
+      data.assigneeId !== userId
+    ) {
+      await createNotification({
+        db,
+        recipientId: data.assigneeId,
+        type: 'TASK_ASSIGNED',
+        title: 'Task Assigned',
+        message: `You were assigned to "${data.title || existingTask?.title || 'a task'}"`,
+        referenceId: data.taskId,
+      })
+    }
+
+    if (
+      data.status &&
+      existingTask &&
+      data.status !== existingTask.status
+    ) {
+      const notifyUsers = new Set<string>()
+      if (existingTask.assigneeId && existingTask.assigneeId !== userId) {
+        notifyUsers.add(existingTask.assigneeId)
+      }
+      if (existingTask.creatorId && existingTask.creatorId !== userId) {
+        notifyUsers.add(existingTask.creatorId)
+      }
+
+      for (const recipientId of notifyUsers) {
+        await createNotification({
+          db,
+          recipientId,
+          type: 'TASK_STATUS_UPDATED',
+          title: 'Task Status Updated',
+          message: `"${data.title || existingTask.title}" status changed to ${data.status.replace('_', ' ')}`,
+          referenceId: data.taskId,
+        })
+      }
+    }
 
     return { success: true }
   })
@@ -320,8 +407,9 @@ export const deleteTask = createServerFn({ method: 'POST' })
     const db = getDb()
     const projectId = await requireTaskAccess(data.taskId, userId)
 
-    const [taskRow] = await db
+    const [taskToDelete] = await db
       .select({
+        title: task.title,
         creatorId: task.creatorId,
         assigneeId: task.assigneeId,
       })
@@ -329,12 +417,12 @@ export const deleteTask = createServerFn({ method: 'POST' })
       .where(eq(task.id, data.taskId))
       .limit(1)
 
-    if (!taskRow) {
+    if (!taskToDelete) {
       throw new Error('Task not found')
     }
 
     const isOwner =
-      taskRow.creatorId === userId || taskRow.assigneeId === userId
+      taskToDelete.creatorId === userId || taskToDelete.assigneeId === userId
 
     if (!isOwner) {
       const [membership] = await db
@@ -354,6 +442,17 @@ export const deleteTask = createServerFn({ method: 'POST' })
     }
 
     await db.delete(task).where(eq(task.id, data.taskId))
+
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId,
+      action: 'TASK_DELETED',
+      entityType: 'task',
+      entityId: data.taskId,
+      metadata: { title: taskToDelete.title },
+    })
+
     return { success: true }
   })
 
@@ -364,6 +463,15 @@ export const assignTask = createServerFn({ method: 'POST' })
     const db = getDb()
 
     const projectId = await requireTaskAccess(data.taskId, userId)
+
+    const [taskRow] = await db
+      .select({
+        title: task.title,
+        assigneeId: task.assigneeId,
+      })
+      .from(task)
+      .where(eq(task.id, data.taskId))
+      .limit(1)
 
     if (data.assigneeId !== null) {
       const assigneeMembership = await db
@@ -387,6 +495,34 @@ export const assignTask = createServerFn({ method: 'POST' })
       .set({ assigneeId: data.assigneeId, updatedAt: new Date() })
       .where(eq(task.id, data.taskId))
 
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId,
+      action: 'TASK_ASSIGNED',
+      entityType: 'task',
+      entityId: data.taskId,
+      metadata: {
+        title: taskRow?.title,
+        assigneeId: data.assigneeId,
+      },
+    })
+
+    if (
+      data.assigneeId &&
+      data.assigneeId !== taskRow?.assigneeId &&
+      data.assigneeId !== userId
+    ) {
+      await createNotification({
+        db,
+        recipientId: data.assigneeId,
+        type: 'TASK_ASSIGNED',
+        title: 'Task Assigned',
+        message: `You were assigned to "${taskRow?.title || 'a task'}"`,
+        referenceId: data.taskId,
+      })
+    }
+
     return { success: true }
   })
 
@@ -398,7 +534,18 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
-    await requireTaskAccess(data.taskId, userId)
+    const projectId = await requireTaskAccess(data.taskId, userId)
+
+    const [taskRow] = await db
+      .select({
+        title: task.title,
+        status: task.status,
+        assigneeId: task.assigneeId,
+        creatorId: task.creatorId,
+      })
+      .from(task)
+      .where(eq(task.id, data.taskId))
+      .limit(1)
 
     const updates: Record<string, unknown> = {
       status: data.status,
@@ -411,6 +558,41 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
     }
 
     await db.update(task).set(updates).where(eq(task.id, data.taskId))
+
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId,
+      action: 'TASK_STATUS_UPDATED',
+      entityType: 'task',
+      entityId: data.taskId,
+      metadata: {
+        title: taskRow?.title,
+        status: data.status,
+      },
+    })
+
+    if (taskRow && data.status !== taskRow.status) {
+      const notifyUsers = new Set<string>()
+      if (taskRow.assigneeId && taskRow.assigneeId !== userId) {
+        notifyUsers.add(taskRow.assigneeId)
+      }
+      if (taskRow.creatorId && taskRow.creatorId !== userId) {
+        notifyUsers.add(taskRow.creatorId)
+      }
+
+      for (const recipientId of notifyUsers) {
+        await createNotification({
+          db,
+          recipientId,
+          type: 'TASK_STATUS_UPDATED',
+          title: 'Task Status Updated',
+          message: `"${taskRow.title}" status changed to ${data.status.replace('_', ' ')}`,
+          referenceId: data.taskId,
+        })
+      }
+    }
+
     return { success: true }
   })
 
@@ -442,21 +624,66 @@ export const addTaskComment = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
-    await requireTaskAccess(data.taskId, userId)
+    const projectId = await requireTaskAccess(data.taskId, userId)
     const trimmedContent = data.content.trim()
     if (trimmedContent.length === 0) {
       throw new Error('Comment content cannot be empty')
     }
+    const commentId = crypto.randomUUID()
     const now = new Date()
 
+    const [taskRow] = await db
+      .select({
+        title: task.title,
+        assigneeId: task.assigneeId,
+        creatorId: task.creatorId,
+      })
+      .from(task)
+      .where(eq(task.id, data.taskId))
+      .limit(1)
+
     await db.insert(comment).values({
-      id: crypto.randomUUID(),
+      id: commentId,
       taskId: data.taskId,
       authorId: userId,
       content: trimmedContent,
       createdAt: now,
       updatedAt: now,
     })
+
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId,
+      action: 'COMMENT_ADDED',
+      entityType: 'comment',
+      entityId: commentId,
+      metadata: {
+        taskId: data.taskId,
+        taskTitle: taskRow?.title,
+      },
+    })
+
+    if (taskRow) {
+      const notifyUsers = new Set<string>()
+      if (taskRow.assigneeId && taskRow.assigneeId !== userId) {
+        notifyUsers.add(taskRow.assigneeId)
+      }
+      if (taskRow.creatorId && taskRow.creatorId !== userId) {
+        notifyUsers.add(taskRow.creatorId)
+      }
+
+      for (const recipientId of notifyUsers) {
+        await createNotification({
+          db,
+          recipientId,
+          type: 'TASK_STATUS_UPDATED',
+          title: 'New Task Comment',
+          message: `New comment on "${taskRow.title}"`,
+          referenceId: data.taskId,
+        })
+      }
+    }
 
     return { success: true }
   })

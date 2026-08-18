@@ -1,5 +1,6 @@
 import { createDb } from '#/db'
 import { project, projectMember, task } from '#/db/schema'
+import { logActivity } from '#/lib/activity-logger'
 import { createAuth } from '#/lib/auth'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
@@ -188,6 +189,16 @@ export const createProject = createServerFn({ method: 'POST' })
       }),
     ])
 
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId,
+      action: 'PROJECT_CREATED',
+      entityType: 'project',
+      entityId: projectId,
+      metadata: { name: trimmedName },
+    })
+
     return { id: projectId }
   })
 
@@ -229,6 +240,19 @@ export const updateProject = createServerFn({ method: 'POST' })
       updates.deadline = data.deadline ? new Date(data.deadline) : null
 
     await db.update(project).set(updates).where(eq(project.id, data.projectId))
+
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId: data.projectId,
+      action: 'PROJECT_UPDATED',
+      entityType: 'project',
+      entityId: data.projectId,
+      metadata: {
+        ...(data.name ? { name: data.name } : {}),
+        ...(data.status ? { status: data.status } : {}),
+      },
+    })
 
     return { success: true }
   })
@@ -312,12 +336,23 @@ export const addProjectMember = createServerFn({ method: 'POST' })
       throw new Error('Only project admins can assign ADMIN role')
     }
 
+    const memberId = crypto.randomUUID()
     await db.insert(projectMember).values({
-      id: crypto.randomUUID(),
+      id: memberId,
       projectId: data.projectId,
       userId: data.userId,
       role: requestedRole,
       createdAt: new Date(),
+    })
+
+    await logActivity({
+      db,
+      actorId: requesterId,
+      projectId: data.projectId,
+      action: 'PROJECT_MEMBER_ADDED',
+      entityType: 'member',
+      entityId: memberId,
+      metadata: { userId: data.userId, role: requestedRole },
     })
 
     return { success: true }
@@ -380,6 +415,17 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
       throw new Error('Cannot remove the last project admin')
     }
 
+    const [targetMember] = await db
+      .select({ id: projectMember.id, role: projectMember.role })
+      .from(projectMember)
+      .where(
+        and(
+          eq(projectMember.projectId, data.projectId),
+          eq(projectMember.userId, data.userId),
+        ),
+      )
+      .limit(1)
+
     await db
       .delete(projectMember)
       .where(
@@ -388,6 +434,16 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
           eq(projectMember.userId, data.userId),
         ),
       )
+
+    await logActivity({
+      db,
+      actorId: requesterId,
+      projectId: data.projectId,
+      action: 'PROJECT_MEMBER_REMOVED',
+      entityType: 'member',
+      entityId: targetMember?.id || data.userId,
+      metadata: { userId: data.userId },
+    })
 
     return { success: true }
   })

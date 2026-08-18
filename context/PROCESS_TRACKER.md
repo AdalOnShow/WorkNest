@@ -143,8 +143,8 @@ Track high-level development phases and milestones.
 | 72  | Add comment                        | [x]    | addTaskComment server function      |
 | 73  | Edit comment                       | [ ]    |                                     |
 | 74  | Delete comment                     | [ ]    |                                     |
-| 75  | Activity logging (server)          | [ ]    | Schema defined, no create logic yet |
-| 76  | Notification creation (server)     | [ ]    | Schema defined, no create logic yet |
+| 75  | Activity logging (server)          | [x]    | logActivity helper integrated into project & task mutations |
+| 76  | Notification creation (server)     | [x]    | createNotification helper integrated into task assign/status/comment events |
 | 77  | Notification UI (bell, list, read) | [x]    | Real D1 data + mark read mutations  |
 | 78  | Notifications page                 | [x]    | Real D1 data with mark-all-read     |
 
