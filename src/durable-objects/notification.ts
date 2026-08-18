@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers'
-import { createAuth, type AuthEnv } from '#/lib/auth'
+import { createAuth } from '#/lib/auth'
+import type { AuthEnv } from '#/lib/auth'
 
 interface NotificationEvent {
   type: 'NOTIFICATION_CREATED' | 'NOTIFICATION_READ' | 'NOTIFICATION_READ_ALL'

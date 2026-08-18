@@ -320,10 +320,10 @@ Track high-level development phases and milestones.
 | 6. Dashboard           | 9       | 5        | 0           | 4           |
 | 7. Collaboration       | 7       | 3        | 0           | 4           |
 | 8. Attachments         | 5       | 2        | 0           | 3           |
-| 9. Real-Time Notif/Act | 7       | 1        | 0           | 6           |
+| 9. Real-Time Notif/Act | 7       | 0        | 0           | 7           |
 | 10. Polish             | 13      | 10       | 1           | 2           |
 | 11. Deployment         | 10      | 1        | 2           | 7           |
-| **Total**              | **117** | **65**   | **7**       | **45**      |
+| **Total**              | **113** | **71**   | **4**       | **45**      |
 
 ---
 
@@ -331,13 +331,13 @@ Track high-level development phases and milestones.
 
 **Phase 4-6 + 7:** All core CRUD server functions built and wired to pages. Projects, Tasks, Members, Notifications, and Dashboard all use real D1 data via TanStack Query.
 
-**Next Priority:** Durable Objects (task 8) for real-time notifications and activities, then RBAC middleware (task 33).
+**Next Priority:** Real-time notification/activity delivery (tasks 97-103), then RBAC middleware (task 33).
 
 ### Immediate Next Steps
 
-1. Configure Durable Objects in wrangler.jsonc (Notification + Activity DOs)
-2. Add role-based authorization middleware (task 33)
-3. Build activity logging server functions (create activity on task/project changes)
-4. Build notification creation server functions (create notifications on task assignment/status changes)
-5. Task validation (task 56) — server-side validation for required fields
-6. Sort functionality for projects and tasks lists
+1. Implement Notification DO and Activity DO server logic (tasks 97-98)
+2. Wire real-time delivery — push NOTIFICATION_CREATED events and broadcast activities (tasks 99-100)
+3. Add WebSocket connection management and client hooks (tasks 101-103)
+4. Add role-based authorization middleware (task 33)
+5. Task validation — server-side validation for required fields (task 56)
+6. Sort functionality for projects and tasks lists (tasks 47, 61)

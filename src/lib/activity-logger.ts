@@ -1,5 +1,7 @@
 import type { createDb } from '#/db'
 import { activity } from '#/db/schema'
+import { getCloudflareEnv } from '#/lib/request-context'
+import { waitUntil } from 'cloudflare:workers'
 
 export type ActivityAction =
   | 'PROJECT_CREATED'
@@ -39,9 +41,10 @@ export async function logActivity({
   entityId,
   metadata,
 }: LogActivityParams): Promise<void> {
+  const activityId = crypto.randomUUID()
   try {
     await db.insert(activity).values({
-      id: crypto.randomUUID(),
+      id: activityId,
       actorId: actorId || null,
       projectId,
       action,
@@ -50,6 +53,43 @@ export async function logActivity({
       metadata: metadata ? JSON.stringify(metadata) : null,
       createdAt: new Date(),
     })
+
+    try {
+      const env = getCloudflareEnv() as Env & { ACTIVITY_DO: DurableObjectNamespace }
+      const stub = env.ACTIVITY_DO.idFromName(projectId)
+      const doStub = env.ACTIVITY_DO.get(stub) as unknown as {
+        broadcastActivity: (event: {
+          type: string
+          payload: {
+            activityId: string
+            projectId: string
+            actorId: string
+            action: string
+            entityType: string
+            entityId: string
+            metadata?: string
+          }
+        }) => Promise<void>
+      }
+      waitUntil(
+        doStub.broadcastActivity({
+          type: 'ACTIVITY_CREATED',
+          payload: {
+            activityId,
+            projectId,
+            actorId: actorId || '',
+            action,
+            entityType,
+            entityId,
+            metadata: metadata ? JSON.stringify(metadata) : undefined,
+          },
+        }).catch((err) => {
+          console.error('[logActivity] Failed to broadcast via DO:', err)
+        }),
+      )
+    } catch (err) {
+      console.error('[logActivity] Failed to broadcast via DO:', err)
+    }
   } catch (err) {
     console.error('[logActivity] Failed to record activity:', err)
   }

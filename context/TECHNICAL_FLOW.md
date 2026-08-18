@@ -1100,13 +1100,20 @@ Toast notification for transient errors
 │  (React) │                 │ (Notification/   │
 └──────────┘                 │  Activity DO)    │
      │                       └─────────────────┘
+     │                              ^
      │                              │
-     │                              ├── Persist to D1
+     │                    ┌─────────┴─────────┐
+     │                    │  Server Mutation   │
+     │                    │  (Persist to D1)   │
+     │                    └─────────┬─────────┘
      │                              │
-     │                              ├── Push notification to user
-     │                              │
-     │                              └── Broadcast activity to project
-     │
+     │              ┌───────────────┼───────────────┐
+     │              │               │               │
+     │              v               v               v
+     │     Push notification   Broadcast      WebSocket
+     │     to user             activity to    delivery to
+     │                         project        connected
+     │                                        clients
      v
 ┌──────────────────┐
 │ TanStack Query   │
@@ -1117,9 +1124,6 @@ Toast notification for transient errors
      v
 ┌──────────────────┐
 │ UI Updates       │
-│ (notifications,  │
-│  activities)     │
-└──────────────────┘
 ```
 
 ---

@@ -3,6 +3,9 @@ import { MessageSquare } from 'lucide-react'
 
 export const Route = createFileRoute('/_authenticated/messages')({
   component: MessagesPage,
+  head: () => ({
+    meta: [{ title: 'Messages — WorkNest' }],
+  }),
 })
 
 function MessagesPage() {

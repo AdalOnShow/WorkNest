@@ -91,7 +91,7 @@ function RouteComponent() {
           <div className="rounded-[14px] border border-border bg-card p-6">
             <p className="label-sm text-muted-foreground">Deadline</p>
             <p className="headline-xs text-foreground">
-              {project.deadline
+              {project.deadline != null
                 ? new Date(project.deadline).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -111,7 +111,7 @@ function RouteComponent() {
           name: project.name,
           description: project.description,
           status: project.status,
-          deadline: project.deadline
+          deadline: project.deadline != null
             ? typeof project.deadline === 'number'
               ? project.deadline
               : new Date(project.deadline).getTime()

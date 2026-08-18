@@ -1,4 +1,6 @@
 import { DurableObject } from 'cloudflare:workers'
+import { createAuth } from '#/lib/auth'
+import type { AuthEnv } from '#/lib/auth'
 
 interface ActivityEvent {
   type: 'ACTIVITY_CREATED' | 'ACTIVITY_UPDATED'
@@ -32,6 +34,16 @@ export class ActivityDO extends DurableObject<Env> {
     const url = new URL(req.url)
 
     if (url.pathname === '/ws') {
+      if (req.headers.get('Upgrade') !== 'websocket') {
+        return new Response('Expected WebSocket upgrade', { status: 426 })
+      }
+
+      const auth = createAuth(this.env as AuthEnv)
+      const session = await auth.api.getSession({ headers: req.headers })
+      if (!session) {
+        return new Response('Unauthorized', { status: 401 })
+      }
+
       const pair = new WebSocketPair()
       const [client, server] = Object.values(pair)
 

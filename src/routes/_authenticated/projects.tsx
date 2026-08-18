@@ -198,7 +198,7 @@ function ProjectsPage() {
                         {project.taskCount}
                       </TableCell>
                       <TableCell className="text-card-foreground">
-                        {project.deadline
+                        {project.deadline != null
                           ? new Date(project.deadline).toLocaleDateString(
                               'en-US',
                               {
