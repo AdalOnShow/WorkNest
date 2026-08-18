@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '#/components/ui/table'
+import { CreateProjectDialog } from '#/components/projects/create-project-dialog'
 import { deleteProject, listProjects } from '#/server-functions/projects'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
@@ -43,6 +44,7 @@ function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['projects', search, statusFilter, page],
@@ -89,7 +91,10 @@ function ProjectsPage() {
               Manage your team projects
             </p>
           </div>
-          <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
+          <Button
+            onClick={() => setShowCreateDialog(true)}
+            className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+          >
             <Plus data-icon="inline-start" className="w-4 h-4" />
             New Project
           </Button>
@@ -238,6 +243,11 @@ function ProjectsPage() {
         title="Delete project"
         description="This action cannot be undone. All tasks and data in this project will be permanently deleted."
         onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
+      />
+
+      <CreateProjectDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
       />
     </PageContainer>
   )

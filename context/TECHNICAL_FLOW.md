@@ -254,7 +254,6 @@ Server Function
     v
 Drizzle Delete (ProjectMember) <-- cascade or manual
     Drizzle Delete (Task)       <-- cascade or manual
-    Drizzle Delete (ChatMessage) <-- cascade or manual
     Drizzle Delete (Project)
     |
     v
@@ -1098,16 +1097,15 @@ Toast notification for transient errors
 ```text
 ┌──────────┐    WebSocket    ┌─────────────────┐
 │  Client  │<───────────────>│ Durable Object   │
-│  (React) │                 │ (WebSocket Room) │
-└──────────┘                 └─────────────────┘
+│  (React) │                 │ (Notification/   │
+└──────────┘                 │  Activity DO)    │
+     │                       └─────────────────┘
      │                              │
      │                              ├── Persist to D1
      │                              │
-     │                              ├── Broadcast to room
+     │                              ├── Push notification to user
      │                              │
-     │                              ├── Update presence
-     │                              │
-     │                              └── Typing indicators
+     │                              └── Broadcast activity to project
      │
      v
 ┌──────────────────┐
@@ -1119,9 +1117,8 @@ Toast notification for transient errors
      v
 ┌──────────────────┐
 │ UI Updates       │
-│ (messages,       │
-│  notifications,  │
-│  presence)       │
+│ (notifications,  │
+│  activities)     │
 └──────────────────┘
 ```
 
@@ -1147,10 +1144,10 @@ Toast notification for transient errors
     ┌─────────┼─────────┐
     │         │         │
     v         v         v
-┌───────┐ ┌───────┐ ┌────────┐
-│ Tasks │ │Members│ │  Chat  │
-│ (CRUD)│ │ (RBAC)│ │(DO+WS) │
-└───┬───┘ └───────┘ └────────┘
+┌───────┐ ┌───────┐ ┌────────────┐
+│ Tasks │ │Members│ │ Activities │
+│ (CRUD)│ │ (RBAC)│ │   (DO+WS)  │
+└───┬───┘ └───────┘ └────────────┘
     │
     ├──> Comments
     │

@@ -2,9 +2,13 @@ import { PageContainer } from '#/components/layout/page-container'
 import { StatusBadge } from '#/components/ui/status-badge'
 import { LoadingState } from '#/components/ui/loading-state'
 import { ErrorState } from '#/components/ui/error-state'
+import { Button } from '#/components/ui/button'
+import { EditProjectDialog } from '#/components/projects/edit-project-dialog'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getProject } from '#/server-functions/projects'
+import { Pencil } from 'lucide-react'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/_authenticated/projects/$projectId')({
   component: RouteComponent,
@@ -12,6 +16,7 @@ export const Route = createFileRoute('/_authenticated/projects/$projectId')({
 
 function RouteComponent() {
   const { projectId } = Route.useParams()
+  const [showEditDialog, setShowEditDialog] = useState(false)
 
   const {
     data: project,
@@ -60,7 +65,18 @@ function RouteComponent() {
               </p>
             )}
           </div>
-          <StatusBadge status={project.status} />
+          <div className="flex items-center gap-3">
+            <StatusBadge status={project.status} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowEditDialog(true)}
+              className="border-border text-card-foreground hover:bg-accent"
+            >
+              <Pencil className="w-4 h-4 mr-1.5" />
+              Edit
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
@@ -86,6 +102,22 @@ function RouteComponent() {
           </div>
         </div>
       </div>
+
+      <EditProjectDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        project={{
+          id: project.id,
+          name: project.name,
+          description: project.description,
+          status: project.status,
+          deadline: project.deadline
+            ? typeof project.deadline === 'number'
+              ? project.deadline
+              : new Date(project.deadline).getTime()
+            : null,
+        }}
+      />
     </PageContainer>
   )
 }

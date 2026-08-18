@@ -635,8 +635,6 @@ Use server-side pagination for large datasets:
 - Activities
 - Notifications
 
-Chat should initially load recent messages and progressively load older messages.
-
 ---
 
 ## 19. Comments
@@ -1019,14 +1017,12 @@ User
  +---- Comment
  +---- Notification
  +---- ActivityLog
- +---- ChatMessage
 
 Project
  |
  +---- ProjectMember
  +---- Task
  +---- ActivityLog
- +---- ChatMessage
 
 Task
  |
@@ -1073,8 +1069,6 @@ Add indexes for common queries such as:
 - Notification read status
 - Activity project ID
 - Activity created timestamp
-- Chat project ID
-- Chat created timestamp
 
 Review the complete schema before generating migrations.
 
@@ -1347,7 +1341,6 @@ Production deployment must include:
 - Attachment schema
 - Notification schema
 - Activity schema
-- Chat schema
 - Indexes
 - Constraints
 - Migrations
@@ -1404,14 +1397,11 @@ Production deployment must include:
 
 ### Phase 9: Real-Time
 
-- Durable Object chat rooms
-- WebSockets
-- Message persistence
-- Live messages
-- Presence
-- Typing indicators
-- Live notifications
-- Live task events
+- Durable Object for notifications (WebSocket hibernation)
+- Durable Object for activities (broadcast to project members)
+- WebSocket connection management
+- Real-time notification delivery
+- Real-time activity broadcasting
 
 ### Phase 10: Polish
 

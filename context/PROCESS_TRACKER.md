@@ -164,23 +164,19 @@ Track high-level development phases and milestones.
 
 ---
 
-## Phase 9: Real-Time Chat
+## Phase 9: Real-Time Notifications & Activities
 
-**Goal:** Durable Object-based messaging with presence, read receipts.
+**Goal:** Durable Object-based real-time notifications and activity broadcasting via WebSockets.
 
-| #   | Task                        | Status | Notes                                    |
-| --- | --------------------------- | ------ | ---------------------------------------- |
-| 97  | Messages page (UI)          | [x]    | Mock data, conversation list + chat area |
-| 98  | Durable Object (ChatRoom)   | [ ]    | No DO configured                         |
-| 99  | Durable Object (Presence)   | [ ]    |                                          |
-| 100 | Real-time message sending   | [ ]    |                                          |
-| 101 | Real-time message receiving | [ ]    |                                          |
-| 102 | Read receipts               | [~]    | UI icons exist, no real logic            |
-| 103 | Typing indicators           | [ ]    |                                          |
-| 104 | Message search              | [ ]    |                                          |
-| 105 | Message reactions           | [~]    | UI exists in mock, no server             |
-| 106 | File attachments in chat    | [ ]    |                                          |
-| 107 | Online status (presence)    | [~]    | UI indicator exists, no real presence    |
+| #   | Task                              | Status | Notes                              |
+| --- | --------------------------------- | ------ | ---------------------------------- |
+| 97  | Durable Object (Notification)     | [ ]    | WebSocket hibernation, push to user|
+| 98  | Durable Object (Activity)         | [ ]    | Broadcast activities to project    |
+| 99  | Real-time notification delivery   | [ ]    | Push NOTIFICATION_CREATED events   |
+| 100 | Real-time activity broadcasting   | [ ]    | Push activity events to project    |
+| 101 | WebSocket connection management   | [ ]    | Auth, accept, close, error handlers|
+| 102 | Client WebSocket hook             | [ ]    | useWebSocket for notifications     |
+| 103 | Notification bell real-time update| [ ]    | Badge count updates via WS         |
 
 ---
 
@@ -232,7 +228,7 @@ Track high-level development phases and milestones.
 | Landing page  | [x]    | Hero, Features, HowItWorks, Testimonials, CTA, Footer |
 | Members page  | [x]    | Real D1 data via TanStack Query                       |
 | Settings page | [x]    | Profile (name/photo), theme toggle, account mgmt      |
-| Messages page | [x]    | Mock chat UI with conversations list                  |
+| Messages page | [x]    | Chat UI (to be refactored for real-time) |
 
 ---
 
@@ -324,7 +320,7 @@ Track high-level development phases and milestones.
 | 6. Dashboard       | 9       | 5        | 0           | 4           |
 | 7. Collaboration   | 7       | 3        | 0           | 4           |
 | 8. Attachments     | 5       | 2        | 0           | 3           |
-| 9. Real-Time Chat  | 11      | 1        | 3           | 7           |
+| 9. Real-Time Notif/Act | 7       | 1        | 0           | 6           |
 | 10. Polish         | 13      | 10       | 1           | 2           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
 | **Total**          | **117** | **65**   | **7**       | **45**      |
@@ -335,11 +331,11 @@ Track high-level development phases and milestones.
 
 **Phase 4-6 + 7:** All core CRUD server functions built and wired to pages. Projects, Tasks, Members, Notifications, and Dashboard all use real D1 data via TanStack Query.
 
-**Next Priority:** Durable Objects (task 8) for real-time chat, then RBAC middleware (task 33), then activity/notification creation server functions.
+**Next Priority:** Durable Objects (task 8) for real-time notifications and activities, then RBAC middleware (task 33).
 
 ### Immediate Next Steps
 
-1. Configure Durable Objects in wrangler.jsonc (ChatRoom + Presence)
+1. Configure Durable Objects in wrangler.jsonc (Notification + Activity DOs)
 2. Add role-based authorization middleware (task 33)
 3. Build activity logging server functions (create activity on task/project changes)
 4. Build notification creation server functions (create notifications on task assignment/status changes)
