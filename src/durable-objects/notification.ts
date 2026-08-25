@@ -13,6 +13,11 @@ interface NotificationEvent {
   }
 }
 
+interface WebSocketAttachment {
+  userId: string
+  connectedAt: number
+}
+
 /**
  * NotificationDO - Durable Object for real-time notification delivery.
  *
@@ -44,8 +49,23 @@ export class NotificationDO extends DurableObject<Env> {
       const pair = new WebSocketPair()
       const [client, server] = Object.values(pair)
 
-      this.ctx.acceptWebSocket(server, ['notifications'])
+      const attachment: WebSocketAttachment = {
+        userId: session.user.id,
+        connectedAt: Date.now(),
+      }
+      server.serializeAttachment(attachment)
+
+      this.ctx.acceptWebSocket(server, ['notifications', `user:${session.user.id}`])
+
       return new Response(null, { status: 101, webSocket: client })
+    }
+
+    if (url.pathname === '/health') {
+      const sockets = this.ctx.getWebSockets('notifications')
+      return Response.json({
+        status: 'ok',
+        connections: sockets.length,
+      })
     }
 
     return new Response('NotificationDO', { status: 200 })
@@ -54,10 +74,35 @@ export class NotificationDO extends DurableObject<Env> {
   async sendNotification(event: NotificationEvent): Promise<void> {
     const data = JSON.stringify(event)
     const sockets = this.ctx.getWebSockets('notifications')
+
     for (const ws of sockets) {
       try {
-        ws.send(data)
-      } catch {}
+        const attachment = ws.deserializeAttachment() as WebSocketAttachment | null
+        if (attachment && attachment.userId === event.payload.recipientId) {
+          ws.send(data)
+        }
+      } catch {
+        // Connection may have been closed, ignore
+      }
+    }
+  }
+
+  async sendUnreadCount(recipientId: string, count: number): Promise<void> {
+    const data = JSON.stringify({
+      type: 'UNREAD_COUNT_UPDATED',
+      payload: { recipientId, unreadCount: count },
+    })
+    const sockets = this.ctx.getWebSockets('notifications')
+
+    for (const ws of sockets) {
+      try {
+        const attachment = ws.deserializeAttachment() as WebSocketAttachment | null
+        if (attachment && attachment.userId === recipientId) {
+          ws.send(data)
+        }
+      } catch {
+        // Connection may have been closed, ignore
+      }
     }
   }
 
@@ -72,9 +117,27 @@ export class NotificationDO extends DurableObject<Env> {
           : new TextDecoder().decode(message),
       )
 
-      if (data.type === 'MARK_READ') {
+      const attachment = ws.deserializeAttachment() as WebSocketAttachment | null
+      if (!attachment) {
+        ws.close(1008, 'Invalid connection')
+        return
       }
-    } catch {}
+
+      switch (data.type) {
+        case 'MARK_READ': {
+          if (data.payload?.notificationId) {
+            this.ctx.getTags(ws)
+          }
+          break
+        }
+        case 'PING': {
+          ws.send(JSON.stringify({ type: 'PONG', timestamp: Date.now() }))
+          break
+        }
+      }
+    } catch {
+      // Ignore malformed messages
+    }
   }
 
   async webSocketClose(
@@ -82,7 +145,9 @@ export class NotificationDO extends DurableObject<Env> {
     code: number,
     reason: string,
     wasClean: boolean,
-  ): Promise<void> {}
+  ): Promise<void> {
+    // Cleanup is automatic with hibernation API
+  }
 
   async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
     console.error('[NotificationDO] WebSocket error:', error)

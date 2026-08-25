@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { useNotificationWS } from '#/hooks/use-notification-ws'
 
 export interface Notification {
   id: string
@@ -20,6 +21,7 @@ export interface NotificationBellProps {
   notifications: Notification[]
   onMarkRead: (id: string) => void
   onMarkAllRead: () => void
+  onUnreadCountChange?: (count: number) => void
   className?: string
 }
 
@@ -27,9 +29,17 @@ export function NotificationBell({
   notifications,
   onMarkRead,
   onMarkAllRead,
+  onUnreadCountChange,
   className,
 }: NotificationBellProps) {
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const staticUnreadCount = notifications.filter((n) => !n.read).length
+
+  const { isConnected, unreadCount: wsUnreadCount } = useNotificationWS({
+    enabled: true,
+    onUnreadCountChange,
+  })
+
+  const unreadCount = wsUnreadCount > 0 ? wsUnreadCount : staticUnreadCount
 
   return (
     <Popover>
@@ -54,6 +64,9 @@ export function NotificationBell({
               <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
             </span>
           )}
+          {isConnected && (
+            <span className="absolute bottom-0 right-0 h-1.5 w-1.5 rounded-full bg-green-500" />
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -61,7 +74,12 @@ export function NotificationBell({
         align="end"
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h4 className="font-medium">Notifications</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="font-medium">Notifications</h4>
+            {isConnected && (
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+            )}
+          </div>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
