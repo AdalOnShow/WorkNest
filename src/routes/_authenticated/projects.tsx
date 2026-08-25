@@ -1,6 +1,5 @@
 import { PageContainer } from '#/components/layout/page-container'
 import { Button } from '#/components/ui/button'
-import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { EmptyState } from '#/components/ui/empty-state'
 import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
@@ -16,23 +15,34 @@ import {
 } from '#/components/ui/select'
 import { StatusBadge } from '#/components/ui/status-badge'
 import { CreateProjectDialog } from '#/components/projects/create-project-dialog'
-import { deleteProject, listProjects } from '#/server-functions/projects'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { Calendar, CheckSquare, FolderKanban, Plus, Trash2 } from 'lucide-react'
+import { listProjects } from '#/server-functions/projects'
+import { useQuery } from '@tanstack/react-query'
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useChildMatches,
+} from '@tanstack/react-router'
+import { Calendar, CheckSquare, FolderKanban, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/projects')({
-  component: ProjectsPage,
+  component: ProjectsRoute,
   head: () => ({
     meta: [{ title: 'Projects — WorkNest' }],
   }),
 })
 
+function ProjectsRoute() {
+  const hasChildMatch = useChildMatches({
+    select: (matches) => matches.length > 0,
+  })
+
+  return hasChildMatch ? <Outlet /> : <ProjectsPage />
+}
+
 function ProjectCard({
   project,
-  onDelete,
 }: {
   project: {
     id: string
@@ -41,19 +51,7 @@ function ProjectCard({
     taskCount: number
     deadline: number | null
   }
-  onDelete: (id: string) => void
 }) {
-  const navigate = useNavigate()
-
-  const handleCardClick = () => {
-    navigate({ to: '/projects/$projectId', params: { projectId: project.id } })
-  }
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onDelete(project.id)
-  }
-
   const formattedDeadline = project.deadline
     ? new Date(project.deadline).toLocaleDateString('en-US', {
         month: 'short',
@@ -63,17 +61,10 @@ function ProjectCard({
     : null
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={handleCardClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          handleCardClick()
-        }
-      }}
-      className="group relative bg-card border border-border rounded-[14px] p-5 cursor-pointer transition-all duration-200 hover:border-primary/30 hover:bg-accent/20 hover:shadow-lg hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background"
+    <Link
+      to="/projects/$projectId"
+      params={{ projectId: project.id }}
+      className="group relative bg-card border border-border rounded-[14px] p-5 min-h-[140px] block transition-all duration-200 hover:border-primary/30 hover:bg-accent/20 hover:shadow-lg hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background"
     >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex-1 min-w-0">
@@ -98,28 +89,14 @@ function ProjectCard({
           </div>
         )}
       </div>
-
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Delete ${project.name}`}
-          onClick={handleDeleteClick}
-          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
+    </Link>
   )
 }
 
 function ProjectsPage() {
-  const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [page, setPage] = useState(1)
-  const [deleteId, setDeleteId] = useState<string | null>(null)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -128,18 +105,6 @@ function ProjectsPage() {
       listProjects({
         data: { search, status: statusFilter, page, pageSize: 12 },
       }),
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (projectId: string) => deleteProject({ data: { projectId } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      toast.success('Project deleted')
-      setDeleteId(null)
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete project')
-    },
   })
 
   const items = data?.items || []
@@ -236,7 +201,6 @@ function ProjectsPage() {
                 <ProjectCard
                   key={project.id}
                   project={project}
-                  onDelete={setDeleteId}
                 />
               ))}
             </div>
@@ -253,14 +217,6 @@ function ProjectsPage() {
           </>
         )}
       </div>
-
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Delete project"
-        description="This action cannot be undone. All tasks and data in this project will be permanently deleted."
-        onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
-      />
 
       <CreateProjectDialog
         open={showCreateDialog}
