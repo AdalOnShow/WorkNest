@@ -15,19 +15,11 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { StatusBadge } from '#/components/ui/status-badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
 import { CreateProjectDialog } from '#/components/projects/create-project-dialog'
 import { deleteProject, listProjects } from '#/server-functions/projects'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { FolderKanban, Plus, Trash2 } from 'lucide-react'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { Calendar, CheckSquare, FolderKanban, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -37,6 +29,90 @@ export const Route = createFileRoute('/_authenticated/projects')({
     meta: [{ title: 'Projects — WorkNest' }],
   }),
 })
+
+function ProjectCard({
+  project,
+  onDelete,
+}: {
+  project: {
+    id: string
+    name: string
+    status: string
+    taskCount: number
+    deadline: number | null
+  }
+  onDelete: (id: string) => void
+}) {
+  const navigate = useNavigate()
+
+  const handleCardClick = () => {
+    navigate({ to: '/projects/$projectId', params: { projectId: project.id } })
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDelete(project.id)
+  }
+
+  const formattedDeadline = project.deadline
+    ? new Date(project.deadline).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleCardClick()
+        }
+      }}
+      className="group relative bg-card border border-border rounded-[14px] p-5 cursor-pointer transition-all duration-200 hover:border-primary/30 hover:bg-accent/20 hover:shadow-lg hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background"
+    >
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+            {project.name}
+          </h3>
+        </div>
+        <StatusBadge status={project.status as 'ACTIVE' | 'COMPLETED' | 'ON_HOLD'} />
+      </div>
+
+      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <CheckSquare className="w-4 h-4" />
+          <span>
+            {project.taskCount} {project.taskCount === 1 ? 'task' : 'tasks'}
+          </span>
+        </div>
+        {formattedDeadline && (
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-4 h-4" />
+            <span>{formattedDeadline}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Delete ${project.name}`}
+          onClick={handleDeleteClick}
+          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
 
 function ProjectsPage() {
   const queryClient = useQueryClient()
@@ -50,7 +126,7 @@ function ProjectsPage() {
     queryKey: ['projects', search, statusFilter, page],
     queryFn: () =>
       listProjects({
-        data: { search, status: statusFilter, page, pageSize: 10 },
+        data: { search, status: statusFilter, page, pageSize: 12 },
       }),
   })
 
@@ -155,76 +231,14 @@ function ProjectsPage() {
           />
         ) : (
           <>
-            <div className="bg-card border border-border rounded-[14px] overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground font-medium">
-                      Name
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Tasks
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Deadline
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((project) => (
-                    <TableRow
-                      key={project.id}
-                      className="border-border/50 hover:bg-accent/30"
-                    >
-                      <TableCell>
-                        <Link
-                          to="/projects/$projectId"
-                          params={{ projectId: project.id }}
-                          className="text-foreground font-medium hover:text-primary transition-colors"
-                        >
-                          {project.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={project.status} />
-                      </TableCell>
-                      <TableCell className="text-card-foreground">
-                        {project.taskCount}
-                      </TableCell>
-                      <TableCell className="text-card-foreground">
-                        {project.deadline != null
-                          ? new Date(project.deadline).toLocaleDateString(
-                              'en-US',
-                              {
-                                month: 'short',
-                                day: 'numeric',
-                              },
-                            )
-                          : '—'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Delete ${project.name}`}
-                            onClick={() => setDeleteId(project.id)}
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {items.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onDelete={setDeleteId}
+                />
+              ))}
             </div>
 
             {totalPages > 1 && (
