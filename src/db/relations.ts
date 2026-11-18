@@ -10,6 +10,7 @@ import {
   comment,
   notification,
   activity,
+  chatMessage,
 } from './schema'
 
 // ─── Auth relations ────────────────────────────────────
@@ -27,6 +28,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   comments: many(comment),
   notifications: many(notification),
   activities: many(activity),
+  chatMessages: many(chatMessage),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -62,6 +64,7 @@ export const projectRelations = relations(project, ({ one, many }) => ({
   members: many(projectMember),
   tasks: many(task),
   activities: many(activity),
+  chatMessages: many(chatMessage),
 }))
 
 export const projectMemberRelations = relations(projectMember, ({ one }) => ({
@@ -127,5 +130,18 @@ export const activityRelations = relations(activity, ({ one }) => ({
   project: one(project, {
     fields: [activity.projectId],
     references: [project.id],
+  }),
+}))
+
+// ─── Chat ──────────────────────────────────────────────
+
+export const chatMessageRelations = relations(chatMessage, ({ one }) => ({
+  project: one(project, {
+    fields: [chatMessage.projectId],
+    references: [project.id],
+  }),
+  sender: one(user, {
+    fields: [chatMessage.senderId],
+    references: [user.id],
   }),
 }))
