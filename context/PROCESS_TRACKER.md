@@ -168,9 +168,9 @@ Track high-level development phases and milestones.
 
 | #   | Task                                    | Status | Notes                                           |
 | --- | --------------------------------------- | ------ | ----------------------------------------------- |
-| 97  | chat_message schema + migration         | [ ]    | Index (projectId, createdAt)                    |
-| 98  | getMessages server function             | [ ]    | Keyset pagination, 30/page, membership check    |
-| 99  | ChatRoom Durable Object                 | [ ]    | Hibernation, auto ping/pong, presence, typing   |
+| 97  | chat_message schema + migration         | [x]    | 0004_chat_message; index (project, created, id) |
+| 98  | getMessages server function             | [x]    | src/server-functions/chat.ts, keyset 30/page    |
+| 99  | ChatRoom Durable Object                 | [x]    | src/chat/ChatRoom.ts, CHAT_ROOM binding (v3)    |
 | 100 | Chat WebSocket route                    | [ ]    | /api/chat/$projectId/ws, session + membership   |
 | 101 | useChatRoom client hook                 | [ ]    | Reconnect/backoff, merge into infinite query    |
 | 102 | Messages page rebuild                   | [ ]    | Project list, history, composer, online, delete |

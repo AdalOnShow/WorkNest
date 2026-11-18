@@ -10,7 +10,7 @@ export async function getProjectRole(
   projectId: string,
   userId: string,
 ): Promise<ProjectRole | null> {
-  const [row] = await db
+  const rows = await db
     .select({ role: projectMember.role })
     .from(projectMember)
     .where(
@@ -20,5 +20,5 @@ export async function getProjectRole(
       ),
     )
     .limit(1)
-  return row?.role ?? null
+  return rows.at(0)?.role ?? null
 }

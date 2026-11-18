@@ -42,6 +42,15 @@
       "migrations_dir": "migrations",
     },
   ],
+  "durable_objects": {
+    "bindings": [
+      {
+        // One ChatRoom instance per project: env.CHAT_ROOM.idFromName(projectId)
+        "name": "CHAT_ROOM",
+        "class_name": "ChatRoom",
+      },
+    ],
+  },
   "migrations": [
     {
       "tag": "v1",
@@ -51,6 +60,11 @@
       // Real-time notifications/activities were dropped in favour of D1 + TanStack Query refetches.
       "tag": "v2",
       "deleted_classes": ["NotificationDO", "ActivityDO"],
+    },
+    {
+      // SQLite-backed class (required on the Workers free plan).
+      "tag": "v3",
+      "new_sqlite_classes": ["ChatRoom"],
     },
   ],
   /**

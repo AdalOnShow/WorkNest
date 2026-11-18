@@ -92,6 +92,7 @@ export const getMessages = createServerFn({ method: 'GET' })
     const last = items.at(-1)
     return {
       items,
-      nextCursor: hasMore && last ? encodeChatCursor(last.createdAt, last.id) : null,
+      nextCursor:
+        hasMore && last ? encodeChatCursor(last.createdAt, last.id) : null,
     }
   })

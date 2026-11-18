@@ -69,11 +69,7 @@ export type ClientEvent = z.infer<typeof clientEventSchema>
 // ─── Server → client ───────────────────────────────────
 
 export type ChatErrorCode =
-  | 'INVALID_EVENT'
-  | 'RATE_LIMITED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'INTERNAL'
+  'INVALID_EVENT' | 'RATE_LIMITED' | 'FORBIDDEN' | 'NOT_FOUND' | 'INTERNAL'
 
 export type ServerEvent =
   | { type: 'MESSAGE_CREATED'; message: ChatMessageDTO; clientId?: string }
