@@ -1,6 +1,6 @@
 import { createDb } from '#/db'
 import { project, projectInvitation, projectMember, user } from '#/db/schema'
-import { logActivity } from '#/lib/activity-logger'
+import { logActivity } from '#/lib/activity'
 import { createAuth } from '#/lib/auth'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
@@ -153,7 +153,8 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
       },
     })
 
-    const baseUrl = getCloudflareEnv().BETTER_AUTH_URL || 'http://localhost:3000'
+    const baseUrl =
+      getCloudflareEnv().BETTER_AUTH_URL || 'http://localhost:3000'
     const invitationLink = `${baseUrl}/invitations/${token}`
 
     return {
@@ -206,7 +207,10 @@ export const getProjectInvitation = createServerFn({ method: 'GET' })
       isAccepted,
       isRejected,
       isValid:
-        invitation.status === 'PENDING' && !isExpired && !isAccepted && !isRejected,
+        invitation.status === 'PENDING' &&
+        !isExpired &&
+        !isAccepted &&
+        !isRejected,
     }
   })
 
@@ -264,7 +268,10 @@ export const acceptProjectInvitation = createServerFn({ method: 'POST' })
         .update(projectInvitation)
         .set({ status: 'ACCEPTED', updatedAt: new Date() })
         .where(eq(projectInvitation.id, invitation.id))
-      return { success: true, message: 'You are already a member of this project' }
+      return {
+        success: true,
+        message: 'You are already a member of this project',
+      }
     }
 
     const now = new Date()
@@ -324,11 +331,7 @@ export const rejectProjectInvitation = createServerFn({ method: 'POST' })
 
 export const listProjectInvitations = createServerFn({ method: 'GET' })
   .validator(
-    (data: {
-      projectId: string
-      page?: number
-      pageSize?: number
-    }) => data,
+    (data: { projectId: string; page?: number; pageSize?: number }) => data,
   )
   .handler(async ({ data }) => {
     const userId = await requireUserId()

@@ -15,6 +15,20 @@
       "when": 1786790116023,
       "tag": "0001_minor_exiles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795003479475,
+      "tag": "0002_project_invitation",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1795003480322,
+      "tag": "0003_drop_attachment",
+      "breakpoints": true
     }
   ]
 }

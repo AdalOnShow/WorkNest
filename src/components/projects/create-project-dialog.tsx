@@ -80,7 +80,10 @@ export function CreateProjectDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
-            <Label htmlFor="project-name" className="text-sm text-muted-foreground">
+            <Label
+              htmlFor="project-name"
+              className="text-sm text-muted-foreground"
+            >
               Name <span className="text-destructive">*</span>
             </Label>
             <Input

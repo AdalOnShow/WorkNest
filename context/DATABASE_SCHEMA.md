@@ -23,7 +23,6 @@ src/
 │   │   ├── projects.ts       # Projects + memberships
 │   │   ├── tasks.ts          # Tasks
 │   │   ├── comments.ts       # Task comments
-│   │   ├── attachments.ts    # File metadata (R2)
 │   │   ├── notifications.ts  # User notifications
 │   │   └── activities.ts     # Activity log
 │   └── relations.ts          # All relation definitions
@@ -273,36 +272,6 @@ CREATE INDEX idx_comment_author ON comment(author_id);
 
 ---
 
-### Attachments (R2 Metadata)
-
-File content is stored in R2. D1 stores metadata only.
-
-```typescript
-// src/db/schema/attachments.ts
-
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
-
-export const attachment = sqliteTable('attachment', {
-  id: text('id').primaryKey(),
-  taskId: text('task_id').notNull(), // references task.id
-  uploaderId: text('uploader_id').notNull(), // references user.id
-  fileName: text('file_name').notNull(),
-  objectKey: text('object_key').notNull().unique(), // R2 key
-  mimeType: text('mime_type').notNull(),
-  fileSize: integer('file_size').notNull(), // bytes
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-})
-```
-
-#### Indexes
-
-```sql
-CREATE INDEX idx_attachment_task ON attachment(task_id);
-CREATE INDEX idx_attachment_uploader ON attachment(uploader_id);
-```
-
----
-
 ### Notifications
 
 ```typescript
@@ -372,7 +341,6 @@ import { userProfile } from './schema/users'
 import { project, projectMember } from './schema/projects'
 import { task } from './schema/tasks'
 import { comment } from './schema/comments'
-import { attachment } from './schema/attachments'
 import { notification } from './schema/notifications'
 import { activity } from './schema/activities'
 
@@ -389,7 +357,6 @@ export const userRelations = relations(user, ({ one, many }) => ({
   assignedTasks: many(task, { relationName: 'assignee' }),
   createdTasks: many(task, { relationName: 'creator' }),
   comments: many(comment),
-  attachments: many(attachment),
   notifications: many(notification),
   activities: many(activity),
 }))
@@ -458,7 +425,6 @@ export const taskRelations = relations(task, ({ one, many }) => ({
     relationName: 'creator',
   }),
   comments: many(comment),
-  attachments: many(attachment),
 }))
 
 // ─── Comments ──────────────────────────────────────────
@@ -470,19 +436,6 @@ export const commentRelations = relations(comment, ({ one }) => ({
   }),
   author: one(user, {
     fields: [comment.authorId],
-    references: [user.id],
-  }),
-}))
-
-// ─── Attachments ───────────────────────────────────────
-
-export const attachmentRelations = relations(attachment, ({ one }) => ({
-  task: one(task, {
-    fields: [attachment.taskId],
-    references: [task.id],
-  }),
-  uploader: one(user, {
-    fields: [attachment.uploaderId],
     references: [user.id],
   }),
 }))
@@ -571,17 +524,20 @@ pnpm drizzle-kit studio
 
 ## Schema Summary
 
-| Table            | Purpose                               | Key Relationships                                   |
-| ---------------- | ------------------------------------- | --------------------------------------------------- |
-| `user`           | Better Auth user (name, email, image) | → profile, sessions, accounts                       |
-| `session`        | Better Auth sessions                  | → user                                              |
-| `account`        | OAuth provider accounts               | → user                                              |
-| `verification`   | Email verification tokens             | → user                                              |
-| `user_profile`   | App role (ADMIN, PM, MEMBER)          | → user                                              |
-| `project`        | Projects                              | → creator, members, tasks, activities               |
-| `project_member` | Project membership                    | → project, user                                     |
-| `task`           | Tasks                                 | → project, assignee, creator, comments, attachments |
-| `comment`        | Task comments                         | → task, author                                      |
-| `attachment`     | R2 file metadata                      | → task, uploader                                    |
-| `notification`   | User notifications                    | → recipient                                         |
-| `activity`       | Activity log                          | → actor, project                                    |
+| Table                | Purpose                                  | Key Relationships                      |
+| -------------------- | ---------------------------------------- | -------------------------------------- |
+| `user`               | Better Auth user (name, email, image)    | → profile, sessions, accounts          |
+| `session`            | Better Auth sessions                     | → user                                 |
+| `account`            | OAuth provider accounts                  | → user                                 |
+| `verification`       | Email verification tokens                | → user                                 |
+| `user_profile`       | App role (ADMIN, PM, MEMBER)             | → user                                 |
+| `project`            | Projects                                 | → creator, members, tasks, activities  |
+| `project_member`     | Project membership                       | → project, user                        |
+| `task`               | Tasks                                    | → project, assignee, creator, comments |
+| `comment`            | Task comments                            | → task, author                         |
+| `project_invitation` | Pending email invitations to a project   | → project, invitedBy                   |
+| `chat_message`       | Project chat messages (Phase 3, planned) | → project, sender                      |
+| `notification`       | User notifications                       | → recipient                            |
+| `activity`           | Activity log                             | → actor, project                       |
+
+> **Attachments removed.** The `attachment` table is dropped by migration `0003_drop_attachment`. There are no file attachments; Cloudinary stores profile photos only.

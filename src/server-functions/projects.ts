@@ -1,6 +1,6 @@
 import { createDb } from '#/db'
 import { project, projectMember, task } from '#/db/schema'
-import { logActivity } from '#/lib/activity-logger'
+import { logActivity } from '#/lib/activity'
 import { createAuth } from '#/lib/auth'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'

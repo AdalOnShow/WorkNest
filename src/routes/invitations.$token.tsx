@@ -115,7 +115,8 @@ function InvitationPage() {
               Invitation Expired
             </h1>
             <p className="text-muted-foreground mb-6">
-              This invitation has expired. Please ask the project admin to send a new one.
+              This invitation has expired. Please ask the project admin to send
+              a new one.
             </p>
             <Link to="/projects">
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
@@ -142,7 +143,10 @@ function InvitationPage() {
             <p className="text-muted-foreground mb-6">
               You have already accepted this invitation.
             </p>
-            <Link to="/projects/$projectId" params={{ projectId: invitation.projectId }}>
+            <Link
+              to="/projects/$projectId"
+              params={{ projectId: invitation.projectId }}
+            >
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
                 Go to Project
               </Button>

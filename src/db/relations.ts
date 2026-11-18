@@ -8,7 +8,6 @@ import {
   projectMember,
   task,
   comment,
-  attachment,
   notification,
   activity,
 } from './schema'
@@ -26,7 +25,6 @@ export const userRelations = relations(user, ({ one, many }) => ({
   assignedTasks: many(task, { relationName: 'assignee' }),
   createdTasks: many(task, { relationName: 'creator' }),
   comments: many(comment),
-  attachments: many(attachment),
   notifications: many(notification),
   activities: many(activity),
 }))
@@ -95,7 +93,6 @@ export const taskRelations = relations(task, ({ one, many }) => ({
     relationName: 'creator',
   }),
   comments: many(comment),
-  attachments: many(attachment),
 }))
 
 // ─── Comments ──────────────────────────────────────────
@@ -107,19 +104,6 @@ export const commentRelations = relations(comment, ({ one }) => ({
   }),
   author: one(user, {
     fields: [comment.authorId],
-    references: [user.id],
-  }),
-}))
-
-// ─── Attachments ───────────────────────────────────────
-
-export const attachmentRelations = relations(attachment, ({ one }) => ({
-  task: one(task, {
-    fields: [attachment.taskId],
-    references: [task.id],
-  }),
-  uploader: one(user, {
-    fields: [attachment.uploaderId],
     references: [user.id],
   }),
 }))

@@ -20,7 +20,7 @@ import {
 } from '#/server-functions/tasks'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowLeft, Send, Trash2, Upload } from 'lucide-react'
+import { ArrowLeft, Send, Trash2 } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -150,8 +150,8 @@ function TaskDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <div>
+          <div className="space-y-6">
             <div className="bg-card border border-border rounded-[14px] p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -299,25 +299,6 @@ function TaskDetailPage() {
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-card border border-border rounded-[14px] p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="label-lg text-foreground">Attachments</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-border text-card-foreground hover:bg-accent"
-                >
-                  <Upload data-icon="inline-start" className="w-4 h-4" />
-                  Upload
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No attachments yet
-              </p>
             </div>
           </div>
         </div>

@@ -14,17 +14,17 @@ Track high-level development phases and milestones.
 
 **Goal:** Working TanStack Start project on Cloudflare with D1, Cloudinary, Durable Objects.
 
-| #   | Task                                                  | Status | Notes                                          |
-| --- | ----------------------------------------------------- | ------ | ---------------------------------------------- |
-| 1   | TanStack Start project scaffolded                     | [x]    | vite.config.ts with tanstackStart + cloudflare |
-| 2   | Cloudflare Worker configured                          | [x]    | wrangler.jsonc, cloudflare vite plugin         |
-| 3   | D1 database created                                   | [x]    | Binding "DB" in wrangler.jsonc, dev.db exists  |
-| 4   | Drizzle ORM + Drizzle Kit installed                   | [x]    | drizzle-orm@^0.45.2, drizzle-kit@^0.31.10      |
-| 5   | drizzle.config.ts configured (D1-http)                | [x]    | D1-http driver with env credentials            |
-| 6   | D1 binding in wrangler config                         | [x]    | d1_databases binding "DB" configured           |
-| 7   | Cloudinary configured (profile photos)                | [x]    | REST API wrapper, worknest/avatars folder      |
-| 8   | Durable Objects configured (Notifications + Presence) | [ ]    |                                                |
-| 9   | Database client (src/db/index.ts)                     | [x]    | createDb() with D1 + schema + relations        |
+| #   | Task                                       | Status | Notes                                          |
+| --- | ------------------------------------------ | ------ | ---------------------------------------------- |
+| 1   | TanStack Start project scaffolded          | [x]    | vite.config.ts with tanstackStart + cloudflare |
+| 2   | Cloudflare Worker configured               | [x]    | wrangler.jsonc, cloudflare vite plugin         |
+| 3   | D1 database created                        | [x]    | Binding "DB" in wrangler.jsonc, dev.db exists  |
+| 4   | Drizzle ORM + Drizzle Kit installed        | [x]    | drizzle-orm@^0.45.2, drizzle-kit@^0.31.10      |
+| 5   | drizzle.config.ts configured (D1-http)     | [x]    | D1-http driver with env credentials            |
+| 6   | D1 binding in wrangler config              | [x]    | d1_databases binding "DB" configured           |
+| 7   | Cloudinary configured (profile photos)     | [x]    | REST API wrapper, worknest/avatars folder      |
+| 8   | Durable Objects configured (ChatRoom only) | [ ]    | Old Notification/Activity DOs removed (v2)     |
+| 9   | Database client (src/db/index.ts)          | [x]    | createDb() with D1 + schema + relations        |
 
 ---
 
@@ -40,7 +40,7 @@ Track high-level development phases and milestones.
 | 13  | Project member schema        | [x]    | projectMember with unique constraint           |
 | 14  | Task schema                  | [x]    | task with unique(project, title) constraint    |
 | 15  | Comment schema               | [x]    | comment table                                  |
-| 16  | Attachment schema            | [x]    | attachment table with object_key unique        |
+| 16  | ~~Attachment schema~~        | n/a    | Dropped by migration 0003_drop_attachment      |
 | 17  | Notification schema          | [x]    | notification with type enum                    |
 | 18  | Activity schema              | [x]    | activity table                                 |
 | 19  | All relations defined        | [x]    | relations.ts — all one/many relations          |
@@ -143,40 +143,38 @@ Track high-level development phases and milestones.
 | 72  | Add comment                        | [x]    | addTaskComment server function                                              |
 | 73  | Edit comment                       | [ ]    |                                                                             |
 | 74  | Delete comment                     | [ ]    |                                                                             |
-| 75  | Activity logging (server)          | [x]    | logActivity helper integrated into project & task mutations                 |
-| 76  | Notification creation (server)     | [x]    | createNotification helper integrated into task assign/status/comment events |
+| 75  | Activity logging (server)          | [x]    | logActivity in src/lib/activity.ts (D1 only), project/task/invite mutations |
+| 76  | Notification creation (server)     | [x]    | notifyUsers in src/lib/activity.ts (D1 only, skips actor, dedupes)          |
 | 77  | Notification UI (bell, list, read) | [x]    | Real D1 data + mark read mutations                                          |
 | 78  | Notifications page                 | [x]    | Real D1 data with mark-all-read                                             |
 
 ---
 
-## Phase 8: Attachments
+## Phase 8: Profile Photos (attachments removed)
 
-**Goal:** Cloudinary upload, metadata, preview, deletion.
+**Goal:** Cloudinary for profile photos only. Task/project attachments were dropped from scope.
 
 | #   | Task                          | Status | Notes                                        |
 | --- | ----------------------------- | ------ | -------------------------------------------- |
 | 79  | Cloudinary upload (profile)   | [x]    | REST API, worknest/avatars folder, SHA-1 sig |
 | 80  | Image validation (MIME, size) | [x]    | JPEG/PNG/WebP/GIF, max 5MB                   |
-| 81  | Attachment metadata in D1     | [ ]    | Schema defined, no server logic              |
-| 82  | File preview                  | [ ]    |                                              |
-| 83  | Delete attachment             | [ ]    |                                              |
+| 81  | Remove attachments            | [x]    | Schema, relations, UI; migration 0003        |
 
 ---
 
-## Phase 9: Real-Time Notifications & Activities
+## Phase 9: Project Chat
 
-**Goal:** Durable Object-based real-time notifications and activity broadcasting via WebSockets.
+**Goal:** Real-time chat per project. One `ChatRoom` DO per project; messages in D1. Notifications and activities are NOT real-time (D1 + TanStack Query refetch); the old Notification/Activity DOs were removed.
 
-| #   | Task                               | Status | Notes                               |
-| --- | ---------------------------------- | ------ | ----------------------------------- |
-| 97  | Durable Object (Notification)      | [ ]    | WebSocket hibernation, push to user |
-| 98  | Durable Object (Activity)          | [ ]    | Broadcast activities to project     |
-| 99  | Real-time notification delivery    | [ ]    | Push NOTIFICATION_CREATED events    |
-| 100 | Real-time activity broadcasting    | [ ]    | Push activity events to project     |
-| 101 | WebSocket connection management    | [ ]    | Auth, accept, close, error handlers |
-| 102 | Client WebSocket hook              | [ ]    | useWebSocket for notifications      |
-| 103 | Notification bell real-time update | [ ]    | Badge count updates via WS          |
+| #   | Task                                    | Status | Notes                                           |
+| --- | --------------------------------------- | ------ | ----------------------------------------------- |
+| 97  | chat_message schema + migration         | [ ]    | Index (projectId, createdAt)                    |
+| 98  | getMessages server function             | [ ]    | Keyset pagination, 30/page, membership check    |
+| 99  | ChatRoom Durable Object                 | [ ]    | Hibernation, auto ping/pong, presence, typing   |
+| 100 | Chat WebSocket route                    | [ ]    | /api/chat/$projectId/ws, session + membership   |
+| 101 | useChatRoom client hook                 | [ ]    | Reconnect/backoff, merge into infinite query    |
+| 102 | Messages page rebuild                   | [ ]    | Project list, history, composer, online, delete |
+| 103 | Verify (build, 2 sessions, permissions) | [ ]    |                                                 |
 
 ---
 
@@ -228,7 +226,7 @@ Track high-level development phases and milestones.
 | Landing page  | [x]    | Hero, Features, HowItWorks, Testimonials, CTA, Footer |
 | Members page  | [x]    | Real D1 data via TanStack Query                       |
 | Settings page | [x]    | Profile (name/photo), theme toggle, account mgmt      |
-| Messages page | [x]    | Chat UI (to be refactored for real-time)              |
+| Messages page | [~]    | Placeholder; rebuilt in Phase 9 (project chat)        |
 
 ---
 
@@ -310,20 +308,20 @@ Track high-level development phases and milestones.
 
 ## Summary
 
-| Phase                  | Tasks   | Complete | In Progress | Not Started |
-| ---------------------- | ------- | -------- | ----------- | ----------- |
-| 1. Infrastructure      | 9       | 8        | 0           | 1           |
-| 2. Database Schema     | 15      | 15       | 0           | 0           |
-| 3. Authentication      | 12      | 9        | 1           | 2           |
-| 4. Projects            | 13      | 11       | 0           | 2           |
-| 5. Tasks               | 13      | 10       | 0           | 3           |
-| 6. Dashboard           | 9       | 5        | 0           | 4           |
-| 7. Collaboration       | 7       | 3        | 0           | 4           |
-| 8. Attachments         | 5       | 2        | 0           | 3           |
-| 9. Real-Time Notif/Act | 7       | 0        | 0           | 7           |
-| 10. Polish             | 13      | 10       | 1           | 2           |
-| 11. Deployment         | 10      | 1        | 2           | 7           |
-| **Total**              | **113** | **71**   | **4**       | **45**      |
+| Phase              | Tasks   | Complete | In Progress | Not Started |
+| ------------------ | ------- | -------- | ----------- | ----------- |
+| 1. Infrastructure  | 9       | 8        | 0           | 1           |
+| 2. Database Schema | 15      | 15       | 0           | 0           |
+| 3. Authentication  | 12      | 9        | 1           | 2           |
+| 4. Projects        | 13      | 11       | 0           | 2           |
+| 5. Tasks           | 13      | 10       | 0           | 3           |
+| 6. Dashboard       | 9       | 5        | 0           | 4           |
+| 7. Collaboration   | 7       | 3        | 0           | 4           |
+| 8. Profile Photos  | 3       | 3        | 0           | 0           |
+| 9. Project Chat    | 7       | 0        | 0           | 7           |
+| 10. Polish         | 13      | 10       | 1           | 2           |
+| 11. Deployment     | 10      | 1        | 2           | 7           |
+| **Total**          | **111** | **72**   | **4**       | **42**      |
 
 ---
 
@@ -331,13 +329,13 @@ Track high-level development phases and milestones.
 
 **Phase 4-6 + 7:** All core CRUD server functions built and wired to pages. Projects, Tasks, Members, Notifications, and Dashboard all use real D1 data via TanStack Query.
 
-**Next Priority:** Real-time notification/activity delivery (tasks 97-103), then RBAC middleware (task 33).
+**Next Priority:** Project chat (Phase 9, tasks 97-103), then RBAC middleware (task 33).
 
 ### Immediate Next Steps
 
-1. Implement Notification DO and Activity DO server logic (tasks 97-98)
-2. Wire real-time delivery — push NOTIFICATION_CREATED events and broadcast activities (tasks 99-100)
-3. Add WebSocket connection management and client hooks (tasks 101-103)
+1. Chat schema + migration + getMessages (tasks 97-98)
+2. ChatRoom Durable Object + chat WebSocket route (tasks 99-100)
+3. useChatRoom hook + Messages page rebuild (tasks 101-102)
 4. Add role-based authorization middleware (task 33)
 5. Task validation — server-side validation for required fields (task 56)
 6. Sort functionality for projects and tasks lists (tasks 47, 61)

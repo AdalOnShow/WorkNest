@@ -24,7 +24,7 @@ WorkNest should allow teams to:
 - View productivity analytics
 - Track recent activities
 - Add comments to tasks
-- Upload task attachments
+- Chat with project members in real time
 - Receive notifications
 - Use the application on desktop, tablet, and mobile
 - Use light and dark themes
@@ -46,7 +46,7 @@ Do NOT introduce:
 - Prisma ORM
 - PostgreSQL
 - MongoDB
-- Cloudinary
+- Cloudflare R2 (no file attachments; see §20)
 - Socket.io
 - Firebase
 
@@ -69,9 +69,9 @@ Cloudflare Workers
    +-------------------+-------------------+
    |                   |                   |
    v                   v                   v
-Drizzle + D1          R2            Durable Objects
-Database              Files         Real-time
-                                      WebSockets
+Drizzle + D1        Cloudinary       Durable Objects
+Database            Profile photos   Project chat
+                                     WebSockets
 ```
 
 ---
@@ -105,11 +105,11 @@ Database              Files         Real-time
 
 ### Storage
 
-- Cloudflare R2
+- Cloudinary (profile photos only)
 
 ### Real-Time
 
-- Cloudflare Durable Objects
+- Cloudflare Durable Objects (project chat only)
 - WebSockets
 - WebSocket Hibernation
 
@@ -163,12 +163,11 @@ Next infrastructure tasks:
 4. Create and apply migrations.
 5. Configure Better Auth.
 6. Configure Google OAuth.
-7. Configure Cloudflare R2.
-8. Configure Durable Objects.
-9. Configure WebSocket real-time communication.
-10. Build application features.
-11. Deploy to Cloudflare Workers.
-12. Configure production secrets and domain.
+7. Configure Cloudinary for profile photos.
+8. Configure the ChatRoom Durable Object for project chat.
+9. Build application features.
+10. Deploy to Cloudflare Workers.
+11. Configure production secrets and domain.
 
 Do not recreate the existing D1 database unless there is a clear technical reason.
 
@@ -211,7 +210,7 @@ projects
 members
 tasks
 comments
-attachments
+chat
 notifications
 activities
 dashboard
@@ -265,7 +264,7 @@ Can:
 - View assigned tasks
 - Update assigned task status
 - Add comments where permitted
-- Upload permitted attachments
+- Chat in projects they belong to
 - View relevant project activity
 
 Role permissions must be enforced on the server.
@@ -417,7 +416,7 @@ Membership controls access to:
 - Project data
 - Tasks
 - Comments
-- Attachments
+- Chat messages
 - Activities
 
 Knowing a project ID must never be enough to access private project data.
@@ -659,47 +658,11 @@ Rules:
 
 ---
 
-## 20. File Attachments
+## 20. File Uploads
 
-Use Cloudflare R2.
+There are **no task or project file attachments**. The attachment feature was removed (migration `0003_drop_attachment`).
 
-Initial scope:
-
-- Images only
-- Maximum 2 MB per file
-
-Flow:
-
-```text
-User
- |
- v
-Server Validation
- |
- v
-Cloudflare R2
- |
- v
-File Metadata
- |
- v
-D1
-```
-
-D1 stores metadata, not binary content.
-
-Metadata:
-
-- ID
-- Task ID
-- Uploader ID
-- File name
-- Object key
-- MIME type
-- File size
-- Created timestamp
-
-Uploader-controlled deletion must be enforced server-side.
+The only upload is the user's profile photo, stored in Cloudinary (`worknest/avatars`). Cloudinary is not used for anything else.
 
 ---
 
@@ -734,7 +697,9 @@ UI:
 - Mark all as read
 - Dedicated notifications page
 
-Use WebSockets for real-time delivery where appropriate. D1 remains the persistent notification history.
+Notifications are stored in D1 only. There is no WebSocket push: the UI refreshes them with TanStack Query (refetch on window focus and after mutations).
+
+Notifications are created through `notifyUsers()` in `src/lib/activity.ts`, which drops the actor and duplicate recipients.
 
 ---
 
@@ -752,7 +717,6 @@ Task completed
 Member added
 Member removed
 Comment created
-Attachment uploaded
 ```
 
 Fields:
@@ -767,64 +731,72 @@ Fields:
 
 Show latest 5-10 relevant activities.
 
+Activities are recorded through `logActivity()` in `src/lib/activity.ts` (D1 only). Activity and notification writes must never fail the primary mutation.
+
 ---
 
-## 23. Real-Time Notifications
+## 23. Project Chat
 
-WorkNest includes live notifications via WebSockets.
+Each project has one chat room. There are no direct messages.
 
 Technology:
 
 ```text
-Cloudflare Durable Objects
+Cloudflare Durable Objects (SQLite-backed, new_sqlite_classes)
 +
 WebSockets
 +
 WebSocket Hibernation
 ```
 
-Durable Objects handle:
-
-- WebSocket connections
-- Online presence tracking
-- Notification delivery (push when online)
-- Connection lifecycle
-
-Permanent notification data is stored in D1.
+- One `ChatRoom` Durable Object per project: `idFromName(projectId)`.
+- Messages are stored in D1 (`chat_message`, one insert per message). The DO is only the live hub.
+- History is loaded through a normal server function with keyset pagination (30 per page), so reading history never wakes a DO.
+- Keepalive uses `setWebSocketAutoResponse("ping", "pong")`. No server heartbeats.
+- Presence = open sockets in the room, deduped per user across tabs.
+- Typing indicators are broadcast only, never stored.
+- Messages cannot be edited. Hard delete is allowed for the author or a project ADMIN.
+- Deferred: read receipts, reactions, message search.
 
 ---
 
-## 24. Real-Time Events
+## 24. Chat Events
 
-WebSocket events:
+Event payloads are typed once in `src/chat/events.ts` and shared by the client and the DO.
+
+Client → server:
 
 ```text
-USER_ONLINE
-USER_OFFLINE
-
-TASK_UPDATED
-TASK_ASSIGNED
-
-NOTIFICATION_CREATED
-NOTIFICATION_READ
+SEND      (body: 1-2000 chars, validated with Zod)
+DELETE    (messageId)
+TYPING
 ```
 
-All WebSocket event payloads must be strongly typed.
+Server → client:
+
+```text
+MESSAGE_CREATED
+MESSAGE_DELETED
+TYPING
+PRESENCE_SNAPSHOT   (on connect)
+USER_ONLINE
+USER_OFFLINE
+```
+
+Sends are rate limited per socket on a best-effort basis.
 
 ---
 
-## 25. WebSocket Security
+## 25. Chat WebSocket Security
 
-Before accepting a WebSocket connection:
+The chat upgrade route (`/api/chat/$projectId/ws`) must, before forwarding to the DO:
 
-1. Validate session.
-2. Identify user.
-3. Accept connection.
+1. Require `Upgrade: websocket`.
+2. Validate the Better Auth session.
+3. Verify the user is a member of the project.
+4. Forward to the project's `ChatRoom` stub with the verified user passed in headers.
 
-WebSocket connections are used for:
-
-- Online presence tracking
-- Real-time notification delivery
+The DO trusts only those verified headers and re-checks delete permissions against D1.
 
 ---
 
@@ -858,16 +830,14 @@ Use React state for:
 - Dropdowns
 - Tabs
 - Form state
-- File previews
 
 ### Real-time client state
 
 React state or a small dedicated store may manage:
 
-- Connection status
-- Online presence
-- WebSocket state
-- Notification count
+- Chat connection status
+- Online presence in the current chat room
+- Typing indicators
 
 Only add Zustand if global client state becomes genuinely difficult to manage otherwise.
 
@@ -886,6 +856,7 @@ useMembersQuery
 useCommentsQuery
 useNotificationsQuery
 useActivitiesQuery
+useChatMessagesInfiniteQuery
 ```
 
 Expected mutations:
@@ -907,15 +878,12 @@ useCreateComment
 useUpdateComment
 useDeleteComment
 
-useUploadAttachment
-useDeleteAttachment
-
 useMarkNotificationRead
 ```
 
 Use targeted invalidation or direct cache updates.
 
-Real-time events should update relevant query caches where practical.
+Chat WebSocket events are merged into the chat messages infinite query cache.
 
 ---
 
@@ -1021,13 +989,14 @@ User
 Project
  |
  +---- ProjectMember
+ +---- ProjectInvitation
  +---- Task
+ +---- ChatMessage
  +---- ActivityLog
 
 Task
  |
  +---- Comment
- +---- Attachment
 ```
 
 ---
@@ -1130,17 +1099,11 @@ The Worker receives the D1 binding through Wrangler.
 
 ---
 
-## 35. Cloudflare R2
+## 35. Cloudinary
 
-R2 is object storage.
+Cloudinary stores user profile photos only (folder `worknest/avatars`), via the REST wrapper in `src/lib/cloudinary.ts`.
 
-Use it for:
-
-- Task images
-- Project files where applicable
-- User avatars
-
-Do not store binary file contents inside D1.
+Cloudflare R2 is not used. Do not store binary file contents inside D1.
 
 ---
 
@@ -1300,8 +1263,8 @@ Production architecture:
         +----------------+----------------+
         |                |                |
         v                v                v
-       D1                R2         Durable Objects
-    Database           Files          WebSockets
+       D1            Cloudinary     Durable Objects
+    Database       Profile photos    Project chat
         |
     Better Auth
 ```
@@ -1309,8 +1272,7 @@ Production architecture:
 Production deployment must include:
 
 - D1 binding
-- R2 binding
-- Durable Object binding
+- ChatRoom Durable Object binding
 - Production secrets
 - Google OAuth production callback
 - Correct Better Auth production URL
@@ -1327,8 +1289,8 @@ Production deployment must include:
 - Cloudflare Worker
 - D1
 - Drizzle
-- R2
-- Durable Objects configuration
+- Cloudinary (profile photos)
+- Durable Objects configuration (ChatRoom)
 
 ### Phase 2: Database
 
@@ -1338,7 +1300,7 @@ Production deployment must include:
 - Membership schema
 - Task schema
 - Comment schema
-- Attachment schema
+- Chat message schema
 - Notification schema
 - Activity schema
 - Indexes
@@ -1387,21 +1349,16 @@ Production deployment must include:
 - Activity logs
 - Notifications
 
-### Phase 8: Attachments
+### Phase 8: Attachments (removed)
 
-- R2 upload
-- Image validation
-- Metadata
-- Preview
-- Delete permissions
+- Attachments were dropped from scope. Only profile photos are uploaded (Cloudinary).
 
-### Phase 9: Real-Time
+### Phase 9: Project Chat
 
-- Durable Object for notifications (WebSocket hibernation)
-- Durable Object for activities (broadcast to project members)
-- WebSocket connection management
-- Real-time notification delivery
-- Real-time activity broadcasting
+- `chat_message` schema + paginated history server function
+- `ChatRoom` Durable Object (WebSocket hibernation)
+- Authenticated, membership-checked WebSocket route
+- Client hook + messages page
 
 ### Phase 10: Polish
 
@@ -1416,7 +1373,6 @@ Production deployment must include:
 
 - Production Worker
 - Production D1
-- Production R2
 - Production Durable Objects
 - Production secrets
 - OAuth callback
@@ -1458,8 +1414,8 @@ Any AI coding agent working on WorkNest must:
 - Use TypeScript.
 - Use Drizzle for D1.
 - Use Better Auth for authentication.
-- Use R2 for files.
-- Use Durable Objects for real-time features.
+- Use Cloudinary only for profile photos (no file attachments).
+- Use Durable Objects only for project chat.
 - Keep server-only code server-side.
 - Validate inputs with Zod.
 - Enforce permissions on the server.
@@ -1507,9 +1463,9 @@ Any AI coding agent working on WorkNest must:
           |          +--------------+--------------+
           |          |              |              |
           |          v              v              v
-          |         D1             R2       Durable Objects
+          |         D1        Cloudinary    Durable Objects
           |          |              |              |
-          |      Drizzle          Files        WebSockets
+          |      Drizzle     Profile photos  Project chat
           |          |
           |     Better Auth
           |
@@ -1556,9 +1512,8 @@ WorkNest should demonstrate:
 - Better Auth
 - Google OAuth
 - Role-based authorization
-- Cloudflare R2
 - Durable Objects
-- Real-time WebSockets
+- Real-time WebSockets (project chat)
 - TanStack Query
 - Responsive UI
 - Database design

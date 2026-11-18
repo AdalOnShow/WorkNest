@@ -66,7 +66,9 @@ export const projectInvitation = sqliteTable(
     invitedBy: text('invited_by').references(() => user.id, {
       onDelete: 'set null',
     }),
-    status: text('status', { enum: ['PENDING', 'ACCEPTED', 'REJECTED', 'EXPIRED'] })
+    status: text('status', {
+      enum: ['PENDING', 'ACCEPTED', 'REJECTED', 'EXPIRED'],
+    })
       .notNull()
       .default('PENDING'),
     expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),

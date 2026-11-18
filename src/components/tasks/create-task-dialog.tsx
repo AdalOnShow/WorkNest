@@ -107,7 +107,10 @@ export function CreateTaskDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
-            <Label htmlFor="task-title" className="text-sm text-muted-foreground">
+            <Label
+              htmlFor="task-title"
+              className="text-sm text-muted-foreground"
+            >
               Title <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -141,7 +144,9 @@ export function CreateTaskDialog({
               <Label className="text-sm text-muted-foreground">Priority</Label>
               <Select
                 value={priority}
-                onValueChange={(v) => setPriority(v as 'HIGH' | 'MEDIUM' | 'LOW')}
+                onValueChange={(v) =>
+                  setPriority(v as 'HIGH' | 'MEDIUM' | 'LOW')
+                }
               >
                 <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
                   <SelectValue placeholder="Priority" />
@@ -158,10 +163,7 @@ export function CreateTaskDialog({
 
             <div className="space-y-2">
               <Label className="text-sm text-muted-foreground">Assignee</Label>
-              <Select
-                value={assigneeId}
-                onValueChange={setAssigneeId}
-              >
+              <Select value={assigneeId} onValueChange={setAssigneeId}>
                 <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
                   <SelectValue placeholder="Unassigned" />
                 </SelectTrigger>

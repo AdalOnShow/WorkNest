@@ -1,8 +1,7 @@
 import { createDb } from '#/db'
 import { comment, project, projectMember, task, user } from '#/db/schema'
-import { logActivity } from '#/lib/activity-logger'
+import { logActivity, notifyUsers } from '#/lib/activity'
 import { createAuth } from '#/lib/auth'
-import { createNotification } from '#/lib/notification-service'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
@@ -284,16 +283,15 @@ export const createTask = createServerFn({ method: 'POST' })
       metadata: { title: trimmedTitle, priority: data.priority || 'MEDIUM' },
     })
 
-    if (data.assigneeId && data.assigneeId !== userId) {
-      await createNotification({
-        db,
-        recipientId: data.assigneeId,
-        type: 'TASK_ASSIGNED',
-        title: 'New Task Assigned',
-        message: `You were assigned to "${trimmedTitle}"`,
-        referenceId: taskId,
-      })
-    }
+    await notifyUsers({
+      db,
+      actorId: userId,
+      recipientIds: [data.assigneeId],
+      type: 'TASK_ASSIGNED',
+      title: 'New Task Assigned',
+      message: `You were assigned to "${trimmedTitle}"`,
+      referenceId: taskId,
+    })
 
     return { id: taskId }
   })
@@ -378,14 +376,11 @@ export const updateTask = createServerFn({ method: 'POST' })
       },
     })
 
-    if (
-      data.assigneeId &&
-      data.assigneeId !== existingTask?.assigneeId &&
-      data.assigneeId !== userId
-    ) {
-      await createNotification({
+    if (data.assigneeId && data.assigneeId !== existingTask?.assigneeId) {
+      await notifyUsers({
         db,
-        recipientId: data.assigneeId,
+        actorId: userId,
+        recipientIds: [data.assigneeId],
         type: 'TASK_ASSIGNED',
         title: 'Task Assigned',
         message: `You were assigned to "${data.title || existingTask?.title || 'a task'}"`,
@@ -394,24 +389,15 @@ export const updateTask = createServerFn({ method: 'POST' })
     }
 
     if (data.status && existingTask && data.status !== existingTask.status) {
-      const notifyUsers = new Set<string>()
-      if (existingTask.assigneeId && existingTask.assigneeId !== userId) {
-        notifyUsers.add(existingTask.assigneeId)
-      }
-      if (existingTask.creatorId && existingTask.creatorId !== userId) {
-        notifyUsers.add(existingTask.creatorId)
-      }
-
-      for (const recipientId of notifyUsers) {
-        await createNotification({
-          db,
-          recipientId,
-          type: 'TASK_STATUS_UPDATED',
-          title: 'Task Status Updated',
-          message: `"${data.title || existingTask.title}" status changed to ${data.status.replace('_', ' ')}`,
-          referenceId: data.taskId,
-        })
-      }
+      await notifyUsers({
+        db,
+        actorId: userId,
+        recipientIds: [existingTask.assigneeId, existingTask.creatorId],
+        type: 'TASK_STATUS_UPDATED',
+        title: 'Task Status Updated',
+        message: `"${data.title || existingTask.title}" status changed to ${data.status.replace('_', ' ')}`,
+        referenceId: data.taskId,
+      })
     }
 
     return { success: true }
@@ -530,14 +516,11 @@ export const assignTask = createServerFn({ method: 'POST' })
       },
     })
 
-    if (
-      data.assigneeId &&
-      data.assigneeId !== taskRow?.assigneeId &&
-      data.assigneeId !== userId
-    ) {
-      await createNotification({
+    if (data.assigneeId && data.assigneeId !== taskRow?.assigneeId) {
+      await notifyUsers({
         db,
-        recipientId: data.assigneeId,
+        actorId: userId,
+        recipientIds: [data.assigneeId],
         type: 'TASK_ASSIGNED',
         title: 'Task Assigned',
         message: `You were assigned to "${taskRow?.title || 'a task'}"`,
@@ -597,24 +580,15 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
     }
 
     if (taskRow && data.status !== taskRow.status) {
-      const notifyUsers = new Set<string>()
-      if (taskRow.assigneeId && taskRow.assigneeId !== userId) {
-        notifyUsers.add(taskRow.assigneeId)
-      }
-      if (taskRow.creatorId && taskRow.creatorId !== userId) {
-        notifyUsers.add(taskRow.creatorId)
-      }
-
-      for (const recipientId of notifyUsers) {
-        await createNotification({
-          db,
-          recipientId,
-          type: 'TASK_STATUS_UPDATED',
-          title: 'Task Status Updated',
-          message: `"${taskRow.title}" status changed to ${data.status.replace('_', ' ')}`,
-          referenceId: data.taskId,
-        })
-      }
+      await notifyUsers({
+        db,
+        actorId: userId,
+        recipientIds: [taskRow.assigneeId, taskRow.creatorId],
+        type: 'TASK_STATUS_UPDATED',
+        title: 'Task Status Updated',
+        message: `"${taskRow.title}" status changed to ${data.status.replace('_', ' ')}`,
+        referenceId: data.taskId,
+      })
     }
 
     return { success: true }
@@ -689,24 +663,15 @@ export const addTaskComment = createServerFn({ method: 'POST' })
     })
 
     if (taskRow) {
-      const notifyUsers = new Set<string>()
-      if (taskRow.assigneeId && taskRow.assigneeId !== userId) {
-        notifyUsers.add(taskRow.assigneeId)
-      }
-      if (taskRow.creatorId && taskRow.creatorId !== userId) {
-        notifyUsers.add(taskRow.creatorId)
-      }
-
-      for (const recipientId of notifyUsers) {
-        await createNotification({
-          db,
-          recipientId,
-          type: 'TASK_COMMENT_ADDED',
-          title: 'New Task Comment',
-          message: `New comment on "${taskRow.title}"`,
-          referenceId: data.taskId,
-        })
-      }
+      await notifyUsers({
+        db,
+        actorId: userId,
+        recipientIds: [taskRow.assigneeId, taskRow.creatorId],
+        type: 'TASK_COMMENT_ADDED',
+        title: 'New Task Comment',
+        message: `New comment on "${taskRow.title}"`,
+        referenceId: data.taskId,
+      })
     }
 
     return { success: true }

@@ -36,7 +36,9 @@ export function InviteMemberDialog({
 }: InviteMemberDialogProps) {
   const queryClient = useQueryClient()
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'>('TEAM_MEMBER')
+  const [role, setRole] = useState<'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'>(
+    'TEAM_MEMBER',
+  )
   const [invitationLink, setInvitationLink] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -108,7 +110,8 @@ export function InviteMemberDialog({
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Share this link with <span className="font-medium text-foreground">{email}</span>. 
+                Share this link with{' '}
+                <span className="font-medium text-foreground">{email}</span>.
                 The link expires in 7 days.
               </p>
               <div className="flex items-center gap-2">
@@ -145,7 +148,10 @@ export function InviteMemberDialog({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 mt-2">
             <div className="space-y-2">
-              <Label htmlFor="invite-email" className="text-sm text-muted-foreground">
+              <Label
+                htmlFor="invite-email"
+                className="text-sm text-muted-foreground"
+              >
                 Email Address <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -163,7 +169,9 @@ export function InviteMemberDialog({
               <Label className="text-sm text-muted-foreground">Role</Label>
               <Select
                 value={role}
-                onValueChange={(v) => setRole(v as 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER')}
+                onValueChange={(v) =>
+                  setRole(v as 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER')
+                }
               >
                 <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
                   <SelectValue placeholder="Select role" />
@@ -171,15 +179,19 @@ export function InviteMemberDialog({
                 <SelectContent className="bg-popover border-border">
                   <SelectGroup>
                     <SelectItem value="TEAM_MEMBER">Team Member</SelectItem>
-                    <SelectItem value="PROJECT_MANAGER">Project Manager</SelectItem>
+                    <SelectItem value="PROJECT_MANAGER">
+                      Project Manager
+                    </SelectItem>
                     <SelectItem value="ADMIN">Admin</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
                 {role === 'ADMIN' && 'Can manage project settings and members'}
-                {role === 'PROJECT_MANAGER' && 'Can manage tasks and invite members'}
-                {role === 'TEAM_MEMBER' && 'Can view and work on assigned tasks'}
+                {role === 'PROJECT_MANAGER' &&
+                  'Can manage tasks and invite members'}
+                {role === 'TEAM_MEMBER' &&
+                  'Can view and work on assigned tasks'}
               </p>
             </div>
 

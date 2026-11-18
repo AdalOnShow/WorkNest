@@ -72,7 +72,9 @@ function ProjectCard({
             {project.name}
           </h3>
         </div>
-        <StatusBadge status={project.status as 'ACTIVE' | 'COMPLETED' | 'ON_HOLD'} />
+        <StatusBadge
+          status={project.status as 'ACTIVE' | 'COMPLETED' | 'ON_HOLD'}
+        />
       </div>
 
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -198,10 +200,7 @@ function ProjectsPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {items.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                />
+                <ProjectCard key={project.id} project={project} />
               ))}
             </div>
 

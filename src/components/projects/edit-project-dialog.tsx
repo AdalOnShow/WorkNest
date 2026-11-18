@@ -61,7 +61,14 @@ export function EditProjectDialog({
         return timestampToLocalDateString(project.deadline)
       })
     }
-  }, [open, project.id, project.name, project.description, project.status, project.deadline])
+  }, [
+    open,
+    project.id,
+    project.name,
+    project.description,
+    project.status,
+    project.deadline,
+  ])
 
   const updateMutation = useMutation({
     mutationFn: () =>
@@ -136,14 +143,22 @@ export function EditProjectDialog({
           </div>
 
           <div className="space-y-2">
-            <Label id="edit-project-status-label" className="text-sm text-muted-foreground">Status</Label>
+            <Label
+              id="edit-project-status-label"
+              className="text-sm text-muted-foreground"
+            >
+              Status
+            </Label>
             <Select
               value={status}
               onValueChange={(v) =>
                 setStatus(v as 'ACTIVE' | 'COMPLETED' | 'ON_HOLD')
               }
             >
-              <SelectTrigger aria-labelledby="edit-project-status-label" className="w-full bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
+              <SelectTrigger
+                aria-labelledby="edit-project-status-label"
+                className="w-full bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-card border-border">

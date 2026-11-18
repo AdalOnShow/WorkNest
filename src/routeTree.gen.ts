@@ -23,8 +23,6 @@ import { Route as InvitationsTokenRouteImport } from './routes/invitations.$toke
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedTasksTaskIdRouteImport } from './routes/_authenticated/tasks.$taskId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiWsActivitiesRouteImport } from './routes/api/ws/activities'
-import { Route as ApiWsNotificationsRouteImport } from './routes/api/ws/notifications'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -98,16 +96,6 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiWsActivitiesRoute = ApiWsActivitiesRouteImport.update({
-  id: '/api/ws/activities',
-  path: '/api/ws/activities',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiWsNotificationsRoute = ApiWsNotificationsRouteImport.update({
-  id: '/api/ws/notifications',
-  path: '/api/ws/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -123,8 +111,6 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
   '/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/ws/activities': typeof ApiWsActivitiesRoute
-  '/api/ws/notifications': typeof ApiWsNotificationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -140,8 +126,6 @@ export interface FileRoutesByTo {
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
   '/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/ws/activities': typeof ApiWsActivitiesRoute
-  '/api/ws/notifications': typeof ApiWsNotificationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -159,8 +143,6 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
   '/_authenticated/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/ws/activities': typeof ApiWsActivitiesRoute
-  '/api/ws/notifications': typeof ApiWsNotificationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -178,8 +160,6 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/tasks/$taskId'
     | '/api/auth/$'
-    | '/api/ws/activities'
-    | '/api/ws/notifications'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -195,8 +175,6 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/tasks/$taskId'
     | '/api/auth/$'
-    | '/api/ws/activities'
-    | '/api/ws/notifications'
   id:
     | '__root__'
     | '/'
@@ -213,8 +191,6 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId'
     | '/_authenticated/tasks/$taskId'
     | '/api/auth/$'
-    | '/api/ws/activities'
-    | '/api/ws/notifications'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,8 +199,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   InvitationsTokenRoute: typeof InvitationsTokenRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiWsActivitiesRoute: typeof ApiWsActivitiesRoute
-  ApiWsNotificationsRoute: typeof ApiWsNotificationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -327,20 +301,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/ws/activities': {
-      id: '/api/ws/activities'
-      path: '/api/ws/activities'
-      fullPath: '/api/ws/activities'
-      preLoaderRoute: typeof ApiWsActivitiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/ws/notifications': {
-      id: '/api/ws/notifications'
-      path: '/api/ws/notifications'
-      fullPath: '/api/ws/notifications'
-      preLoaderRoute: typeof ApiWsNotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -398,8 +358,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   InvitationsTokenRoute: InvitationsTokenRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiWsActivitiesRoute: ApiWsActivitiesRoute,
-  ApiWsNotificationsRoute: ApiWsNotificationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

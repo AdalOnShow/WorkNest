@@ -14,11 +14,10 @@ function MessagesPage() {
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
         <MessageSquare className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h2 className="text-xl font-semibold text-foreground mb-2">
-        Messages
-      </h2>
+      <h2 className="text-xl font-semibold text-foreground mb-2">Messages</h2>
       <p className="text-muted-foreground max-w-md">
-        Real-time messaging between team members is coming soon. Stay tuned for direct and group conversations.
+        Real-time messaging between team members is coming soon. Stay tuned for
+        direct and group conversations.
       </p>
     </div>
   )
