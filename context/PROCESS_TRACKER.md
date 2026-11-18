@@ -166,15 +166,15 @@ Track high-level development phases and milestones.
 
 **Goal:** Real-time chat per project. One `ChatRoom` DO per project; messages in D1. Notifications and activities are NOT real-time (D1 + TanStack Query refetch); the old Notification/Activity DOs were removed.
 
-| #   | Task                                    | Status | Notes                                           |
-| --- | --------------------------------------- | ------ | ----------------------------------------------- |
-| 97  | chat_message schema + migration         | [x]    | 0004_chat_message; index (project, created, id) |
-| 98  | getMessages server function             | [x]    | src/server-functions/chat.ts, keyset 30/page    |
-| 99  | ChatRoom Durable Object                 | [x]    | src/chat/ChatRoom.ts, CHAT_ROOM binding (v3)    |
-| 100 | Chat WebSocket route                    | [ ]    | /api/chat/$projectId/ws, session + membership   |
-| 101 | useChatRoom client hook                 | [ ]    | Reconnect/backoff, merge into infinite query    |
-| 102 | Messages page rebuild                   | [ ]    | Project list, history, composer, online, delete |
-| 103 | Verify (build, 2 sessions, permissions) | [ ]    |                                                 |
+| #   | Task                                    | Status | Notes                                            |
+| --- | --------------------------------------- | ------ | ------------------------------------------------ |
+| 97  | chat_message schema + migration         | [x]    | 0004_chat_message; index (project, created, id)  |
+| 98  | getMessages server function             | [x]    | src/server-functions/chat.ts, keyset 30/page     |
+| 99  | ChatRoom Durable Object                 | [x]    | src/chat/ChatRoom.ts, CHAT_ROOM binding (v3)     |
+| 100 | Chat WebSocket route                    | [x]    | src/chat/upgrade.ts; session, Origin, membership |
+| 101 | useChatRoom client hook                 | [ ]    | Reconnect/backoff, merge into infinite query     |
+| 102 | Messages page rebuild                   | [ ]    | Project list, history, composer, online, delete  |
+| 103 | Verify (build, 2 sessions, permissions) | [ ]    |                                                  |
 
 ---
 
