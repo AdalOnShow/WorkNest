@@ -50,6 +50,10 @@ function RouteComponent() {
     queryFn: () => listTasks({ data: { projectId, pageSize: 50 } }),
   })
 
+  // Only project admins and managers may create tasks (enforced server-side too).
+  const canCreateTask =
+    members?.myRole === 'ADMIN' || members?.myRole === 'PROJECT_MANAGER'
+
   if (isLoading) {
     return (
       <PageContainer>
@@ -93,7 +97,7 @@ function RouteComponent() {
           </div>
           <div className="flex items-center gap-3">
             <StatusBadge status={project.status} />
-            {members && members.myRole !== 'TEAM_MEMBER' && (
+            {canCreateTask && (
               <Button size="sm" onClick={() => setShowTaskDialog(true)}>
                 <Plus className="w-4 h-4 mr-1.5" />
                 Add task
@@ -160,12 +164,33 @@ function RouteComponent() {
         </div>
 
         <section className="space-y-3">
-          <h2 className="label-lg text-foreground">Tasks</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="label-lg text-foreground">
+              Tasks{taskData ? ` (${taskData.total})` : ''}
+            </h2>
+            {canCreateTask && (
+              <Button size="sm" onClick={() => setShowTaskDialog(true)}>
+                <Plus className="w-4 h-4 mr-1.5" />
+                Add task
+              </Button>
+            )}
+          </div>
           {taskData && taskData.items.length > 0 ? (
             <TaskTable items={taskData.items} showProject={false} />
           ) : (
-            <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
-              No tasks yet.
+            <div className="rounded-xl border border-border bg-card p-6 text-center space-y-3">
+              <p className="text-sm text-muted-foreground">No tasks yet.</p>
+              {canCreateTask && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowTaskDialog(true)}
+                  className="border-border"
+                >
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Create the first task
+                </Button>
+              )}
             </div>
           )}
         </section>
