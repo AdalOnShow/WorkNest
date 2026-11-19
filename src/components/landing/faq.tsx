@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     q: 'How do invitations work?',
-    a: 'An admin or project manager enters an email address and picks a role. The person gets an invite link that is valid for 7 days, and they join the project when they accept it.',
+    a: 'An admin or project manager enters an email address and picks a role. WorkNest creates an invite link that is valid for 7 days. Share it with them, and they join the project when they accept it.',
   },
   {
     q: 'Is the chat real time?',

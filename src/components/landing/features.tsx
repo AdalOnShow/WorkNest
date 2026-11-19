@@ -93,7 +93,7 @@ function RolesVisual() {
           </div>
         ))}
         <div className="rounded-full border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
-          + Invite by email
+          + Invite a teammate
         </div>
       </div>
     </Panel>

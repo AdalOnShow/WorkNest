@@ -9,4 +9,7 @@ export const userProfile = sqliteTable('user_profile', {
     .notNull()
     .default('TEAM_MEMBER'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  onboardingCompletedAt: integer('onboarding_completed_at', {
+    mode: 'timestamp_ms',
+  }),
 })

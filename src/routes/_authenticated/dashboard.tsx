@@ -3,7 +3,8 @@ import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
 import { getDashboardData } from '#/server-functions/dashboard'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { getOnboardingStatus } from '#/server-functions/onboarding'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -12,6 +13,13 @@ import {
 } from 'lucide-react'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
+  beforeLoad: async () => {
+    // New users (no projects, onboarding not finished) get the setup guide.
+    const status = await getOnboardingStatus().catch(() => null)
+    if (status?.shouldOnboard) {
+      throw redirect({ to: '/onboarding', search: { step: 'welcome' } })
+    }
+  },
   component: DashboardPage,
   head: () => ({
     meta: [{ title: 'Dashboard — WorkNest' }],

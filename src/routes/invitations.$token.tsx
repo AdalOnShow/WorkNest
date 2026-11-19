@@ -55,6 +55,14 @@ function InvitationPage() {
       }
     },
     onError: (error: Error) => {
+      if (error.message === 'Unauthorized') {
+        toast.info('Sign in to accept this invitation')
+        void navigate({
+          to: '/login',
+          search: { redirect: `/invitations/${token}` },
+        })
+        return
+      }
       toast.error(error.message || 'Failed to accept invitation')
     },
   })

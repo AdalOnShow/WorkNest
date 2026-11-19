@@ -130,7 +130,7 @@ function InviteVisual() {
   return (
     <div className="mx-auto w-full max-w-sm">
       <div className="hiw-rise flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-2 text-sm text-muted-foreground mb-5">
-        <Mail className="size-4" /> Invite by email
+        <Mail className="size-4" /> Invite teammates
       </div>
       <div className="space-y-2.5">
         {invites.map((inv, i) => (
@@ -153,7 +153,7 @@ function InviteVisual() {
         className="hiw-pop mt-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs text-primary"
         style={delay(2000)}
       >
-        <Check className="size-3.5" /> 3 invites sent
+        <Check className="size-3.5" /> 3 invite links ready
       </div>
     </div>
   )
@@ -283,7 +283,7 @@ const steps: Array<{
   {
     title: 'Invite your team',
     description:
-      'Send an invite link by email and choose a role: Admin, Project Manager or Team Member.',
+      'Create an invite link for each teammate, choose their role and share the link with them.',
     label: 'Website Relaunch · Members',
     visual: InviteVisual,
   },
