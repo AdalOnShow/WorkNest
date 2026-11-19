@@ -29,7 +29,7 @@ export function PriorityBadge({
     <Badge
       variant="outline"
       className={cn(
-        'inline-flex items-center gap-1.5 font-medium border-border bg-card text-foreground',
+        'inline-flex items-center gap-1.5 font-semibold border-border bg-card text-foreground',
         className,
       )}
       {...props}

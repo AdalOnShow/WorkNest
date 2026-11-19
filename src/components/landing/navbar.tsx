@@ -95,8 +95,8 @@ export function Navbar({
           {!isAuthenticated && (
             <div className="shrink-0">
               <Link to="/" className="flex items-center gap-2.5">
-                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary">
-                  <Sprout className="w-5 h-5 text-primary-foreground" />
+                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-ink">
+                  <Sprout className="w-5 h-5 text-ink-foreground" />
                 </div>
                 <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
                   WorkNest

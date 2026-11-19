@@ -46,18 +46,18 @@ function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-card relative overflow-hidden flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-card border-r border-border relative overflow-hidden flex-col justify-between p-12">
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-2.5 mb-24">
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary">
-              <Sprout className="w-5 h-5 text-primary-foreground" />
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-ink">
+              <Sprout className="w-5 h-5 text-ink-foreground" />
             </div>
             <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
               WorkNest
             </span>
           </Link>
 
-          <h1 className="font-heading text-5xl font-bold text-foreground leading-tight mb-6">
+          <h1 className="font-headline text-foreground text-5xl font-bold leading-tight mb-6">
             Welcome back to
             <br />
             your workspace
@@ -67,12 +67,6 @@ function LoginPage() {
             your team.
           </p>
         </div>
-
-        {/* Abstract geometric shapes */}
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-primary/5" />
-        <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-primary/10" />
-        <div className="absolute top-1/2 right-1/4 w-3 h-3 rounded-full bg-primary/40" />
-        <div className="absolute bottom-1/4 right-1/3 w-2 h-2 rounded-full bg-primary/60" />
       </div>
 
       {/* Right Panel - Social Login */}

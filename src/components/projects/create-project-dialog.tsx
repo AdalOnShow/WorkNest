@@ -134,14 +134,14 @@ export function CreateProjectDialog({
               variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={createMutation.isPending}
-              className="border-border bg-transparent text-foreground hover:bg-accent rounded-full"
+              className="border-border bg-transparent text-foreground hover:bg-accent"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={!name.trim() || createMutation.isPending}
-              className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-medium"
+              className=" font-semibold"
             >
               {createMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

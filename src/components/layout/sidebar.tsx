@@ -52,10 +52,10 @@ export function AppSidebar({ user }: AppSidebarProps) {
     <SidebarComponent collapsible="icon" className="bg-sidebar">
       <SidebarHeader className="p-4 h-16 flex items-center border-b border-sidebar-border">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary">
-            <Sprout className="w-5 h-5 text-primary-foreground" />
+          <div className="flex items-center justify-center w-9 h-9 rounded-full bg-ink">
+            <Sprout className="w-5 h-5 text-ink-foreground" />
           </div>
-          <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
+          <span className="text-xl font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
             WorkNest
           </span>
         </Link>
@@ -63,7 +63,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground uppercase tracking-wider text-[11px]">
+          <SidebarGroupLabel className="text-muted-foreground text-xs">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -78,7 +78,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     }
                     className={cn(
                       'text-muted-foreground hover:text-foreground hover:bg-accent',
-                      'data-[active=true]:bg-accent data-[active=true]:text-primary',
+                      'data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-bold',
                     )}
                   >
                     <Link to={item.to}>
@@ -102,7 +102,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
               <SidebarMenuButton
                 asChild
                 isActive={location.pathname === item.to}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent data-[active=true]:bg-accent data-[active=true]:text-primary"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-bold"
               >
                 <Link to={item.to}>
                   <item.icon className="w-5 h-5" />
@@ -119,7 +119,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
             size="sm"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">
+            <p className="text-sm font-semibold text-sidebar-foreground truncate">
               {user?.name ?? 'Account'}
             </p>
             <p className="text-xs text-muted-foreground truncate">

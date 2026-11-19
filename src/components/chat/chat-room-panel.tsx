@@ -145,12 +145,12 @@ function ConnectedRoom({
           size="icon"
           onClick={onBack}
           aria-label="Back to project list"
-          className="rounded-full md:hidden"
+          className=" md:hidden"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-base font-semibold text-foreground">
+          <h2 className="truncate text-base font-bold text-foreground">
             {room.projectName}
           </h2>
           <ConnectionStatus status={chat.status} onReconnect={chat.reconnect} />
@@ -215,7 +215,7 @@ function ConnectedRoom({
           size="icon"
           aria-label="Send message"
           disabled={!draft.trim() || chat.status !== 'open'}
-          className="h-11 w-11 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+          className="h-11 w-11 shrink-0"
         >
           <SendHorizontal className="h-5 w-5" />
         </Button>
@@ -360,12 +360,7 @@ function MessageList({
           <p className="text-sm text-muted-foreground">
             Couldn't load messages.
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full"
-            onClick={onRetryHistory}
-          >
+          <Button variant="outline" size="sm" onClick={onRetryHistory}>
             Try again
           </Button>
         </div>
@@ -374,7 +369,7 @@ function MessageList({
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent">
             <MessageSquare className="h-6 w-6 text-accent-foreground" />
           </div>
-          <p className="font-medium text-foreground">No messages yet</p>
+          <p className="font-semibold text-foreground">No messages yet</p>
           <p className="text-sm text-muted-foreground">
             Say hello to your team.
           </p>
@@ -389,7 +384,7 @@ function MessageList({
                 role="separator"
               >
                 <span className="h-px flex-1 bg-border" />
-                <span className="text-xs font-medium text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   {row.label}
                 </span>
                 <span className="h-px flex-1 bg-border" />
@@ -460,7 +455,7 @@ function MessageRow({
           <div className="flex items-baseline gap-2">
             <span
               className={cn(
-                'text-sm font-semibold',
+                'text-sm font-bold',
                 message.sender
                   ? 'text-foreground'
                   : 'italic text-muted-foreground',
@@ -487,7 +482,7 @@ function MessageRow({
           aria-label={`Delete message from ${name}`}
           onClick={() => onDelete(message)}
           className={cn(
-            'absolute right-2 top-1 h-7 w-7 rounded-full bg-background text-muted-foreground shadow-none',
+            'absolute right-2 top-1 h-7 w-7 bg-background text-muted-foreground shadow-none',
             'hover:bg-destructive/10 hover:text-destructive',
             // Hidden until hover/focus on pointer devices; always visible on touch.
             'opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100',
@@ -531,7 +526,7 @@ function PendingRow({
             <button
               type="button"
               onClick={() => onRetry(message.clientId)}
-              className="font-medium text-foreground hover:underline"
+              className="font-semibold text-foreground hover:underline"
             >
               Retry
             </button>
@@ -567,7 +562,7 @@ function ConnectionStatus({
         <button
           type="button"
           onClick={onReconnect}
-          className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
+          className="inline-flex items-center gap-1 font-semibold text-foreground hover:underline"
         >
           <RotateCw className="h-3 w-3" /> Reconnect
         </button>
@@ -638,7 +633,7 @@ function OnlinePanel({
       aria-label="Online now"
       className="hidden w-60 shrink-0 flex-col border-l border-border xl:flex"
     >
-      <h3 className="px-5 pt-5 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <h3 className="px-5 pt-5 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         Online — {users.length}
       </h3>
       <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-4">
@@ -691,12 +686,7 @@ function TypingIndicator({ users }: { users: ChatUser[] }) {
 function RoomBackBar({ onBack }: { onBack: () => void }) {
   return (
     <div className="border-b border-border px-4 py-3 md:hidden">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onBack}
-        className="rounded-full"
-      >
+      <Button variant="ghost" size="sm" onClick={onBack}>
         <ArrowLeft className="mr-1 h-4 w-4" /> Projects
       </Button>
     </div>

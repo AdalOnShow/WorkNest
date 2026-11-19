@@ -30,7 +30,7 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        'mb-3 font-medium',
+        'mb-3 font-semibold',
         'data-[variant=legend]:text-base',
         'data-[variant=label]:text-sm',
         className,
@@ -129,7 +129,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="field-label"
       className={cn(
-        'flex w-fit items-center gap-2 text-sm leading-snug font-medium group-data-[disabled=true]/field:opacity-50',
+        'flex w-fit items-center gap-2 text-sm leading-snug font-semibold group-data-[disabled=true]/field:opacity-50',
         className,
       )}
       {...props}

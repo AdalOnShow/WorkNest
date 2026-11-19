@@ -78,25 +78,25 @@ function DashboardPage() {
       label: 'Total Projects',
       value: kpi.totalProjects,
       icon: FolderKanban,
-      color: 'var(--color-primary)',
+      chip: 'bg-primary text-primary-foreground',
     },
     {
       label: 'Total Tasks',
       value: kpi.totalTasks,
       icon: CheckSquare,
-      color: 'var(--color-status-in-progress)',
+      chip: 'bg-sky text-sky-foreground',
     },
     {
       label: 'Completed Tasks',
       value: kpi.completedTasks,
       icon: CheckCircle2,
-      color: 'var(--color-muted)',
+      chip: 'bg-lime text-lime-foreground',
     },
     {
       label: 'Overdue Tasks',
       value: kpi.overdueTasks,
       icon: AlertTriangle,
-      color: 'var(--color-error)',
+      chip: 'bg-highlight text-highlight-foreground',
     },
   ]
 
@@ -117,23 +117,23 @@ function DashboardPage() {
           {kpiCards.map((card) => (
             <div
               key={card.label}
-              className="bg-card border border-border rounded-[14px] p-5"
+              className="bg-card border border-border rounded-xl p-5"
             >
-              <div className="flex items-center justify-between">
-                <span className="label-sm text-muted-foreground">
-                  {card.label}
+              <span className="label-lg text-foreground">{card.label}</span>
+              <div className="mt-6 flex items-end justify-between">
+                <p className="stat-number text-foreground">{card.value}</p>
+                <span
+                  className={`inline-flex items-center rounded-md px-2 py-1 ${card.chip}`}
+                >
+                  <card.icon className="w-4 h-4" />
                 </span>
-                <card.icon className="w-5 h-5" style={{ color: card.color }} />
               </div>
-              <p className="text-3xl font-bold text-foreground mt-3">
-                {card.value}
-              </p>
             </div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-card border border-border rounded-[14px] p-6">
+          <div className="bg-card border border-border rounded-xl p-6">
             <h3 className="label-lg text-foreground mb-4">Tasks by Status</h3>
             <div className="flex items-center justify-center h-48">
               {statusTotal === 0 ? (
@@ -175,7 +175,7 @@ function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-[14px] p-6">
+          <div className="bg-card border border-border rounded-xl p-6">
             <h3 className="label-lg text-foreground mb-4">Tasks by Priority</h3>
             <div className="flex items-end justify-center h-48 gap-6 px-4">
               {priorityTotal === 0 ? (
@@ -222,7 +222,7 @@ function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-card border border-border rounded-[14px] p-6">
+          <div className="bg-card border border-border rounded-xl p-6">
             <h3 className="label-lg text-foreground mb-4">Recent Activity</h3>
             {recentActivities.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
@@ -247,7 +247,7 @@ function DashboardPage() {
             )}
           </div>
 
-          <div className="bg-card border border-border rounded-[14px] p-6">
+          <div className="bg-card border border-border rounded-xl p-6">
             <h3 className="label-lg text-foreground mb-4">
               Upcoming Deadlines
             </h3>
@@ -263,7 +263,7 @@ function DashboardPage() {
                     className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50"
                   >
                     <div>
-                      <p className="body-sm text-foreground font-medium">
+                      <p className="body-sm text-foreground font-semibold">
                         {item.name}
                       </p>
                       <p className="text-xs text-muted-foreground">

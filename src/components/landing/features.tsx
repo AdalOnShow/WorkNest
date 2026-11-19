@@ -8,7 +8,7 @@ function Panel({ children }: { children: ReactNode }) {
   return (
     <div
       aria-hidden="true"
-      className="rounded-2xl border border-border bg-card p-5 select-none"
+      className="rounded-xl border border-border bg-card p-5 select-none"
     >
       {children}
     </div>
@@ -120,7 +120,7 @@ function ChatVisual() {
           <div key={m.text} className="flex items-start gap-2.5">
             <Initials>{m.who}</Initials>
             <div>
-              <p className="text-xs font-medium text-foreground">{m.name}</p>
+              <p className="text-xs font-semibold text-foreground">{m.name}</p>
               <p className="text-sm text-muted-foreground">{m.text}</p>
             </div>
           </div>
@@ -141,7 +141,7 @@ function DashboardVisual() {
       <div className="grid grid-cols-3 gap-3 mb-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-xl bg-background/60 p-3">
-            <p className="text-xl font-semibold text-foreground">{s.value}</p>
+            <p className="text-xl font-bold text-foreground">{s.value}</p>
             <p className="text-[11px] text-muted-foreground">{s.label}</p>
           </div>
         ))}
@@ -233,10 +233,10 @@ export function Features() {
               className="grid items-center gap-10 md:grid-cols-2 md:gap-16"
             >
               <div className={cn(i % 2 === 1 && 'md:order-2')}>
-                <p className="text-sm font-medium text-primary mb-3">
+                <p className="text-sm font-semibold text-primary mb-3">
                   {f.eyebrow}
                 </p>
-                <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground mb-4">
+                <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground mb-4">
                   {f.title}
                 </h3>
                 <p className="text-muted-foreground mb-6">{f.description}</p>

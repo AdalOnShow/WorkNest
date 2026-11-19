@@ -123,10 +123,10 @@ function OnboardingPage() {
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary">
-              <Sprout className="size-5 text-primary-foreground" />
+            <span className="flex size-8 items-center justify-center rounded-full bg-ink">
+              <Sprout className="size-5 text-ink-foreground" />
             </span>
-            <span className="font-semibold text-foreground">WorkNest</span>
+            <span className="font-bold text-foreground">WorkNest</span>
           </div>
 
           <Stepper current={stepIndex} />
@@ -159,8 +159,8 @@ function OnboardingPage() {
       </header>
 
       {/* Body */}
-      <main className="flex flex-1 items-start justify-center px-4 py-10 sm:items-center sm:py-16">
-        <div key={step} className="hiw-rise w-full max-w-xl">
+      <main className="relative flex flex-1 items-start justify-center px-4 py-10 sm:items-center sm:py-16">
+        <div key={step} className="hiw-rise relative w-full max-w-xl">
           {step === 'welcome' && <WelcomeStep />}
           {step === 'project' && <ProjectStep />}
           {step === 'team' && <TeamStep />}
@@ -181,7 +181,7 @@ function Stepper({ current }: { current: number }) {
           <li key={s.id} className="flex items-center gap-2">
             <span
               className={cn(
-                'flex size-6 items-center justify-center rounded-full border text-xs font-medium transition-all duration-300',
+                'flex size-6 items-center justify-center rounded-full border text-xs font-semibold transition-all duration-300',
                 active && 'border-primary bg-primary text-primary-foreground',
                 done && 'border-primary text-primary',
                 !active && !done && 'border-border text-muted-foreground',
@@ -226,9 +226,9 @@ function StepCard({
   children: ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-      <p className="text-sm font-medium text-primary mb-2">{eyebrow}</p>
-      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
+    <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
+      <p className="text-sm font-semibold text-primary mb-2">{eyebrow}</p>
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-2">
         {title}
       </h1>
       <p className="text-muted-foreground mb-8">{description}</p>
@@ -267,7 +267,7 @@ function WelcomeStep() {
   ]
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
       <div className="flex flex-col items-center text-center">
         <div className="hiw-pop mb-5" style={{ animationDelay: '150ms' }}>
           <UserAvatar
@@ -276,7 +276,7 @@ function WelcomeStep() {
             size="lg"
           />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-2">
           Welcome to WorkNest, {firstName}!
         </h1>
         <p className="text-muted-foreground max-w-md">
@@ -287,7 +287,7 @@ function WelcomeStep() {
 
       {invites.length > 0 && (
         <div className="hiw-rise mt-8" style={{ animationDelay: '250ms' }}>
-          <p className="mb-3 text-sm font-medium text-foreground">
+          <p className="mb-3 text-sm font-semibold text-foreground">
             You’ve been invited to join
           </p>
           <ul className="space-y-2">
@@ -302,7 +302,7 @@ function WelcomeStep() {
                     <Mail className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-foreground">
+                    <p className="truncate font-semibold text-foreground">
                       {inv.projectName}
                     </p>
                     <p className="truncate text-sm text-muted-foreground">
@@ -314,7 +314,7 @@ function WelcomeStep() {
                           : 'Team Member'}
                     </p>
                   </div>
-                  <span className="hidden sm:inline text-sm font-medium text-primary">
+                  <span className="hidden sm:inline text-sm font-semibold text-primary">
                     Review
                   </span>
                   <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -339,7 +339,7 @@ function WelcomeStep() {
               <item.icon className="size-4" />
             </span>
             <div>
-              <p className="font-medium text-foreground">{item.title}</p>
+              <p className="font-semibold text-foreground">{item.title}</p>
               <p className="text-sm text-muted-foreground">{item.text}</p>
             </div>
           </li>
@@ -357,7 +357,7 @@ function WelcomeStep() {
 
       <Button
         size="lg"
-        className="mt-8 w-full rounded-full"
+        className="mt-8 w-full"
         onClick={() =>
           void navigate({ to: '/onboarding', search: { step: 'project' } })
         }
@@ -462,7 +462,6 @@ function ProjectStep() {
           <Button
             type="button"
             variant="ghost"
-            className="rounded-full"
             onClick={() =>
               void navigate({ to: '/onboarding', search: { step: 'welcome' } })
             }
@@ -472,7 +471,6 @@ function ProjectStep() {
           <Button
             type="submit"
             size="lg"
-            className="rounded-full"
             disabled={!name.trim() || createMutation.isPending}
           >
             {createMutation.isPending && (
@@ -590,7 +588,7 @@ function TeamStep() {
         </Select>
         <Button
           type="submit"
-          className="h-11 rounded-full"
+          className="h-11"
           disabled={!email.trim() || inviteMutation.isPending}
         >
           {inviteMutation.isPending && (
@@ -637,7 +635,7 @@ function TeamStep() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="shrink-0 rounded-full"
+                  className="shrink-0"
                   onClick={() => void copy(inv.link)}
                 >
                   {copied === inv.link ? (
@@ -669,7 +667,6 @@ function TeamStep() {
       <div className="mt-8 flex justify-end">
         <Button
           size="lg"
-          className="rounded-full"
           variant={invites.length ? 'default' : 'outline'}
           disabled={finishMutation.isPending}
           onClick={() => finishMutation.mutate()}
@@ -704,14 +701,14 @@ function DoneStep() {
   ]
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 text-center">
+    <div className="rounded-xl border border-border bg-card p-6 sm:p-8 text-center">
       <span
         className="hiw-pop mx-auto mb-6 flex size-14 items-center justify-center rounded-full bg-primary"
         style={{ animationDelay: '150ms' }}
       >
         <Check className="size-7 text-primary-foreground" />
       </span>
-      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-2">
         You’re all set!
       </h1>
       <p className="text-muted-foreground">
@@ -744,14 +741,12 @@ function DoneStep() {
         <Button
           variant="outline"
           size="lg"
-          className="rounded-full"
           onClick={() => void navigate({ to: '/dashboard' })}
         >
           Go to dashboard
         </Button>
         <Button
           size="lg"
-          className="rounded-full"
           onClick={() =>
             void navigate({
               to: '/projects/$projectId',

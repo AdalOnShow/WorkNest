@@ -33,7 +33,7 @@ Load skills proactively when a task matches their description. Use the skill too
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PROJECT_OVERVIEW.md`       | Master project specification (1650 lines). Tech stack, features, constraints, role-based access, state management rules, all 50 sections of the spec                                                                                                                                                           |
 | `TECHNICAL_FLOW.md`         | Complete technical/user flows for all 18 features: Auth, Authorization, Projects, Tasks, Dashboard, Comments, Project Chat, Notifications, Theme, Responsive Design, Search/Filter/Sort, Pagination, Error Handling, State Management, Data Flow Summary, Feature Interaction Map, Security Enforcement Points |
-| `DESIGN.md`                 | **Tomorro Dark Neon** design system. Colors (primary #68EF3F, secondary #121212, tertiary #1F331D, surface #172318), typography (Ozik for headlines, Aeonik for body), spacing scale, rounded corners, component tokens (button, card, input, chip), layout rules, do's and don'ts                             |
+| `DESIGN.md`                 | **Sage** design system. Palette (blue #5880DA, lime #C9F17E, sky #BCDBFA, sage-white #F7F9F5, ink #23262B, yellow #F6D24A), Urbanist font, light-first with a matching dark mode, flat cards, ink buttons, chip variants, status/priority tokens, do's and don'ts                                              |
 | `ARCHITECTURE_DECISIONS.md` | (To be populated) Architecture decision records                                                                                                                                                                                                                                                                |
 | `DATABASE_SCHEMA.md`        | (To be populated) Drizzle ORM schema definitions for D1                                                                                                                                                                                                                                                        |
 | `FEATURES.md`               | (To be populated) Feature implementation status tracker                                                                                                                                                                                                                                                        |
@@ -41,14 +41,13 @@ Load skills proactively when a task matches their description. Use the skill too
 
 ### Design System
 
-This project follows the **Tomorro Dark Neon** design system defined in `context/DESIGN.md`. Key rules:
+This project follows the **Sage** design system defined in `context/DESIGN.md`. All values live as tokens in `src/styles.css`. Use the tokens and utilities, never raw hex. Key rules:
 
-- **Primary accent:** #68EF3F (neon green) — reserved for CTAs and critical highlights only
-- **Background:** #121212 (near-black forest) — dominant page background
-- **Surface:** #172318 (dark green) — cards, chips, UI containers
-- **Typography:** Ozik for hero headlines, Aeonik for everything else
-- **Shapes:** Pill-heavy buttons (full radius), medium-large rounded cards, no sharp corners
-- **Elevation:** Flat and tonal — no heavy shadows, use color contrast for hierarchy
+- **Themes:** light-first (`:root`) with a matching dark mode (`.dark`). The default follows the OS (`defaultTheme="system"`).
+- **Palette:** blue #5880DA (`primary`), lime #C9F17E (`lime`), sky #BCDBFA (`sky`), sage-white #F7F9F5 (`card`), ink #23262B (`ink`), yellow #F6D24A (`highlight`).
+- **Typography:** Urbanist everywhere. Body text is 500, headings are 600, and emphasis is 600–700 (Urbanist runs thin). Use `stat-number` for KPI figures.
+- **Buttons:** ink (`bg-ink`, the Button default variant) with `rounded-lg`. Chips use `rounded-md` Badge variants `lime`, `blue`, `sky`, `yellow`.
+- **Surfaces:** flat `bg-card` cards with `rounded-xl` and `border-border`. **No gradients, glows or gradient text.**
 
 ---
 
@@ -56,7 +55,7 @@ This project follows the **Tomorro Dark Neon** design system defined in `context
 
 ### styles.css
 
-Update `src/styles.css` to match the Tomorro Dark Neon design system. The current file contains the old WorkNest theme. Replace CSS variables with the DESIGN.md tokens.
+`src/styles.css` holds the Sage tokens (`:root` = light, `.dark` = dark), the `@theme inline` mapping, and the custom utilities (`headline-*`, `label-*`, `body-*`, `stat-number`). Add new colors there as tokens, not as hex in components.
 
 ### shadcn/ui Components
 

@@ -152,7 +152,7 @@ function TaskDetailPage() {
 
         <div>
           <div className="space-y-6">
-            <div className="bg-card border border-border rounded-[14px] p-6">
+            <div className="bg-card border border-border rounded-xl p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
@@ -234,7 +234,7 @@ function TaskDetailPage() {
             </div>
 
             {task.description && (
-              <div className="bg-card border border-border rounded-[14px] p-6">
+              <div className="bg-card border border-border rounded-xl p-6">
                 <h3 className="label-lg text-foreground mb-3">Description</h3>
                 <p className="body-md text-card-foreground leading-relaxed">
                   {task.description}
@@ -242,7 +242,7 @@ function TaskDetailPage() {
               </div>
             )}
 
-            <div className="bg-card border border-border rounded-[14px] p-6">
+            <div className="bg-card border border-border rounded-xl p-6">
               <h3 className="label-lg text-foreground mb-4">
                 Comments ({comments.length})
               </h3>
@@ -293,7 +293,6 @@ function TaskDetailPage() {
                     aria-label="Send comment"
                     onClick={() => void addCommentMutation.mutateAsync()}
                     disabled={!comment.trim() || addCommentMutation.isPending}
-                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <Send className="w-4 h-4" />
                   </Button>

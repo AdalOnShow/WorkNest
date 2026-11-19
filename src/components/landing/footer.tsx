@@ -20,7 +20,7 @@ export function Footer() {
 
           {/* Product Column */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Product</h3>
+            <h3 className="font-bold text-foreground mb-4">Product</h3>
             <ul className="space-y-3">
               <li>
                 <button
@@ -62,7 +62,7 @@ export function Footer() {
 
           {/* Company Column */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Company</h3>
+            <h3 className="font-bold text-foreground mb-4">Company</h3>
             <ul className="space-y-3">
               <li>
                 <Link
@@ -101,7 +101,7 @@ export function Footer() {
 
           {/* Legal Column */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Legal</h3>
+            <h3 className="font-bold text-foreground mb-4">Legal</h3>
             <ul className="space-y-3">
               <li>
                 <Link

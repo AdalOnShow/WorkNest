@@ -125,7 +125,7 @@ function SettingsPage() {
         </div>
 
         {/* Profile Section */}
-        <div className="bg-card border border-border rounded-[14px] p-6 space-y-6">
+        <div className="bg-card border border-border rounded-xl p-6 space-y-6">
           <h3 className="label-lg text-foreground">Profile</h3>
 
           {/* Avatar */}
@@ -155,7 +155,9 @@ function SettingsPage() {
               />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">{user.name}</p>
+              <p className="text-sm font-semibold text-foreground">
+                {user.name}
+              </p>
               <p className="text-xs text-muted-foreground">{user.email}</p>
               {isUploading && (
                 <p className="text-xs text-primary mt-1 flex items-center gap-1">
@@ -232,7 +234,7 @@ function SettingsPage() {
                   <Button
                     onClick={handleSaveName}
                     disabled={isSaving || !name.trim()}
-                    className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+                    className=" font-semibold"
                   >
                     {isSaving ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -268,7 +270,7 @@ function SettingsPage() {
         <Separator className="bg-border" />
 
         {/* Appearance Section */}
-        <div className="bg-card border border-border rounded-[14px] p-6 space-y-4">
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
           <h3 className="label-lg text-foreground">Appearance</h3>
           <div className="space-y-3">
             <p className="body-sm text-muted-foreground">Theme</p>
@@ -307,7 +309,7 @@ function SettingsPage() {
         <Separator className="bg-border" />
 
         {/* Account Section */}
-        <div className="bg-card border border-border rounded-[14px] p-6 space-y-4">
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
           <h3 className="label-lg text-foreground">Account</h3>
           <div className="space-y-3">
             <Button

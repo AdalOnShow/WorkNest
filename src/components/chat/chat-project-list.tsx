@@ -20,7 +20,7 @@ export function ChatProjectList({ selectedProjectId }: ChatProjectListProps) {
   return (
     <nav aria-label="Project chats" className="flex min-h-0 flex-1 flex-col">
       <div className="px-5 pt-6 pb-3">
-        <h1 className="text-xl font-semibold text-foreground">Messages</h1>
+        <h1 className="text-xl font-bold text-foreground">Messages</h1>
         <p className="text-sm text-muted-foreground">One chat per project</p>
       </div>
 
@@ -37,7 +37,7 @@ export function ChatProjectList({ selectedProjectId }: ChatProjectListProps) {
             <button
               type="button"
               onClick={() => void refetch()}
-              className="font-medium text-foreground underline-offset-4 hover:underline"
+              className="font-semibold text-foreground underline-offset-4 hover:underline"
             >
               Try again
             </button>
@@ -63,7 +63,7 @@ export function ChatProjectList({ selectedProjectId }: ChatProjectListProps) {
                       'flex items-center gap-3 rounded-full px-4 py-2.5 text-sm transition-colors',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       selected
-                        ? 'bg-accent font-medium text-accent-foreground'
+                        ? 'bg-accent font-semibold text-accent-foreground'
                         : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
                     )}
                   >

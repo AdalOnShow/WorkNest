@@ -92,7 +92,7 @@ function NotificationsPage() {
           />
         ) : (
           <>
-            <div className="bg-card border border-border rounded-[14px] overflow-hidden">
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
               {items.map((notification) => (
                 <div
                   key={notification.id}
@@ -130,7 +130,7 @@ function NotificationsPage() {
                         'body-sm',
                         notification.read
                           ? 'text-card-foreground'
-                          : 'text-foreground font-medium',
+                          : 'text-foreground font-semibold',
                       )}
                     >
                       {notification.title}

@@ -63,7 +63,7 @@ function MembersPage() {
           </div>
           <Button
             onClick={() => setInviteOpen(true)}
-            className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+            className=" font-semibold"
           >
             <Plus data-icon="inline-start" className="w-4 h-4" />
             Invite Member
@@ -92,17 +92,17 @@ function MembersPage() {
           />
         ) : (
           <>
-            <div className="bg-card border border-border rounded-[14px] overflow-hidden">
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Member
                     </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Email
                     </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Role
                     </TableHead>
                   </TableRow>
@@ -120,7 +120,7 @@ function MembersPage() {
                             image={member.image || undefined}
                             size="sm"
                           />
-                          <span className="text-foreground font-medium">
+                          <span className="text-foreground font-semibold">
                             {member.name}
                           </span>
                         </div>

@@ -93,20 +93,18 @@ function InvitationPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="max-w-md w-full mx-auto p-8">
-          <div className="bg-card border border-border rounded-[14px] p-8 text-center">
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-destructive" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground mb-2">
+            <h1 className="text-xl font-bold text-foreground mb-2">
               Invitation Not Found
             </h1>
             <p className="text-muted-foreground mb-6">
               This invitation link is invalid or has been removed.
             </p>
             <Link to="/projects">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
-                Go to Projects
-              </Button>
+              <Button>Go to Projects</Button>
             </Link>
           </div>
         </div>
@@ -118,11 +116,11 @@ function InvitationPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="max-w-md w-full mx-auto p-8">
-          <div className="bg-card border border-border rounded-[14px] p-8 text-center">
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-destructive" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground mb-2">
+            <h1 className="text-xl font-bold text-foreground mb-2">
               Invitation Expired
             </h1>
             <p className="text-muted-foreground mb-6">
@@ -130,9 +128,7 @@ function InvitationPage() {
               a new one.
             </p>
             <Link to="/projects">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
-                Go to Projects
-              </Button>
+              <Button>Go to Projects</Button>
             </Link>
           </div>
         </div>
@@ -144,11 +140,11 @@ function InvitationPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="max-w-md w-full mx-auto p-8">
-          <div className="bg-card border border-border rounded-[14px] p-8 text-center">
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground mb-2">
+            <h1 className="text-xl font-bold text-foreground mb-2">
               Already Accepted
             </h1>
             <p className="text-muted-foreground mb-6">
@@ -158,9 +154,7 @@ function InvitationPage() {
               to="/projects/$projectId"
               params={{ projectId: invitation.projectId }}
             >
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
-                Go to Project
-              </Button>
+              <Button>Go to Project</Button>
             </Link>
           </div>
         </div>
@@ -172,20 +166,18 @@ function InvitationPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="max-w-md w-full mx-auto p-8">
-          <div className="bg-card border border-border rounded-[14px] p-8 text-center">
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <XCircle className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground mb-2">
+            <h1 className="text-xl font-bold text-foreground mb-2">
               Invitation Declined
             </h1>
             <p className="text-muted-foreground mb-6">
               You have already declined this invitation.
             </p>
             <Link to="/projects">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full">
-                Go to Projects
-              </Button>
+              <Button>Go to Projects</Button>
             </Link>
           </div>
         </div>
@@ -202,12 +194,12 @@ function InvitationPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md w-full mx-auto p-8">
-        <div className="bg-card border border-border rounded-[14px] p-8">
+        <div className="bg-card border border-border rounded-xl p-8">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <FolderKanban className="w-8 h-8 text-primary" />
           </div>
 
-          <h1 className="text-xl font-semibold text-foreground text-center mb-2">
+          <h1 className="text-xl font-bold text-foreground text-center mb-2">
             Project Invitation
           </h1>
           <p className="text-muted-foreground text-center mb-6">
@@ -217,7 +209,7 @@ function InvitationPage() {
           <div className="space-y-4 mb-6">
             <div className="rounded-lg bg-accent/50 border border-border p-4">
               <p className="text-sm text-muted-foreground mb-1">Project</p>
-              <p className="font-medium text-foreground">
+              <p className="font-semibold text-foreground">
                 {invitation.projectName}
               </p>
               {invitation.projectDescription && (
@@ -233,7 +225,7 @@ function InvitationPage() {
                   <User className="w-4 h-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">Invited by</p>
                 </div>
-                <p className="font-medium text-foreground">
+                <p className="font-semibold text-foreground">
                   {invitation.inviterName || invitation.inviterEmail}
                 </p>
               </div>
@@ -243,7 +235,7 @@ function InvitationPage() {
                   <Mail className="w-4 h-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">Your role</p>
                 </div>
-                <p className="font-medium text-foreground">
+                <p className="font-semibold text-foreground">
                   {roleLabels[invitation.role]}
                 </p>
               </div>
@@ -255,7 +247,7 @@ function InvitationPage() {
               variant="outline"
               onClick={() => rejectMutation.mutate()}
               disabled={rejectMutation.isPending}
-              className="flex-1 border-border bg-transparent text-foreground hover:bg-accent rounded-full"
+              className="flex-1 border-border bg-transparent text-foreground hover:bg-accent"
             >
               {rejectMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -265,7 +257,7 @@ function InvitationPage() {
             <Button
               onClick={() => acceptMutation.mutate()}
               disabled={acceptMutation.isPending}
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-medium"
+              className="flex-1 font-semibold"
             >
               {acceptMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

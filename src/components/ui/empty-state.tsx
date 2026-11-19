@@ -24,16 +24,13 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-[#1F331D] mb-6">
-        <Icon className="w-10 h-10 text-[#7A8278]" />
+      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-6">
+        <Icon className="w-10 h-10 text-muted-foreground" />
       </div>
-      <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
-      <p className="text-[#B8C0B5] max-w-sm mb-8">{description}</p>
+      <h3 className="text-xl font-bold text-foreground mb-2">{title}</h3>
+      <p className="text-muted-foreground max-w-sm mb-8">{description}</p>
       {action && (
-        <Button
-          onClick={action.onClick}
-          className="bg-[#68EF3F] text-[#273F2B] hover:bg-[#5BE337] rounded-full px-6"
-        >
+        <Button onClick={action.onClick} className=" px-6">
           {action.label}
         </Button>
       )}

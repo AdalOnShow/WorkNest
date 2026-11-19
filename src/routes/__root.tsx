@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Urbanist:wght@300..800&family=Geist+Mono:wght@400..600&display=swap',
       },
       {
         rel: 'stylesheet',
@@ -175,8 +175,8 @@ function NotFoundPage() {
       <div className="relative z-10 mx-auto w-full max-w-2xl text-center">
         {/* Brand */}
         <Link to="/" className="mb-12 inline-flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-            <Sprout className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ink">
+            <Sprout className="h-5 w-5 text-ink-foreground" />
           </div>
           <span className="text-lg font-bold tracking-tight">WorkNest</span>
         </Link>
@@ -189,7 +189,7 @@ function NotFoundPage() {
           <div className="absolute left-1/2 top-1/2 -z-10 h-28 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-3xl" />
         </div>
 
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
           Page not found
         </p>
         <h1 className="mt-3 text-4xl font-bold sm:text-5xl">
@@ -201,18 +201,14 @@ function NotFoundPage() {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button
-            asChild
-            size="lg"
-            className="w-full rounded-full px-8 sm:w-auto"
-          >
+          <Button asChild size="lg" className="w-full px-8 sm:w-auto">
             <Link to="/dashboard">Back to dashboard</Link>
           </Button>
           <Button
             asChild
             variant="outline"
             size="lg"
-            className="w-full rounded-full px-8 sm:w-auto"
+            className="w-full px-8 sm:w-auto"
           >
             <Link to="/">Return home</Link>
           </Button>

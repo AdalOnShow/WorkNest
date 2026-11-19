@@ -86,7 +86,7 @@ export function NotificationBell({ className }: { className?: string }) {
         >
           <Bell className="w-5 h-5" />
           {badgeCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
               {badgeCount > 9 ? '9+' : badgeCount}
             </span>
           )}
@@ -97,7 +97,7 @@ export function NotificationBell({ className }: { className?: string }) {
         align="end"
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h4 className="font-medium">Notifications</h4>
+          <h4 className="font-semibold">Notifications</h4>
           {unread > 0 && (
             <Button
               variant="ghost"
@@ -132,7 +132,7 @@ export function NotificationBell({ className }: { className?: string }) {
                     <Mail className="w-4 h-4" />
                   </span>
                   <div className="min-w-0 flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">
+                    <p className="text-sm font-semibold leading-none text-foreground">
                       Project invitation
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -143,7 +143,7 @@ export function NotificationBell({ className }: { className?: string }) {
                       <span className="text-foreground">{inv.projectName}</span>{' '}
                       as {ROLE_LABELS[inv.role]}
                     </p>
-                    <p className="text-xs font-medium text-primary">
+                    <p className="text-xs font-semibold text-primary">
                       Review invitation
                     </p>
                   </div>
@@ -169,7 +169,7 @@ export function NotificationBell({ className }: { className?: string }) {
                         'text-sm leading-none',
                         n.read
                           ? 'text-muted-foreground'
-                          : 'font-medium text-foreground',
+                          : 'font-semibold text-foreground',
                       )}
                     >
                       {n.title}

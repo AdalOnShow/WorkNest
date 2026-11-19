@@ -43,21 +43,21 @@ export function DataTable<TData, TValue>({
   return (
     <div
       className={cn(
-        'rounded-xl border border-[#2D3B2A] bg-[#172318] overflow-hidden',
+        'rounded-xl border border-border bg-card overflow-hidden',
         className,
       )}
     >
       <Table>
-        <TableHeader className="bg-[#1F331D]">
+        <TableHeader className="bg-muted">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="border-b-[#2D3B2A] hover:bg-transparent"
+              className="border-b-border hover:bg-transparent"
             >
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="text-[#B8C0B5] font-medium h-12"
+                  className="text-muted-foreground font-semibold h-12"
                 >
                   {header.isPlaceholder
                     ? null
@@ -77,13 +77,13 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
                 className={cn(
-                  'border-b-[#2D3B2A] hover:bg-[#1F331D]/50 transition-colors',
+                  'border-b-border hover:bg-accent/50 transition-colors',
                   onRowClick && 'cursor-pointer',
                 )}
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="text-white py-4">
+                  <TableCell key={cell.id} className="text-foreground py-4">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -93,7 +93,7 @@ export function DataTable<TData, TValue>({
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="h-24 text-center text-[#B8C0B5]"
+                className="h-24 text-center text-muted-foreground"
               >
                 No results.
               </TableCell>

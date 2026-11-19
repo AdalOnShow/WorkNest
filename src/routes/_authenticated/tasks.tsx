@@ -97,7 +97,7 @@ function TasksPage() {
               Manage all tasks across projects
             </p>
           </div>
-          <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
+          <Button className=" font-semibold">
             <Plus className="w-4 h-4" />
             New Task
           </Button>
@@ -175,29 +175,29 @@ function TasksPage() {
           />
         ) : (
           <>
-            <div className="bg-card border border-border rounded-[14px] overflow-hidden">
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Title
                     </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Project
                     </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Assignee
                     </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Status
                     </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Priority
                     </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
+                    <TableHead className="text-muted-foreground font-semibold">
                       Due
                     </TableHead>
-                    <TableHead className="text-muted-foreground font-medium text-right">
+                    <TableHead className="text-muted-foreground font-semibold text-right">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -212,7 +212,7 @@ function TasksPage() {
                         <Link
                           to="/tasks/$taskId"
                           params={{ taskId: task.id }}
-                          className="text-foreground font-medium hover:text-primary transition-colors"
+                          className="text-foreground font-semibold hover:text-primary transition-colors"
                         >
                           {task.title}
                         </Link>

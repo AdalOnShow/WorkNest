@@ -8,15 +8,15 @@ export function Hero() {
   }
 
   return (
-    <section className="pt-32 pb-20 md:pt-40 md:pb-28">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center animate-fade-in-up">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground mb-6">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-xs text-description backdrop-blur mb-6">
             <span className="size-1.5 rounded-full bg-primary" />
             Projects, tasks and team chat in one place
           </span>
 
-          <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-6">
+          <h1 className="font-headline text-foreground text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight mb-6">
             The simple workspace for teams that ship
           </h1>
 

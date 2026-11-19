@@ -42,7 +42,7 @@ function useTypewriter(text: string, startMs = 300, speedMs = 70) {
 function SignInVisual() {
   return (
     <div className="mx-auto w-full max-w-xs text-center">
-      <p className="hiw-rise text-lg font-semibold text-foreground mb-1">
+      <p className="hiw-rise text-lg font-bold text-foreground mb-1">
         Welcome to WorkNest
       </p>
       <p
@@ -79,7 +79,7 @@ function CreateProjectVisual() {
   const name = useTypewriter('Website Relaunch')
   return (
     <div className="mx-auto w-full max-w-sm space-y-4">
-      <p className="hiw-rise text-sm font-medium text-foreground">
+      <p className="hiw-rise text-sm font-semibold text-foreground">
         New project
       </p>
       <div className="hiw-rise" style={delay(100)}>
@@ -111,7 +111,7 @@ function CreateProjectVisual() {
           <Check className="size-3.5 text-primary" /> You are the admin
         </span>
         <span
-          className="hiw-pop rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground"
+          className="hiw-pop rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
           style={delay(2100)}
         >
           Create project
@@ -236,7 +236,7 @@ function SyncVisual() {
           >
             <Initials>{m.who}</Initials>
             <div className="rounded-xl bg-background/60 px-3 py-2">
-              <p className="text-xs font-medium text-foreground">{m.name}</p>
+              <p className="text-xs font-semibold text-foreground">{m.name}</p>
               <p className="text-sm text-muted-foreground">{m.text}</p>
             </div>
           </div>
@@ -341,14 +341,16 @@ export function HowItWorks() {
                     onClick={() => setActive(i)}
                     aria-current={isActive ? 'step' : undefined}
                     className={cn(
-                      'group relative w-full overflow-hidden rounded-2xl p-4 text-left transition-colors duration-300',
-                      isActive ? 'bg-card' : 'hover:bg-card/50',
+                      'group relative w-full overflow-hidden rounded-xl border p-4 text-left transition-colors duration-300',
+                      isActive
+                        ? 'border-border bg-card'
+                        : 'border-transparent hover:bg-card/50',
                     )}
                   >
                     <div className="flex gap-4">
                       <span
                         className={cn(
-                          'flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-medium transition-all duration-300',
+                          'flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-all duration-300',
                           isActive &&
                             'scale-110 border-primary bg-primary text-primary-foreground',
                           isDone && 'border-primary text-primary',
@@ -362,7 +364,7 @@ export function HowItWorks() {
                       <div className="min-w-0">
                         <h3
                           className={cn(
-                            'font-semibold transition-colors duration-300',
+                            'font-bold transition-colors duration-300',
                             isActive
                               ? 'text-foreground'
                               : 'text-muted-foreground group-hover:text-foreground',
@@ -409,7 +411,7 @@ export function HowItWorks() {
           {/* Live preview */}
           <div
             aria-hidden="true"
-            className="overflow-hidden rounded-2xl border border-border bg-card select-none lg:sticky lg:top-24"
+            className="relative overflow-hidden rounded-xl border border-border bg-card select-none lg:sticky lg:top-24"
           >
             <div className="flex items-center gap-2 border-b border-border px-4 py-3">
               <span className="size-2.5 rounded-full bg-muted" />

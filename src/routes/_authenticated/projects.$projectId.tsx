@@ -90,7 +90,7 @@ function RouteComponent() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-[14px] border border-border bg-card p-5">
+          <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <CheckSquare className="w-5 h-5 text-primary" />
@@ -103,7 +103,7 @@ function RouteComponent() {
               </div>
             </div>
           </div>
-          <div className="rounded-[14px] border border-border bg-card p-5">
+          <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
@@ -116,14 +116,14 @@ function RouteComponent() {
               </div>
             </div>
           </div>
-          <div className="rounded-[14px] border border-border bg-card p-5 sm:col-span-2 lg:col-span-2">
+          <div className="rounded-xl border border-border bg-card p-5 sm:col-span-2 lg:col-span-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Deadline</p>
-                <p className="text-lg font-semibold text-foreground">
+                <p className="text-lg font-bold text-foreground">
                   {project.deadline != null
                     ? new Date(project.deadline).toLocaleDateString('en-US', {
                         month: 'long',

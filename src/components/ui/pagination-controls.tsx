@@ -60,7 +60,7 @@ export function Pagination({
             className={cn(
               'w-9 h-9',
               currentPage === page
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                ? ''
                 : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground',
             )}
             onClick={() => onPageChange(page)}

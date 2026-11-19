@@ -57,7 +57,7 @@ function MessagesPage() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent">
               <MessageSquare className="h-7 w-7 text-accent-foreground" />
             </div>
-            <h2 className="mb-1 text-lg font-semibold text-foreground">
+            <h2 className="mb-1 text-lg font-bold text-foreground">
               Pick a project
             </h2>
             <p className="max-w-sm text-sm text-muted-foreground">

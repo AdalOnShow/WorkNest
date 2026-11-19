@@ -33,15 +33,14 @@ const messages = [
 
 export function PriorityDot({ priority }: { priority: Priority }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-      <span
-        className={cn(
-          'size-1.5 rounded-full',
-          priority === 'High' && 'bg-primary',
-          priority === 'Medium' && 'bg-foreground/50',
-          priority === 'Low' && 'bg-foreground/20',
-        )}
-      />
+    <span
+      className={cn(
+        'inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-semibold',
+        priority === 'High' && 'bg-ink text-ink-foreground',
+        priority === 'Medium' && 'bg-primary text-primary-foreground',
+        priority === 'Low' && 'bg-lime text-lime-foreground',
+      )}
+    >
       {priority}
     </span>
   )
@@ -49,7 +48,7 @@ export function PriorityDot({ priority }: { priority: Priority }) {
 
 export function Initials({ children }: { children: string }) {
   return (
-    <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-foreground">
+    <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-foreground">
       {children}
     </span>
   )
@@ -59,7 +58,7 @@ export function ProductMockup() {
   return (
     <div
       aria-hidden="true"
-      className="rounded-2xl border border-border bg-card overflow-hidden select-none"
+      className="rounded-xl border border-border bg-card overflow-hidden select-none"
     >
       {/* Window bar */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
@@ -77,7 +76,7 @@ export function ProductMockup() {
           {columns.map((col) => (
             <div key={col.title} className="rounded-xl bg-background/60 p-3">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-foreground">
+                <span className="text-xs font-semibold text-foreground">
                   {col.title}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
@@ -88,7 +87,12 @@ export function ProductMockup() {
                 {col.tasks.map((task) => (
                   <div
                     key={task.title}
-                    className="rounded-lg border border-border bg-card p-3"
+                    className={cn(
+                      'rounded-lg border p-3',
+                      task.title === 'Fix login redirect'
+                        ? 'border-transparent bg-sky text-sky-foreground'
+                        : 'border-border bg-card',
+                    )}
                   >
                     <p
                       className={cn(
@@ -112,7 +116,7 @@ export function ProductMockup() {
 
         {/* Chat */}
         <div className="hidden md:flex flex-col border-l border-border p-4">
-          <span className="text-xs font-medium text-foreground mb-3">
+          <span className="text-xs font-semibold text-foreground mb-3">
             Project chat
           </span>
           <div className="space-y-3 flex-1">

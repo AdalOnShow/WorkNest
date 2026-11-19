@@ -124,7 +124,7 @@ export function InviteMemberDialog({
               <div className="flex items-start gap-2">
                 <Bell className="w-4 h-4 mt-0.5 text-primary shrink-0" />
                 <p className="text-sm text-foreground">
-                  <span className="font-medium">{email}</span> will see this
+                  <span className="font-semibold">{email}</span> will see this
                   invitation in their notifications when they sign in with that
                   email.
                 </p>
@@ -166,16 +166,11 @@ export function InviteMemberDialog({
                   setInvitationLink(null)
                   setCopied(false)
                 }}
-                className="border-border bg-transparent text-foreground hover:bg-accent rounded-full"
+                className="border-border bg-transparent text-foreground hover:bg-accent"
               >
                 Invite another
               </Button>
-              <Button
-                onClick={() => handleOpenChange(false)}
-                className="rounded-full"
-              >
-                Done
-              </Button>
+              <Button onClick={() => handleOpenChange(false)}>Done</Button>
             </DialogFooter>
           </div>
         ) : noInvitableProjects ? (
@@ -269,7 +264,7 @@ export function InviteMemberDialog({
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={inviteMutation.isPending}
-                className="border-border bg-transparent text-foreground hover:bg-accent rounded-full"
+                className="border-border bg-transparent text-foreground hover:bg-accent"
               >
                 Cancel
               </Button>
@@ -278,7 +273,7 @@ export function InviteMemberDialog({
                 disabled={
                   !email.trim() || !projectId || inviteMutation.isPending
                 }
-                className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-medium"
+                className=" font-semibold"
               >
                 {inviteMutation.isPending ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

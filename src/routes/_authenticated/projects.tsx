@@ -64,11 +64,11 @@ function ProjectCard({
     <Link
       to="/projects/$projectId"
       params={{ projectId: project.id }}
-      className="group relative bg-card border border-border rounded-[14px] p-5 min-h-[140px] block transition-all duration-200 hover:border-primary/30 hover:bg-accent/20 hover:shadow-lg hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background"
+      className="group relative bg-card border border-border rounded-xl p-5 min-h-[140px] block transition-all duration-200 hover:border-primary/30 hover:bg-accent/20 hover:shadow-lg hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background"
     >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+          <h3 className="text-base font-bold text-foreground truncate group-hover:text-primary transition-colors">
             {project.name}
           </h3>
         </div>
@@ -136,7 +136,7 @@ function ProjectsPage() {
           </div>
           <Button
             onClick={() => setShowCreateDialog(true)}
-            className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+            className=" font-semibold"
           >
             <Plus data-icon="inline-start" className="w-4 h-4" />
             New Project

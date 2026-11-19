@@ -90,7 +90,7 @@ export function ProjectMembersPanel({ projectId }: { projectId: string }) {
   const invites = invitesQuery.data?.items ?? []
 
   return (
-    <div className="rounded-[14px] border border-border bg-card">
+    <div className="rounded-xl border border-border bg-card">
       <div className="flex items-center justify-between gap-4 border-b border-border p-5">
         <div>
           <h2 className="label-lg text-foreground">Members</h2>
@@ -100,11 +100,7 @@ export function ProjectMembersPanel({ projectId }: { projectId: string }) {
           </p>
         </div>
         {canInvite && (
-          <Button
-            size="sm"
-            className="rounded-full"
-            onClick={() => setInviteOpen(true)}
-          >
+          <Button size="sm" onClick={() => setInviteOpen(true)}>
             <UserPlus className="w-4 h-4" />
             Invite member
           </Button>
@@ -125,7 +121,7 @@ export function ProjectMembersPanel({ projectId }: { projectId: string }) {
                 size="sm"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">
+                <p className="truncate text-sm font-semibold text-foreground">
                   {m.name}
                   {m.isMe && (
                     <span className="ml-1.5 text-muted-foreground font-normal">
@@ -167,7 +163,7 @@ export function ProjectMembersPanel({ projectId }: { projectId: string }) {
 
       {canInvite && invites.length > 0 && (
         <div className="border-t border-border p-5">
-          <h3 className="mb-3 text-sm font-medium text-foreground">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">
             Pending invitations
           </h3>
           <ul className="space-y-2">
@@ -197,7 +193,6 @@ export function ProjectMembersPanel({ projectId }: { projectId: string }) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-full"
                       onClick={() => void copyLink(inv.id, inv.invitationLink!)}
                     >
                       {copiedId === inv.id ? (
@@ -214,7 +209,7 @@ export function ProjectMembersPanel({ projectId }: { projectId: string }) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="rounded-full text-muted-foreground hover:text-destructive"
+                    className=" text-muted-foreground hover:text-destructive"
                     disabled={revokeMutation.isPending}
                     onClick={() => revokeMutation.mutate(inv.id)}
                   >

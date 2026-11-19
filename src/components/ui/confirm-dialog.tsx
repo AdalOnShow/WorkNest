@@ -29,10 +29,10 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#172318] border-[#2D3B2A] text-white sm:max-w-[425px]">
+      <DialogContent className="bg-card border-border text-foreground sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-xl">{title}</DialogTitle>
-          <DialogDescription className="text-[#B8C0B5]">
+          <DialogDescription className="text-muted-foreground">
             {description}
           </DialogDescription>
         </DialogHeader>
@@ -41,7 +41,7 @@ export function ConfirmDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-[#2D3B2A] bg-transparent text-white hover:bg-[#1F331D] rounded-full"
+            className="border-border bg-transparent text-foreground hover:bg-accent"
           >
             Cancel
           </Button>
@@ -53,8 +53,8 @@ export function ConfirmDialog({
             }}
             className={
               variant === 'destructive'
-                ? 'bg-[#FF5A5F] text-white hover:bg-[#FF5A5F]/90 rounded-full'
-                : 'bg-[#68EF3F] text-[#273F2B] hover:bg-[#5BE337] rounded-full'
+                ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                : ''
             }
           >
             {confirmLabel}

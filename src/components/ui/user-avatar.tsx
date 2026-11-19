@@ -37,7 +37,7 @@ export function UserAvatar({
     <div className={cn('relative inline-block', className)}>
       <Avatar className={cn(SIZE_MAP[size], 'border border-border')}>
         <AvatarImage src={image} alt={name} />
-        <AvatarFallback className="bg-accent text-card-foreground font-medium">
+        <AvatarFallback className="bg-accent text-card-foreground font-semibold">
           {getInitials(name)}
         </AvatarFallback>
       </Avatar>
