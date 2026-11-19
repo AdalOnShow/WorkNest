@@ -172,8 +172,8 @@ Track high-level development phases and milestones.
 | 98  | getMessages server function             | [x]    | src/server-functions/chat.ts, keyset 30/page     |
 | 99  | ChatRoom Durable Object                 | [x]    | src/chat/ChatRoom.ts, CHAT_ROOM binding (v3)     |
 | 100 | Chat WebSocket route                    | [x]    | src/chat/upgrade.ts; session, Origin, membership |
-| 101 | useChatRoom client hook                 | [ ]    | Reconnect/backoff, merge into infinite query     |
-| 102 | Messages page rebuild                   | [ ]    | Project list, history, composer, online, delete  |
+| 101 | useChatRoom client hook                 | [x]    | src/hooks/use-chat-room.ts; backoff, cache merge |
+| 102 | Messages page rebuild                   | [x]    | src/components/chat/*, messages.tsx rebuilt      |
 | 103 | Verify (build, 2 sessions, permissions) | [ ]    |                                                  |
 
 ---

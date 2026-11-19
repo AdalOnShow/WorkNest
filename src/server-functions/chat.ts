@@ -1,5 +1,5 @@
 import { createDb } from '#/db'
-import { chatMessage, user } from '#/db/schema'
+import { chatMessage, project, user } from '#/db/schema'
 import { getProjectRole } from '#/chat/access'
 import {
   CHAT_PAGE_SIZE,
@@ -94,5 +94,41 @@ export const getMessages = createServerFn({ method: 'GET' })
       items,
       nextCursor:
         hasMore && last ? encodeChatCursor(last.createdAt, last.id) : null,
+    }
+  })
+
+/**
+ * Metadata for opening a project's chat room. The client calls this before
+ * connecting the WebSocket: a browser cannot read why a handshake was refused,
+ * so membership errors are surfaced here instead.
+ */
+export const getChatRoom = createServerFn({ method: 'GET' })
+  .validator(z.object({ projectId: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    const env = getCloudflareEnv()
+    const session = await createAuth(env).api.getSession({
+      headers: getRequest().headers,
+    })
+    if (!session) throw new Error('Unauthorized')
+
+    const db = createDb(env.DB)
+    const role = await getProjectRole(db, data.projectId, session.user.id)
+    if (!role) throw new Error('Project not found')
+
+    const rows = await db
+      .select({ id: project.id, name: project.name })
+      .from(project)
+      .where(eq(project.id, data.projectId))
+      .limit(1)
+    const room = rows.at(0)
+    if (!room) throw new Error('Project not found')
+
+    return {
+      projectId: room.id,
+      projectName: room.name,
+      role,
+      /** ADMINs may delete anyone's message; everyone may delete their own. */
+      canModerate: role === 'ADMIN',
+      viewerId: session.user.id,
     }
   })
