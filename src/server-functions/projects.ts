@@ -12,6 +12,8 @@ export const listProjects = createServerFn({ method: 'GET' })
     (data: {
       search?: string
       status?: string
+      sort?: 'created' | 'deadline' | 'name' | 'updated'
+      dir?: 'asc' | 'desc'
       page?: number
       pageSize?: number
     }) => data,
@@ -39,6 +41,30 @@ export const listProjects = createServerFn({ method: 'GET' })
 
     const where = and(...conditions)
 
+    const asc = data.dir === 'asc'
+    let orderBy
+    switch (data.sort) {
+      case 'deadline':
+        // Projects without a deadline always sort last.
+        orderBy = [
+          sql`${project.deadline} IS NULL`,
+          asc ? project.deadline : desc(project.deadline),
+        ]
+        break
+      case 'name': {
+        const name = sql`${project.name} COLLATE NOCASE`
+        orderBy = [asc ? name : sql`${name} DESC`]
+        break
+      }
+      case 'updated':
+        orderBy = [asc ? project.updatedAt : desc(project.updatedAt)]
+        break
+      default:
+        orderBy = [asc ? project.createdAt : desc(project.createdAt)]
+    }
+    // Stable pagination when sort keys tie.
+    orderBy.push(desc(project.id))
+
     const [projectRows, countResult] = await Promise.all([
       db
         .select({
@@ -50,7 +76,7 @@ export const listProjects = createServerFn({ method: 'GET' })
         })
         .from(project)
         .where(where)
-        .orderBy(desc(project.createdAt))
+        .orderBy(...orderBy)
         .limit(pageSize)
         .offset((page - 1) * pageSize),
       db.select({ count: count() }).from(project).where(where),

@@ -88,7 +88,7 @@ Track high-level development phases and milestones.
 | 44  | Project detail page              | [x]    | Real D1 data via TanStack Query                              |
 | 45  | Search (by name)                 | [x]    | Server-side search via like()                                |
 | 46  | Filter (by status)               | [x]    | Server-side filter via eq()                                  |
-| 47  | Sort                             | [ ]    |                                                              |
+| 47  | Sort                             | [x]    | created / name / deadline (nulls last) / updated, asc or desc  |
 | 48  | Pagination                       | [x]    | Server-side pagination (count + offset)                      |
 | 49  | Permissions enforced             | [x]    | Membership check in getProject, admin check in deleteProject |
 
@@ -313,7 +313,7 @@ Track high-level development phases and milestones.
 | 1. Infrastructure  | 9       | 9        | 0           | 0           |
 | 2. Database Schema | 13      | 13       | 0           | 0           |
 | 3. Authentication  | 12      | 11       | 0           | 1           |
-| 4. Projects        | 13      | 12       | 0           | 1           |
+| 4. Projects        | 13      | 13       | 0           | 0           |
 | 5. Tasks           | 13      | 13       | 0           | 0           |
 | 6. Dashboard       | 9       | 6        | 0           | 3           |
 | 7. Collaboration   | 7       | 5        | 0           | 2           |
@@ -321,7 +321,7 @@ Track high-level development phases and milestones.
 | 9. Project Chat    | 7       | 6        | 0           | 1           |
 | 10. Polish         | 13      | 10       | 1           | 2           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **109** | **89**   | **3**       | **17**      |
+| **Total**          | **109** | **90**   | **3**       | **16**      |
 
 Phase 2 excludes the n/a attachment row.
 

@@ -98,14 +98,27 @@ function ProjectCard({
 function ProjectsPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [sort, setSort] = useState('created:desc')
   const [page, setPage] = useState(1)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
+  const [sortKey, sortDir] = sort.split(':') as [
+    'created' | 'deadline' | 'name' | 'updated',
+    'asc' | 'desc',
+  ]
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['projects', search, statusFilter, page],
+    queryKey: ['projects', search, statusFilter, sort, page],
     queryFn: () =>
       listProjects({
-        data: { search, status: statusFilter, page, pageSize: 12 },
+        data: {
+          search,
+          status: statusFilter,
+          sort: sortKey,
+          dir: sortDir,
+          page,
+          pageSize: 12,
+        },
       }),
   })
 
@@ -143,7 +156,7 @@ function ProjectsPage() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <SearchInput
             placeholder="Search projects..."
             value={search}
@@ -173,6 +186,32 @@ function ProjectsPage() {
                 <SelectItem value="ACTIVE">Active</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
                 <SelectItem value="ON_HOLD">On Hold</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <Select
+            value={sort}
+            onValueChange={(v) => {
+              setSort(v)
+              setPage(1)
+            }}
+          >
+            <SelectTrigger
+              aria-label="Sort projects"
+              style={{ width: '180px' }}
+              className="bg-card border-border text-foreground rounded-lg"
+            >
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border">
+              <SelectGroup>
+                <SelectItem value="created:desc">Newest first</SelectItem>
+                <SelectItem value="created:asc">Oldest first</SelectItem>
+                <SelectItem value="name:asc">Name (A–Z)</SelectItem>
+                <SelectItem value="name:desc">Name (Z–A)</SelectItem>
+                <SelectItem value="deadline:asc">Deadline (soonest)</SelectItem>
+                <SelectItem value="deadline:desc">Deadline (latest)</SelectItem>
+                <SelectItem value="updated:desc">Recently updated</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
