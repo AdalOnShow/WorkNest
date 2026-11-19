@@ -21,10 +21,8 @@ import {
 } from '#/components/ui/select'
 import { createTask } from '#/server-functions/tasks'
 import { parseLocalDate } from '#/lib/date-utils'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { listProjectMembers } from '#/server-functions/projects'
-import { Checkbox } from '#/components/ui/checkbox'
-import { UserAvatar } from '#/components/ui/user-avatar'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AssigneePicker } from '#/components/tasks/assignee-picker'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
@@ -48,12 +46,6 @@ export function CreateTaskDialog({
   )
   const [assigneeIds, setAssigneeIds] = useState<Array<string>>([])
   const [deadline, setDeadline] = useState('')
-
-  const { data: membersData } = useQuery({
-    queryKey: ['project-members', projectId],
-    queryFn: () => listProjectMembers({ data: { projectId } }),
-    enabled: open,
-  })
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -101,14 +93,6 @@ export function CreateTaskDialog({
   function handleOpenChange(newOpen: boolean) {
     if (!newOpen) resetForm()
     onOpenChange(newOpen)
-  }
-
-  const members = membersData?.items || []
-
-  function toggleAssignee(id: string, checked: boolean) {
-    setAssigneeIds((prev) =>
-      checked ? [...prev, id] : prev.filter((x) => x !== id),
-    )
   }
 
   return (
@@ -199,41 +183,12 @@ export function CreateTaskDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">
-              Assignees
-              {assigneeIds.length > 0 && ` (${assigneeIds.length})`}
-            </Label>
-            <div className="max-h-40 overflow-y-auto rounded-lg border border-border bg-background divide-y divide-border">
-              {members.length === 0 ? (
-                <p className="p-3 text-sm text-muted-foreground">
-                  No members found.
-                </p>
-              ) : (
-                members.map((member) => (
-                  <label
-                    key={member.userId}
-                    className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-accent"
-                  >
-                    <Checkbox
-                      checked={assigneeIds.includes(member.userId)}
-                      onCheckedChange={(c) =>
-                        toggleAssignee(member.userId, c === true)
-                      }
-                    />
-                    <UserAvatar
-                      name={member.name || member.email}
-                      image={member.image ?? undefined}
-                      size="sm"
-                    />
-                    <span className="text-sm text-foreground truncate">
-                      {member.name || member.email}
-                    </span>
-                  </label>
-                ))
-              )}
-            </div>
-          </div>
+          <AssigneePicker
+            projectId={projectId}
+            value={assigneeIds}
+            onChange={setAssigneeIds}
+            enabled={open}
+          />
 
           <div className="space-y-2">
             <Label

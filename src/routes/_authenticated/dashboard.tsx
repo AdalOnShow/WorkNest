@@ -3,7 +3,7 @@ import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
 import { getDashboardData } from '#/server-functions/dashboard'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { getOnboardingStatus } from '#/server-functions/onboarding'
 import {
   AlertTriangle,
@@ -72,6 +72,8 @@ function DashboardPage() {
     tasksByPriority.HIGH + tasksByPriority.MEDIUM + tasksByPriority.LOW
   const recentActivities = data?.recentActivities || []
   const upcomingDeadlines = data?.upcomingDeadlines || []
+  const myOpenTasks = data?.myOpenTasks || []
+  const highPriorityTasks = data?.highPriorityTasks || []
 
   const kpiCards = [
     {
@@ -219,6 +221,52 @@ function DashboardPage() {
               )}
             </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {[
+            { title: 'My Tasks', empty: 'No open tasks assigned to you', items: myOpenTasks },
+            {
+              title: 'High Priority Tasks',
+              empty: 'No open high priority tasks',
+              items: highPriorityTasks,
+            },
+          ].map((section) => (
+            <div
+              key={section.title}
+              className="bg-card border border-border rounded-xl p-6"
+            >
+              <h3 className="label-lg text-foreground mb-4">{section.title}</h3>
+              {section.items.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {section.empty}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {section.items.map((item) => (
+                    <Link
+                      key={item.id}
+                      to="/tasks/$taskId"
+                      params={{ taskId: item.id }}
+                      className="flex items-center justify-between gap-3 p-3 rounded-lg bg-accent/50 border border-border/50 hover:bg-accent transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="body-sm text-foreground font-semibold truncate">
+                          {item.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {item.projectName}
+                        </p>
+                      </div>
+                      <span className="label-sm text-muted-foreground shrink-0">
+                        {item.dueFormatted}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -1,5 +1,11 @@
 import { createDb } from '#/db'
-import { activity, project, projectMember, task } from '#/db/schema'
+import {
+  activity,
+  project,
+  projectMember,
+  task,
+  taskAssignee,
+} from '#/db/schema'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, sql } from 'drizzle-orm'
@@ -31,6 +37,8 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
       tasksByPriority,
       recentActivities,
       upcomingDeadlines,
+      myOpenTasks,
+      highPriorityTasks,
     ] = await Promise.all([
       db.select({ count: count() }).from(project).where(memberCondition),
       db
@@ -54,7 +62,7 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
         .where(
           and(
             sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
-            sql`${task.deadline} IS NOT NULL AND ${task.deadline} < ${new Date().toISOString()} AND ${task.completedAt} IS NULL`,
+            sql`${task.deadline} IS NOT NULL AND ${task.deadline} < ${new Date()} AND ${task.status} != 'COMPLETED'`,
           ),
         ),
       db
@@ -110,11 +118,51 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
         .where(
           and(
             memberCondition,
-            sql`${project.deadline} IS NOT NULL AND ${project.deadline} > ${new Date().toISOString()}`,
+            sql`${project.deadline} IS NOT NULL AND ${project.deadline} > ${new Date()}`,
           ),
         )
         .groupBy(project.id)
         .orderBy(project.deadline)
+        .limit(5),
+      db
+        .select({
+          id: task.id,
+          title: task.title,
+          status: task.status,
+          priority: task.priority,
+          deadline: task.deadline,
+          projectName: project.name,
+        })
+        .from(task)
+        .innerJoin(taskAssignee, eq(taskAssignee.taskId, task.id))
+        .innerJoin(project, eq(project.id, task.projectId))
+        .where(
+          and(
+            eq(taskAssignee.userId, userId),
+            sql`${task.status} != 'COMPLETED'`,
+          ),
+        )
+        .orderBy(sql`${task.deadline} IS NULL`, task.deadline)
+        .limit(5),
+      db
+        .select({
+          id: task.id,
+          title: task.title,
+          status: task.status,
+          priority: task.priority,
+          deadline: task.deadline,
+          projectName: project.name,
+        })
+        .from(task)
+        .innerJoin(project, eq(project.id, task.projectId))
+        .where(
+          and(
+            sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
+            eq(task.priority, 'HIGH'),
+            sql`${task.status} != 'COMPLETED'`,
+          ),
+        )
+        .orderBy(sql`${task.deadline} IS NULL`, task.deadline)
         .limit(5),
     ])
 
@@ -153,6 +201,8 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
         ...a,
         timeAgo: getTimeAgo(a.createdAt),
       })),
+      myOpenTasks: myOpenTasks.map(withDue),
+      highPriorityTasks: highPriorityTasks.map(withDue),
       upcomingDeadlines: upcomingDeadlines.map((d) => ({
         ...d,
         deadlineFormatted: d.deadline
@@ -165,6 +215,18 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
     }
   },
 )
+
+function withDue<T extends { deadline: Date | null }>(t: T) {
+  return {
+    ...t,
+    dueFormatted: t.deadline
+      ? new Date(t.deadline).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })
+      : '—',
+  }
+}
 
 function getTimeAgo(date: Date): string {
   const now = new Date()

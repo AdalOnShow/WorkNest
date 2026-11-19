@@ -7,6 +7,7 @@ import {
   project,
   projectMember,
   task,
+  taskAssignee,
   comment,
   notification,
   activity,
@@ -25,6 +26,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   memberships: many(projectMember),
   assignedTasks: many(task, { relationName: 'assignee' }),
   createdTasks: many(task, { relationName: 'creator' }),
+  taskAssignments: many(taskAssignee),
   comments: many(comment),
   notifications: many(notification),
   activities: many(activity),
@@ -95,7 +97,19 @@ export const taskRelations = relations(task, ({ one, many }) => ({
     references: [user.id],
     relationName: 'creator',
   }),
+  assignees: many(taskAssignee),
   comments: many(comment),
+}))
+
+export const taskAssigneeRelations = relations(taskAssignee, ({ one }) => ({
+  task: one(task, {
+    fields: [taskAssignee.taskId],
+    references: [task.id],
+  }),
+  user: one(user, {
+    fields: [taskAssignee.userId],
+    references: [user.id],
+  }),
 }))
 
 // ─── Comments ──────────────────────────────────────────
