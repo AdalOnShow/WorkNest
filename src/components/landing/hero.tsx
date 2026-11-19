@@ -1,54 +1,53 @@
 import { Link } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
-import { AnimatedDots } from './animated-dots'
+import { Button } from '#/components/ui/button'
+import { ProductMockup } from './product-mockup'
 
 export function Hero() {
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated Background */}
-      <AnimatedDots />
+    <section className="pt-32 pb-20 md:pt-40 md:pb-28">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center animate-fade-in-up">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground mb-6">
+            <span className="size-1.5 rounded-full bg-primary" />
+            Projects, tasks and team chat in one place
+          </span>
 
-      {/* Hero Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-32">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Headline */}
-          <h1 className="font-headline text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-foreground mb-6 animate-fade-in-up">
-            Manage Projects.
-            <br />
-            Ship Faster.
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-6">
+            The simple workspace for teams that ship
           </h1>
 
-          {/* Subtext */}
-          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in-up animation-delay-200">
-            The modern collaboration platform for teams that move fast.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+            WorkNest gives every project its own task board, roles and chat
+            room, so your team always knows who is doing what and what is due
+            next.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button size="lg" asChild className="w-full sm:w-auto">
-              <Link to="/login">Get Started Free</Link>
+              <Link to="/login">Get started free</Link>
             </Button>
             <Button
               size="lg"
-              variant="ghost"
+              variant="outline"
               onClick={() => scrollToSection('how-it-works')}
               className="w-full sm:w-auto"
             >
-              See How It Works
+              See how it works
             </Button>
           </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Sign in with Google or GitHub. No credit card.
+          </p>
+        </div>
+
+        <div className="mt-16 md:mt-20 max-w-5xl mx-auto animate-fade-in-up animation-delay-200">
+          <ProductMockup />
         </div>
       </div>
-
-      {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
   )
 }

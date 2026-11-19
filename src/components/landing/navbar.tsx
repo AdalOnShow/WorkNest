@@ -139,10 +139,10 @@ export function Navbar({
                 How it Works
               </button>
               <button
-                onClick={() => scrollToSection('testimonials')}
+                onClick={() => scrollToSection('faq')}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Testimonials
+                FAQ
               </button>
             </div>
           )}
@@ -242,10 +242,10 @@ export function Navbar({
               How it Works
             </button>
             <button
-              onClick={() => scrollToSection('testimonials')}
+              onClick={() => scrollToSection('faq')}
               className="block w-full text-left px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
             >
-              Testimonials
+              FAQ
             </button>
 
             <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-border">
