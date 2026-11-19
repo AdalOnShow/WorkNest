@@ -23,7 +23,7 @@ Track high-level development phases and milestones.
 | 5   | drizzle.config.ts configured (D1-http)     | [x]    | D1-http driver with env credentials            |
 | 6   | D1 binding in wrangler config              | [x]    | d1_databases binding "DB" configured           |
 | 7   | Cloudinary configured (profile photos)     | [x]    | REST API wrapper, worknest/avatars folder      |
-| 8   | Durable Objects configured (ChatRoom only) | [ ]    | Old Notification/Activity DOs removed (v2)     |
+| 8   | Durable Objects configured (ChatRoom only) | [x]    | CHAT_ROOM binding, migration v3; v2 removed old DOs |
 | 9   | Database client (src/db/index.ts)          | [x]    | createDb() with D1 + schema + relations        |
 
 ---
@@ -67,7 +67,7 @@ Track high-level development phases and milestones.
 | 32  | Server-side session validation middleware | [x]    | getSession + requireSession server functions  |
 | 33  | Role-based authorization middleware       | [ ]    | No RBAC middleware yet                        |
 | 34  | Login page                                | [x]    | Social login (Google + GitHub) with redirect  |
-| 35  | Signup page                               | [~]    | Auto-handled by Better Auth OAuth flow        |
+| 35  | Signup page                               | [x]    | Via OAuth first sign-in; email is sign-in only |
 | 36  | Auth callback handling                    | [x]    | /api/auth/$ catch-all route                   |
 
 ---
@@ -226,7 +226,7 @@ Track high-level development phases and milestones.
 | Landing page  | [x]    | Hero, Features, HowItWorks, Testimonials, CTA, Footer |
 | Members page  | [x]    | Real D1 data via TanStack Query                       |
 | Settings page | [x]    | Profile (name/photo), theme toggle, account mgmt      |
-| Messages page | [~]    | Placeholder; rebuilt in Phase 9 (project chat)        |
+| Messages page | [x]    | Rebuilt in Phase 9 (project chat)                     |
 
 ---
 
@@ -310,32 +310,35 @@ Track high-level development phases and milestones.
 
 | Phase              | Tasks   | Complete | In Progress | Not Started |
 | ------------------ | ------- | -------- | ----------- | ----------- |
-| 1. Infrastructure  | 9       | 8        | 0           | 1           |
-| 2. Database Schema | 15      | 15       | 0           | 0           |
-| 3. Authentication  | 12      | 9        | 1           | 2           |
-| 4. Projects        | 13      | 11       | 0           | 2           |
-| 5. Tasks           | 13      | 10       | 0           | 3           |
-| 6. Dashboard       | 9       | 5        | 0           | 4           |
-| 7. Collaboration   | 7       | 3        | 0           | 4           |
+| 1. Infrastructure  | 9       | 9        | 0           | 0           |
+| 2. Database Schema | 13      | 13       | 0           | 0           |
+| 3. Authentication  | 12      | 10       | 0           | 2           |
+| 4. Projects        | 13      | 12       | 0           | 1           |
+| 5. Tasks           | 13      | 13       | 0           | 0           |
+| 6. Dashboard       | 9       | 6        | 0           | 3           |
+| 7. Collaboration   | 7       | 5        | 0           | 2           |
 | 8. Profile Photos  | 3       | 3        | 0           | 0           |
-| 9. Project Chat    | 7       | 0        | 0           | 7           |
+| 9. Project Chat    | 7       | 6        | 0           | 1           |
 | 10. Polish         | 13      | 10       | 1           | 2           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **111** | **72**   | **4**       | **42**      |
+| **Total**          | **109** | **88**   | **3**       | **18**      |
+
+Phase 2 excludes the n/a attachment row.
 
 ---
 
 ## Current Phase
 
-**Phase 4-6 + 7:** All core CRUD server functions built and wired to pages. Projects, Tasks, Members, Notifications, and Dashboard all use real D1 data via TanStack Query.
+**Master plan (F0–F8):** finish every in-scope unimplemented item. Deployment (tasks 108–114, 117) is out of scope for now.
 
-**Next Priority:** Project chat (Phase 9, tasks 97-103), then RBAC middleware (task 33).
+### Feature order
 
-### Immediate Next Steps
-
-1. Chat schema + migration + getMessages (tasks 97-98)
-2. ChatRoom Durable Object + chat WebSocket route (tasks 99-100)
-3. useChatRoom hook + Messages page rebuild (tasks 101-102)
-4. Add role-based authorization middleware (task 33)
-5. Task validation — server-side validation for required fields (task 56)
-6. Sort functionality for projects and tasks lists (tasks 47, 61)
+1. F0: Tracker housekeeping
+2. F1: Shared auth + RBAC middleware (task 33)
+3. F2: Project sort (task 47)
+4. F3: Comment edit/delete (tasks 73, 74)
+5. F4: Email/password behind `ENABLE_EMAIL_PASSWORD` (task 26)
+6. F5: Dashboard charts: progress, productivity, workload (tasks 64, 67, 68)
+7. F6: Chat verification (task 103)
+8. F7: Polish: tablet, a11y, perf (tasks 89, 95, 96)
+9. F8: Seed data, demo login, README (tasks 115, 116)
