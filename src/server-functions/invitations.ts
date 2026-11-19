@@ -1,29 +1,10 @@
-import { createDb } from '#/db'
 import { project, projectInvitation, projectMember, user } from '#/db/schema'
 import { logActivity } from '#/lib/activity'
-import { createAuth } from '#/lib/auth'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { MANAGER_ROLES, canManage, requireProjectRole } from '#/lib/authz'
+import { authMiddleware } from '#/lib/middleware'
+import { getCloudflareEnv, getDb } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { and, count, desc, eq, gt, inArray } from 'drizzle-orm'
-
-function getDb() {
-  const env = getCloudflareEnv()
-  return createDb(env.DB)
-}
-
-function getAuth() {
-  const env = getCloudflareEnv()
-  return createAuth(env)
-}
-
-async function requireUserId() {
-  const request = getRequest()
-  const auth = getAuth()
-  const session = await auth.api.getSession({ headers: request.headers })
-  if (!session) throw new Error('Unauthorized')
-  return session.user.id
-}
 
 function buildInvitationLink(token: string) {
   return `${getCloudflareEnv().BETTER_AUTH_URL}/invitations/${token}`
@@ -34,6 +15,7 @@ function generateInvitationToken(): string {
 }
 
 export const createProjectInvitation = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator(
     (data: {
       projectId: string
@@ -47,30 +29,16 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
       return { ...data, email: data.email.trim(), role }
     },
   )
-  .handler(async ({ data }) => {
-    const requesterId = await requireUserId()
-    const db = getDb()
-
-    const membership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, requesterId),
-        ),
-      )
-      .limit(1)
-
-    if (
-      !membership[0] ||
-      !['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
-    ) {
-      throw new Error('Project not found or access denied')
-    }
+  .handler(async ({ data, context: { db, userId: requesterId } }) => {
+    const requesterRole = await requireProjectRole(
+      db,
+      data.projectId,
+      requesterId,
+      { roles: MANAGER_ROLES },
+    )
 
     const requestedRole = data.role
-    if (membership[0].role === 'PROJECT_MANAGER' && requestedRole === 'ADMIN') {
+    if (requesterRole === 'PROJECT_MANAGER' && requestedRole === 'ADMIN') {
       throw new Error('Only project admins can assign ADMIN role')
     }
 
@@ -223,17 +191,9 @@ export const getProjectInvitation = createServerFn({ method: 'GET' })
   })
 
 export const acceptProjectInvitation = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { token: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-    const auth = getAuth()
-
-    const session = await auth.api.getSession({
-      headers: getRequest().headers,
-    })
-    if (!session) throw new Error('Unauthorized')
-
+  .handler(async ({ data, context: { db, userId, user: sessionUser } }) => {
     const [invitation] = await db
       .select()
       .from(projectInvitation)
@@ -256,7 +216,7 @@ export const acceptProjectInvitation = createServerFn({ method: 'POST' })
       throw new Error('Invitation has expired')
     }
 
-    if (session.user.email.toLowerCase() !== invitation.email.toLowerCase()) {
+    if (sessionUser.email.toLowerCase() !== invitation.email.toLowerCase()) {
       throw new Error('This invitation was sent to a different email address')
     }
 
@@ -311,10 +271,9 @@ export const acceptProjectInvitation = createServerFn({ method: 'POST' })
   })
 
 export const rejectProjectInvitation = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { token: string }) => data)
-  .handler(async ({ data }) => {
-    const db = getDb()
-
+  .handler(async ({ data, context: { db, user: sessionUser } }) => {
     const [invitation] = await db
       .select()
       .from(projectInvitation)
@@ -329,6 +288,11 @@ export const rejectProjectInvitation = createServerFn({ method: 'POST' })
       throw new Error('Invitation has already been processed')
     }
 
+    // Only the invitee may decline; a leaked link must not let others cancel it.
+    if (sessionUser.email.toLowerCase() !== invitation.email.toLowerCase()) {
+      throw new Error('This invitation was sent to a different email address')
+    }
+
     await db
       .update(projectInvitation)
       .set({ status: 'REJECTED', updatedAt: new Date() })
@@ -338,27 +302,12 @@ export const rejectProjectInvitation = createServerFn({ method: 'POST' })
   })
 
 export const listProjectInvitations = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator(
     (data: { projectId: string; page?: number; pageSize?: number }) => data,
   )
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-
-    const membership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, userId),
-        ),
-      )
-      .limit(1)
-
-    if (!membership[0]) {
-      throw new Error('Project not found or access denied')
-    }
+  .handler(async ({ data, context: { db, userId } }) => {
+    const role = await requireProjectRole(db, data.projectId, userId)
 
     const page = Math.max(1, Math.floor(data.page || 1))
     const pageSize = Math.min(100, Math.max(1, Math.floor(data.pageSize || 20)))
@@ -368,7 +317,7 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
       eq(projectInvitation.projectId, data.projectId),
       eq(projectInvitation.status, 'PENDING'),
     )
-    const canManage = ['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
+    const canInvite = canManage(role)
 
     const [invitations, countResult] = await Promise.all([
       db
@@ -394,7 +343,7 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
     const items = invitations.map(({ token, ...inv }) => ({
       ...inv,
       // Only people who can invite may see (and copy) the invite links.
-      invitationLink: canManage ? buildInvitationLink(token) : null,
+      invitationLink: canInvite ? buildInvitationLink(token) : null,
       expiresAt: inv.expiresAt.getTime(),
       createdAt: inv.createdAt.getTime(),
       isExpired: new Date(inv.expiresAt) < new Date(),
@@ -403,15 +352,13 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
     const total = countResult[0]?.count || 0
     const totalPages = Math.ceil(total / pageSize)
 
-    return { items, total, totalPages, page, canManage }
+    return { items, total, totalPages, page, canManage: canInvite }
   })
 
 export const revokeProjectInvitation = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { invitationId: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-
+  .handler(async ({ data, context: { db, userId } }) => {
     const [invitation] = await db
       .select()
       .from(projectInvitation)
@@ -422,23 +369,9 @@ export const revokeProjectInvitation = createServerFn({ method: 'POST' })
       throw new Error('Invitation not found')
     }
 
-    const membership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, invitation.projectId),
-          eq(projectMember.userId, userId),
-        ),
-      )
-      .limit(1)
-
-    if (
-      !membership[0] ||
-      !['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
-    ) {
-      throw new Error('Project not found or access denied')
-    }
+    await requireProjectRole(db, invitation.projectId, userId, {
+      roles: MANAGER_ROLES,
+    })
 
     await db
       .update(projectInvitation)
@@ -455,42 +388,39 @@ export const revokeProjectInvitation = createServerFn({ method: 'POST' })
  */
 export const listMyPendingInvitations = createServerFn({
   method: 'GET',
-}).handler(async () => {
-  const auth = getAuth()
-  const session = await auth.api.getSession({ headers: getRequest().headers })
-  if (!session) throw new Error('Unauthorized')
-
-  const items = await getDb()
-    .select({
-      id: projectInvitation.id,
-      token: projectInvitation.token,
-      role: projectInvitation.role,
-      createdAt: projectInvitation.createdAt,
-      projectName: project.name,
-      inviterName: user.name,
-    })
-    .from(projectInvitation)
-    .innerJoin(project, eq(projectInvitation.projectId, project.id))
-    .leftJoin(user, eq(projectInvitation.invitedBy, user.id))
-    .where(
-      and(
-        eq(projectInvitation.email, session.user.email.toLowerCase()),
-        eq(projectInvitation.status, 'PENDING'),
-        gt(projectInvitation.expiresAt, new Date()),
-      ),
-    )
-    .orderBy(desc(projectInvitation.createdAt))
-    .limit(20)
-
-  return items.map((inv) => ({ ...inv, createdAt: inv.createdAt.getTime() }))
 })
+  .middleware([authMiddleware])
+  .handler(async ({ context: { db, user: sessionUser } }) => {
+    const items = await db
+      .select({
+        id: projectInvitation.id,
+        token: projectInvitation.token,
+        role: projectInvitation.role,
+        createdAt: projectInvitation.createdAt,
+        projectName: project.name,
+        inviterName: user.name,
+      })
+      .from(projectInvitation)
+      .innerJoin(project, eq(projectInvitation.projectId, project.id))
+      .leftJoin(user, eq(projectInvitation.invitedBy, user.id))
+      .where(
+        and(
+          eq(projectInvitation.email, sessionUser.email.toLowerCase()),
+          eq(projectInvitation.status, 'PENDING'),
+          gt(projectInvitation.expiresAt, new Date()),
+        ),
+      )
+      .orderBy(desc(projectInvitation.createdAt))
+      .limit(20)
+
+    return items.map((inv) => ({ ...inv, createdAt: inv.createdAt.getTime() }))
+  })
 
 /** Projects where the signed-in user is allowed to invite people. */
-export const listInvitableProjects = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    const userId = await requireUserId()
-
-    return getDb()
+export const listInvitableProjects = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .handler(async ({ context: { db, userId } }) => {
+    return db
       .select({
         id: project.id,
         name: project.name,
@@ -501,9 +431,8 @@ export const listInvitableProjects = createServerFn({ method: 'GET' }).handler(
       .where(
         and(
           eq(projectMember.userId, userId),
-          inArray(projectMember.role, ['ADMIN', 'PROJECT_MANAGER']),
+          inArray(projectMember.role, [...MANAGER_ROLES]),
         ),
       )
       .orderBy(project.name)
-  },
-)
+  })

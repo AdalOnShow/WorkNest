@@ -1,4 +1,3 @@
-import { createDb } from '#/db'
 import {
   activity,
   project,
@@ -6,26 +5,13 @@ import {
   task,
   taskAssignee,
 } from '#/db/schema'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { authMiddleware } from '#/lib/middleware'
 import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, sql } from 'drizzle-orm'
 
-function getDb() {
-  const env = getCloudflareEnv()
-  return createDb(env.DB)
-}
-
-export const getDashboardData = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    const env = getCloudflareEnv()
-    const auth = (await import('#/lib/auth')).createAuth(env)
-    const request = (await import('@tanstack/react-start/server')).getRequest()
-    const session = await auth.api.getSession({ headers: request.headers })
-    if (!session) throw new Error('Unauthorized')
-    const userId = session.user.id
-
-    const db = getDb()
-
+export const getDashboardData = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .handler(async ({ context: { db, userId } }) => {
     const memberCondition = sql`${project.id} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`
 
     const [
@@ -213,8 +199,7 @@ export const getDashboardData = createServerFn({ method: 'GET' }).handler(
           : '—',
       })),
     }
-  },
-)
+  })
 
 function withDue<T extends { deadline: Date | null }>(t: T) {
   return {

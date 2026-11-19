@@ -1,4 +1,3 @@
-import { createDb } from '#/db'
 import type { Database } from '#/db'
 import {
   comment,
@@ -9,41 +8,15 @@ import {
   user,
 } from '#/db/schema'
 import { logActivity, notifyUsers } from '#/lib/activity'
-import { createAuth } from '#/lib/auth'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { canManage, requireProjectRole } from '#/lib/authz'
+import { authMiddleware } from '#/lib/middleware'
+import { escapeLikePattern } from '#/lib/sql'
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/sqlite-core'
 
 const creator = alias(user, 'creator')
 
-function escapeLikePattern(value: string) {
-  return value
-    .replaceAll('\\', '\\\\')
-    .replaceAll('%', '\\%')
-    .replaceAll('_', '\\_')
-}
-
-function getDb() {
-  const env = getCloudflareEnv()
-  return createDb(env.DB)
-}
-
-function getAuth() {
-  const env = getCloudflareEnv()
-  return createAuth(env)
-}
-
-async function requireUserId() {
-  const request = getRequest()
-  const auth = getAuth()
-  const session = await auth.api.getSession({ headers: request.headers })
-  if (!session) throw new Error('Unauthorized')
-  return session.user.id
-}
-
-type ProjectRole = 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
 type TaskPriority = 'HIGH' | 'MEDIUM' | 'LOW'
 type Db = Database
@@ -56,17 +29,12 @@ export interface TaskAssignee {
 
 const DAY_MS = 86_400_000
 
-function canManage(role: ProjectRole) {
-  return role === 'ADMIN' || role === 'PROJECT_MANAGER'
-}
-
 /**
  * Loads the task plus the caller's project role and the task's assignees.
  * Throws "Task not found" when the task is missing or the caller is not a
  * member of its project, so existence is never leaked.
  */
-async function requireTaskContext(taskId: string, userId: string) {
-  const db = getDb()
+async function requireTaskContext(db: Db, taskId: string, userId: string) {
   const [row] = await db
     .select({
       projectId: task.projectId,
@@ -177,6 +145,7 @@ function formatDue(deadline: Date | null) {
 }
 
 export const listTasks = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator(
     (data: {
       search?: string
@@ -192,9 +161,7 @@ export const listTasks = createServerFn({ method: 'GET' })
       pageSize?: number
     }) => data,
   )
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
+  .handler(async ({ data, context: { db, userId } }) => {
     const search = data.search || ''
     const status = data.status || 'all'
     const priority = data.priority || 'all'
@@ -321,11 +288,10 @@ export const listTasks = createServerFn({ method: 'GET' })
   })
 
 export const getTask = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator((data: { taskId: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-    const ctx = await requireTaskContext(data.taskId, userId)
+  .handler(async ({ data, context: { db, userId } }) => {
+    const ctx = await requireTaskContext(db, data.taskId, userId)
 
     const [taskRow] = await db
       .select({
@@ -366,6 +332,7 @@ export const getTask = createServerFn({ method: 'GET' })
   })
 
 export const createTask = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator(
     (data: {
       projectId: string
@@ -377,24 +344,9 @@ export const createTask = createServerFn({ method: 'POST' })
       deadline?: number
     }) => data,
   )
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-    const [membership] = await db
-      .select({ role: projectMember.role })
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, userId),
-        ),
-      )
-      .limit(1)
-
-    if (!membership) {
-      throw new Error('Project not found or access denied')
-    }
-    if (!canManage(membership.role)) {
+  .handler(async ({ data, context: { db, userId } }) => {
+    const role = await requireProjectRole(db, data.projectId, userId)
+    if (!canManage(role)) {
       throw new Error('Only admins and project managers can create tasks')
     }
     const trimmedTitle = data.title.trim()
@@ -459,6 +411,7 @@ export const createTask = createServerFn({ method: 'POST' })
   })
 
 export const updateTask = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator(
     (data: {
       taskId: string
@@ -470,10 +423,8 @@ export const updateTask = createServerFn({ method: 'POST' })
       deadline?: number | null
     }) => data,
   )
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-    const ctx = await requireTaskContext(data.taskId, userId)
+  .handler(async ({ data, context: { db, userId } }) => {
+    const ctx = await requireTaskContext(db, data.taskId, userId)
     if (!canManage(ctx.role)) {
       throw new Error('Only admins and project managers can edit tasks')
     }
@@ -581,11 +532,10 @@ export const updateTask = createServerFn({ method: 'POST' })
   })
 
 export const deleteTask = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { taskId: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-    const ctx = await requireTaskContext(data.taskId, userId)
+  .handler(async ({ data, context: { db, userId } }) => {
+    const ctx = await requireTaskContext(db, data.taskId, userId)
     if (!canManage(ctx.role)) {
       throw new Error('Only admins and project managers can delete tasks')
     }
@@ -606,11 +556,10 @@ export const deleteTask = createServerFn({ method: 'POST' })
   })
 
 export const changeTaskStatus = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { taskId: string; status: TaskStatus }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-    const ctx = await requireTaskContext(data.taskId, userId)
+  .handler(async ({ data, context: { db, userId } }) => {
+    const ctx = await requireTaskContext(db, data.taskId, userId)
     if (!canManage(ctx.role) && !ctx.isAssignee) {
       throw new Error(
         'Only assignees, admins and project managers can change status',
@@ -652,11 +601,10 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
   })
 
 export const getTaskComments = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator((data: { taskId: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-    await requireTaskContext(data.taskId, userId)
+  .handler(async ({ data, context: { db, userId } }) => {
+    await requireTaskContext(db, data.taskId, userId)
     const comments = await db
       .select({
         id: comment.id,
@@ -675,11 +623,10 @@ export const getTaskComments = createServerFn({ method: 'GET' })
   })
 
 export const addTaskComment = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { taskId: string; content: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-    const ctx = await requireTaskContext(data.taskId, userId)
+  .handler(async ({ data, context: { db, userId } }) => {
+    const ctx = await requireTaskContext(db, data.taskId, userId)
     const trimmedContent = data.content.trim()
     if (trimmedContent.length === 0) {
       throw new Error('Comment content cannot be empty')

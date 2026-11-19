@@ -65,7 +65,7 @@ Track high-level development phases and milestones.
 | 30  | Session management working                | [x]    | Cookie cache (2min), getSession server fn     |
 | 31  | Protected routes (beforeLoad guards)      | [x]    | _authenticated layout redirects to /login     |
 | 32  | Server-side session validation middleware | [x]    | getSession + requireSession server functions  |
-| 33  | Role-based authorization middleware       | [ ]    | No RBAC middleware yet                        |
+| 33  | Role-based authorization middleware       | [x]    | authMiddleware + requireProjectRole (lib/authz) |
 | 34  | Login page                                | [x]    | Social login (Google + GitHub) with redirect  |
 | 35  | Signup page                               | [x]    | Via OAuth first sign-in; email is sign-in only |
 | 36  | Auth callback handling                    | [x]    | /api/auth/$ catch-all route                   |
@@ -312,7 +312,7 @@ Track high-level development phases and milestones.
 | ------------------ | ------- | -------- | ----------- | ----------- |
 | 1. Infrastructure  | 9       | 9        | 0           | 0           |
 | 2. Database Schema | 13      | 13       | 0           | 0           |
-| 3. Authentication  | 12      | 10       | 0           | 2           |
+| 3. Authentication  | 12      | 11       | 0           | 1           |
 | 4. Projects        | 13      | 12       | 0           | 1           |
 | 5. Tasks           | 13      | 13       | 0           | 0           |
 | 6. Dashboard       | 9       | 6        | 0           | 3           |
@@ -321,7 +321,7 @@ Track high-level development phases and milestones.
 | 9. Project Chat    | 7       | 6        | 0           | 1           |
 | 10. Polish         | 13      | 10       | 1           | 2           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **109** | **88**   | **3**       | **18**      |
+| **Total**          | **109** | **89**   | **3**       | **17**      |
 
 Phase 2 excludes the n/a attachment row.
 

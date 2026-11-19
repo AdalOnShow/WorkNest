@@ -1,12 +1,10 @@
-import { createAuth } from '#/lib/auth'
 import {
   deleteFromCloudinary,
   getCloudinaryPublicId,
   uploadToCloudinary,
 } from '#/lib/cloudinary'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { authMiddleware, sessionMiddleware } from '#/lib/middleware'
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -17,13 +15,9 @@ const ALLOWED_MIME_TYPES = [
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const CLOUDINARY_FOLDER = 'worknest/avatars'
 
-export const getProfile = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    const request = getRequest()
-    const env = getCloudflareEnv()
-    const auth = createAuth(env)
-    const session = await auth.api.getSession({ headers: request.headers })
-
+export const getProfile = createServerFn({ method: 'GET' })
+  .middleware([sessionMiddleware])
+  .handler(async ({ context: { session } }) => {
     if (!session) {
       return null
     }
@@ -40,10 +34,10 @@ export const getProfile = createServerFn({ method: 'GET' }).handler(
         userId,
       },
     }
-  },
-)
+  })
 
 export const updateProfile = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: unknown) => {
     if (
       typeof data !== 'object' ||
@@ -55,16 +49,7 @@ export const updateProfile = createServerFn({ method: 'POST' })
 
     return data as { name: string }
   })
-  .handler(async ({ data }) => {
-    const request = getRequest()
-    const env = getCloudflareEnv()
-    const auth = createAuth(env)
-    const session = await auth.api.getSession({ headers: request.headers })
-
-    if (!session) {
-      throw new Error('Unauthorized')
-    }
-
+  .handler(async ({ data, context: { auth, headers } }) => {
     const name = data.name.trim()
     if (name.length < 1 || name.length > 100) {
       throw new Error('Name must be between 1 and 100 characters')
@@ -73,13 +58,14 @@ export const updateProfile = createServerFn({ method: 'POST' })
     // Use Better Auth's updateUser to update DB + refresh session cookie
     await auth.api.updateUser({
       body: { name },
-      headers: request.headers,
+      headers,
     })
 
     return { success: true }
   })
 
 export const uploadProfilePhoto = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: FormData) => {
     const file = data.get('photo') as File | null
     if (!file) {
@@ -95,21 +81,10 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
     }
     return { file }
   })
-  .handler(async ({ data }) => {
-    const request = getRequest()
-    const env = getCloudflareEnv()
-    const auth = createAuth(env)
-    const session = await auth.api.getSession({ headers: request.headers })
-
-    if (!session) {
-      throw new Error('Unauthorized')
-    }
-
+  .handler(async ({ data, context: { auth, env, headers, user } }) => {
     const { file } = data
 
-    const oldPublicId = session.user.image
-      ? getCloudinaryPublicId(session.user.image)
-      : null
+    const oldPublicId = user.image ? getCloudinaryPublicId(user.image) : null
 
     // Upload new photo to Cloudinary
     const result = await uploadToCloudinary(env, file, CLOUDINARY_FOLDER)
@@ -118,7 +93,7 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
       // Use Better Auth's updateUser to update DB + refresh session cookie
       await auth.api.updateUser({
         body: { image: result.secure_url },
-        headers: request.headers,
+        headers,
       })
     } catch {
       // Cleanup uploaded asset if DB update fails
@@ -141,20 +116,12 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
     return { success: true }
   })
 
-export const deleteProfilePhoto = createServerFn({ method: 'POST' }).handler(
-  async () => {
-    const request = getRequest()
-    const env = getCloudflareEnv()
-    const auth = createAuth(env)
-    const session = await auth.api.getSession({ headers: request.headers })
-
-    if (!session) {
-      throw new Error('Unauthorized')
-    }
-
+export const deleteProfilePhoto = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .handler(async ({ context: { auth, env, headers, user } }) => {
     // Delete from Cloudinary
-    if (session.user.image) {
-      const publicId = getCloudinaryPublicId(session.user.image)
+    if (user.image) {
+      const publicId = getCloudinaryPublicId(user.image)
       if (publicId) {
         await deleteFromCloudinary(env, publicId)
       }
@@ -163,9 +130,8 @@ export const deleteProfilePhoto = createServerFn({ method: 'POST' }).handler(
     // Use Better Auth's updateUser to update DB + refresh session cookie
     await auth.api.updateUser({
       body: { image: null },
-      headers: request.headers,
+      headers,
     })
 
     return { success: true }
-  },
-)
+  })

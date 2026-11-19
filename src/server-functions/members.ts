@@ -1,46 +1,17 @@
-import { createDb } from '#/db'
 import { projectMember, user, userProfile } from '#/db/schema'
-import { createAuth } from '#/lib/auth'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { authMiddleware } from '#/lib/middleware'
+import { escapeLikePattern } from '#/lib/sql'
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { and, count, eq, sql } from 'drizzle-orm'
 
-function escapeLikePattern(value: string) {
-  return value
-    .replaceAll('\\', '\\\\')
-    .replaceAll('%', '\\%')
-    .replaceAll('_', '\\_')
-}
-
-function getDb() {
-  const env = getCloudflareEnv()
-  return createDb(env.DB)
-}
-
-function getAuth() {
-  const env = getCloudflareEnv()
-  return createAuth(env)
-}
-
-async function requireSession() {
-  const request = getRequest()
-  const auth = getAuth()
-  const session = await auth.api.getSession({ headers: request.headers })
-  if (!session) throw new Error('Unauthorized')
-  return session
-}
-
 export const listMembers = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator((data: { search?: string; page?: number; pageSize?: number }) => ({
     search: data.search,
     page: Math.max(1, Math.floor(data.page || 1)),
     pageSize: Math.min(100, Math.max(1, Math.floor(data.pageSize || 10))),
   }))
-  .handler(async ({ data }) => {
-    const session = await requireSession()
-    const userId = session.user.id
-    const db = getDb()
+  .handler(async ({ data, context: { db, userId } }) => {
     const search = data.search || ''
     const page = data.page
     const pageSize = data.pageSize

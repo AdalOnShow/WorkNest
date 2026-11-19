@@ -1,5 +1,5 @@
 import { createDb } from '#/db'
-import { getProjectRole } from '#/chat/access'
+import { getProjectRole } from '#/lib/authz'
 import { CHAT_HEADERS } from '#/chat/events'
 import { createAuth } from '#/lib/auth'
 

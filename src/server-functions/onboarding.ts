@@ -1,21 +1,7 @@
-import { createDb } from '#/db'
 import { projectMember, userProfile } from '#/db/schema'
-import { createAuth } from '#/lib/auth'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { authMiddleware } from '#/lib/middleware'
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { eq } from 'drizzle-orm'
-
-function getDb() {
-  return createDb(getCloudflareEnv().DB)
-}
-
-async function requireUserId() {
-  const auth = createAuth(getCloudflareEnv())
-  const session = await auth.api.getSession({ headers: getRequest().headers })
-  if (!session) throw new Error('Unauthorized')
-  return session.user.id
-}
 
 /**
  * `completed` — the user finished or skipped onboarding.
@@ -23,11 +9,9 @@ async function requireUserId() {
  * Users who joined through an invitation already have a project, so they
  * are never sent to onboarding.
  */
-export const getOnboardingStatus = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    const userId = await requireUserId()
-    const db = getDb()
-
+export const getOnboardingStatus = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .handler(async ({ context: { db, userId } }) => {
     const [profile, membership] = await Promise.all([
       db
         .select({ completedAt: userProfile.onboardingCompletedAt })
@@ -44,15 +28,14 @@ export const getOnboardingStatus = createServerFn({ method: 'GET' }).handler(
 
     const completed = Boolean(profile?.completedAt)
     return { completed, shouldOnboard: !completed && !membership }
-  },
-)
+  })
 
-export const completeOnboarding = createServerFn({ method: 'POST' }).handler(
-  async () => {
-    const userId = await requireUserId()
+export const completeOnboarding = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .handler(async ({ context: { db, userId } }) => {
     const now = new Date()
 
-    await getDb()
+    await db
       .insert(userProfile)
       .values({ id: userId, createdAt: now, onboardingCompletedAt: now })
       .onConflictDoUpdate({
@@ -61,5 +44,4 @@ export const completeOnboarding = createServerFn({ method: 'POST' }).handler(
       })
 
     return { success: true }
-  },
-)
+  })

@@ -1,16 +1,13 @@
-import { createDb } from '#/db'
 import { chatMessage, project, user } from '#/db/schema'
-import { getProjectRole } from '#/chat/access'
 import {
   CHAT_PAGE_SIZE,
   decodeChatCursor,
   encodeChatCursor,
 } from '#/chat/events'
 import type { ChatHistoryPage, ChatMessageDTO } from '#/chat/events'
-import { createAuth } from '#/lib/auth'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { getProjectRole } from '#/lib/authz'
+import { authMiddleware } from '#/lib/middleware'
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { and, desc, eq, lt, or } from 'drizzle-orm'
 import { z } from 'zod'
 
@@ -28,74 +25,70 @@ const getMessagesInput = z.object({
  * WebSocket and are merged into the same query cache on the client.
  */
 export const getMessages = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator(getMessagesInput)
-  .handler(async ({ data }): Promise<ChatHistoryPage> => {
-    const env = getCloudflareEnv()
-    const session = await createAuth(env).api.getSession({
-      headers: getRequest().headers,
-    })
-    if (!session) throw new Error('Unauthorized')
+  .handler(
+    async ({ data, context: { db, userId } }): Promise<ChatHistoryPage> => {
+      const role = await getProjectRole(db, data.projectId, userId)
+      // Same message for "missing" and "not a member" so project ids can't be probed.
+      if (!role) throw new Error('Project not found')
 
-    const db = createDb(env.DB)
-    const role = await getProjectRole(db, data.projectId, session.user.id)
-    // Same message for "missing" and "not a member" so project ids can't be probed.
-    if (!role) throw new Error('Project not found')
+      const limit = data.limit ?? CHAT_PAGE_SIZE
+      const cursor = data.cursor ? decodeChatCursor(data.cursor) : null
+      if (data.cursor && !cursor) throw new Error('Invalid cursor')
 
-    const limit = data.limit ?? CHAT_PAGE_SIZE
-    const cursor = data.cursor ? decodeChatCursor(data.cursor) : null
-    if (data.cursor && !cursor) throw new Error('Invalid cursor')
-
-    const where = cursor
-      ? and(
-          eq(chatMessage.projectId, data.projectId),
-          or(
-            lt(chatMessage.createdAt, new Date(cursor.createdAt)),
-            and(
-              eq(chatMessage.createdAt, new Date(cursor.createdAt)),
-              lt(chatMessage.id, cursor.id),
+      const where = cursor
+        ? and(
+            eq(chatMessage.projectId, data.projectId),
+            or(
+              lt(chatMessage.createdAt, new Date(cursor.createdAt)),
+              and(
+                eq(chatMessage.createdAt, new Date(cursor.createdAt)),
+                lt(chatMessage.id, cursor.id),
+              ),
             ),
-          ),
-        )
-      : eq(chatMessage.projectId, data.projectId)
+          )
+        : eq(chatMessage.projectId, data.projectId)
 
-    // Fetch one extra row to know whether an older page exists.
-    const rows = await db
-      .select({
-        id: chatMessage.id,
-        projectId: chatMessage.projectId,
-        body: chatMessage.body,
-        createdAt: chatMessage.createdAt,
-        senderId: chatMessage.senderId,
-        senderName: user.name,
-        senderImage: user.image,
-      })
-      .from(chatMessage)
-      .leftJoin(user, eq(chatMessage.senderId, user.id))
-      .where(where)
-      .orderBy(desc(chatMessage.createdAt), desc(chatMessage.id))
-      .limit(limit + 1)
+      // Fetch one extra row to know whether an older page exists.
+      const rows = await db
+        .select({
+          id: chatMessage.id,
+          projectId: chatMessage.projectId,
+          body: chatMessage.body,
+          createdAt: chatMessage.createdAt,
+          senderId: chatMessage.senderId,
+          senderName: user.name,
+          senderImage: user.image,
+        })
+        .from(chatMessage)
+        .leftJoin(user, eq(chatMessage.senderId, user.id))
+        .where(where)
+        .orderBy(desc(chatMessage.createdAt), desc(chatMessage.id))
+        .limit(limit + 1)
 
-    const hasMore = rows.length > limit
-    const page = hasMore ? rows.slice(0, limit) : rows
+      const hasMore = rows.length > limit
+      const page = hasMore ? rows.slice(0, limit) : rows
 
-    const items: ChatMessageDTO[] = page.map((row) => ({
-      id: row.id,
-      projectId: row.projectId,
-      body: row.body,
-      createdAt: row.createdAt.getTime(),
-      sender:
-        row.senderId && row.senderName !== null
-          ? { id: row.senderId, name: row.senderName, image: row.senderImage }
-          : null,
-    }))
+      const items: ChatMessageDTO[] = page.map((row) => ({
+        id: row.id,
+        projectId: row.projectId,
+        body: row.body,
+        createdAt: row.createdAt.getTime(),
+        sender:
+          row.senderId && row.senderName !== null
+            ? { id: row.senderId, name: row.senderName, image: row.senderImage }
+            : null,
+      }))
 
-    const last = items.at(-1)
-    return {
-      items,
-      nextCursor:
-        hasMore && last ? encodeChatCursor(last.createdAt, last.id) : null,
-    }
-  })
+      const last = items.at(-1)
+      return {
+        items,
+        nextCursor:
+          hasMore && last ? encodeChatCursor(last.createdAt, last.id) : null,
+      }
+    },
+  )
 
 /**
  * Metadata for opening a project's chat room. The client calls this before
@@ -103,16 +96,10 @@ export const getMessages = createServerFn({ method: 'GET' })
  * so membership errors are surfaced here instead.
  */
 export const getChatRoom = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator(z.object({ projectId: z.string().min(1) }))
-  .handler(async ({ data }) => {
-    const env = getCloudflareEnv()
-    const session = await createAuth(env).api.getSession({
-      headers: getRequest().headers,
-    })
-    if (!session) throw new Error('Unauthorized')
-
-    const db = createDb(env.DB)
-    const role = await getProjectRole(db, data.projectId, session.user.id)
+  .handler(async ({ data, context: { db, userId } }) => {
+    const role = await getProjectRole(db, data.projectId, userId)
     if (!role) throw new Error('Project not found')
 
     const rows = await db
@@ -129,6 +116,6 @@ export const getChatRoom = createServerFn({ method: 'GET' })
       role,
       /** ADMINs may delete anyone's message; everyone may delete their own. */
       canModerate: role === 'ADMIN',
-      viewerId: session.user.id,
+      viewerId: userId,
     }
   })

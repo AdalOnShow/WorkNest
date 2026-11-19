@@ -1,37 +1,15 @@
-import { createDb } from '#/db'
 import { notification } from '#/db/schema'
-import { createAuth } from '#/lib/auth'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { authMiddleware } from '#/lib/middleware'
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { and, count, desc, eq } from 'drizzle-orm'
 
-function getDb() {
-  const env = getCloudflareEnv()
-  return createDb(env.DB)
-}
-
-function getAuth() {
-  const env = getCloudflareEnv()
-  return createAuth(env)
-}
-
-async function requireUserId() {
-  const request = getRequest()
-  const auth = getAuth()
-  const session = await auth.api.getSession({ headers: request.headers })
-  if (!session) throw new Error('Unauthorized')
-  return session.user.id
-}
-
 export const listNotifications = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator((data: { page?: number; pageSize?: number }) => ({
     page: Math.max(1, Math.floor(data.page || 1)),
     pageSize: Math.min(100, Math.max(1, Math.floor(data.pageSize || 20))),
   }))
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
+  .handler(async ({ data, context: { db, userId } }) => {
     const page = data.page
     const pageSize = data.pageSize
 
@@ -67,11 +45,9 @@ export const listNotifications = createServerFn({ method: 'GET' })
   })
 
 export const markNotificationRead = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { notificationId: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const db = getDb()
-
+  .handler(async ({ data, context: { db, userId } }) => {
     await db
       .update(notification)
       .set({ read: true })
@@ -87,19 +63,18 @@ export const markNotificationRead = createServerFn({ method: 'POST' })
 
 export const markAllNotificationsRead = createServerFn({
   method: 'POST',
-}).handler(async () => {
-  const userId = await requireUserId()
-  const db = getDb()
-
-  await db
-    .update(notification)
-    .set({ read: true })
-    .where(
-      and(eq(notification.recipientId, userId), eq(notification.read, false)),
-    )
-
-  return { success: true }
 })
+  .middleware([authMiddleware])
+  .handler(async ({ context: { db, userId } }) => {
+    await db
+      .update(notification)
+      .set({ read: true })
+      .where(
+        and(eq(notification.recipientId, userId), eq(notification.read, false)),
+      )
+
+    return { success: true }
+  })
 
 function getTimeAgo(date: Date): string {
   const now = new Date()

@@ -77,6 +77,14 @@ function InvitationPage() {
       navigate({ to: '/projects' })
     },
     onError: (err: Error) => {
+      if (err.message === 'Unauthorized') {
+        toast.info('Sign in to respond to this invitation')
+        void navigate({
+          to: '/login',
+          search: { redirect: `/invitations/${token}` },
+        })
+        return
+      }
       toast.error(err.message || 'Failed to decline invitation')
     },
   })

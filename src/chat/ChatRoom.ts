@@ -2,7 +2,7 @@ import { DurableObject } from 'cloudflare:workers'
 import { createDb } from '#/db'
 import type { Database } from '#/db'
 import { chatMessage } from '#/db/schema'
-import { getProjectRole } from '#/chat/access'
+import { getProjectRole } from '#/lib/authz'
 import {
   CHAT_HEADERS,
   CHAT_PING,

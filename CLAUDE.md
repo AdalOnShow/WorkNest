@@ -37,7 +37,11 @@ To apply migrations to the local D1 that `pnpm dev` uses, run `pnpm wrangler d1 
 
 **Bindings access.** Server code reads bindings through `getCloudflareEnv()` (`src/lib/request-context.ts`, a wrapper over `cloudflare:workers` `env`). Nothing is passed through context. `createDb(env.DB)` (`src/db/index.ts`) and `createAuth(env)` (`src/lib/auth.ts`) are built per call, not as module-level singletons.
 
-**Server functions (`src/server-functions/*.ts`)** hold all data access. Each file repeats the same local helpers: `getDb()`, `getAuth()`, `requireUserId()` (session from `getRequest().headers`), and access checks such as `requireTaskAccess`. These are `createServerFn` with `.validator(...)` and `.handler(...)`. The UI calls them directly from TanStack Query `queryFn`/`mutationFn` in route components, and mutations invalidate query keys like `['tasks']`, `['projects']`, `['dashboard']`.
+**Server functions (`src/server-functions/*.ts`)** hold all data access. They are `createServerFn().middleware([authMiddleware]).validator(...).handler(...)`.
+- `authMiddleware` (`src/lib/middleware.ts`) resolves the Better Auth session or throws `Unauthorized`, and puts `{ db, auth, env, headers, session, user, userId }` on `context`.
+- `sessionMiddleware` is the non-throwing variant.
+- Project permissions are checked in the handler with `requireProjectRole(db, projectId, userId, { roles })`, `getProjectRole` and `canManage` (`src/lib/authz.ts`).
+- Keep `src/lib/middleware.ts` free of plain exported helpers. The Start compiler only strips `.server()` bodies from the client build, so a plain helper would pull `cloudflare:workers` into the browser bundle. Put request helpers such as `getDb()` in `src/lib/request-context.ts` instead. The UI calls them directly from TanStack Query `queryFn`/`mutationFn` in route components, and mutations invalidate query keys like `['tasks']`, `['projects']`, `['dashboard']`.
 
 **Authorization is per project.** The global `user_profile.role` is created as `TEAM_MEMBER` by a Better Auth `databaseHooks.user.create.after` hook. Real permissions come from `project_member.role` (`ADMIN | PROJECT_MANAGER | TEAM_MEMBER`), checked inside each server function. A user sees a task or project only through a `project_member` join. Project creators become `ADMIN`, and a `PROJECT_MANAGER` cannot grant `ADMIN`.
 

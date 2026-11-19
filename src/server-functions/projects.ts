@@ -1,39 +1,13 @@
-import { createDb } from '#/db'
 import { project, projectMember, task, user } from '#/db/schema'
 import { logActivity } from '#/lib/activity'
-import { createAuth } from '#/lib/auth'
-import { getCloudflareEnv } from '#/lib/request-context'
+import { MANAGER_ROLES, requireProjectRole } from '#/lib/authz'
+import { authMiddleware } from '#/lib/middleware'
+import { escapeLikePattern } from '#/lib/sql'
 import { createServerFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
 
-function escapeLikePattern(value: string) {
-  return value
-    .replaceAll('\\', '\\\\')
-    .replaceAll('%', '\\%')
-    .replaceAll('_', '\\_')
-}
-
-function getDb() {
-  const env = getCloudflareEnv()
-  const db = createDb(env.DB)
-  return { db, env }
-}
-
-function getAuth() {
-  const env = getCloudflareEnv()
-  return { auth: createAuth(env), env }
-}
-
-async function requireUserId() {
-  const request = getRequest()
-  const { auth } = getAuth()
-  const session = await auth.api.getSession({ headers: request.headers })
-  if (!session) throw new Error('Unauthorized')
-  return session.user.id
-}
-
 export const listProjects = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator(
     (data: {
       search?: string
@@ -42,9 +16,7 @@ export const listProjects = createServerFn({ method: 'GET' })
       pageSize?: number
     }) => data,
   )
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const { db } = getDb()
+  .handler(async ({ data, context: { db, userId } }) => {
     const search = data.search || ''
     const status = data.status || 'all'
     const page = Math.max(1, Math.floor(data.page || 1))
@@ -114,25 +86,10 @@ export const listProjects = createServerFn({ method: 'GET' })
   })
 
 export const getProject = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator((data: { projectId: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const { db } = getDb()
-
-    const [membershipResult] = await db
-      .select({ count: count() })
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, userId),
-        ),
-      )
-      .limit(1)
-
-    if (!membershipResult || membershipResult.count === 0) {
-      throw new Error('Project not found or access denied')
-    }
+  .handler(async ({ data, context: { db, userId } }) => {
+    await requireProjectRole(db, data.projectId, userId)
 
     const [projectRow] = await db
       .select()
@@ -156,12 +113,11 @@ export const getProject = createServerFn({ method: 'GET' })
   })
 
 export const createProject = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator(
     (data: { name: string; description?: string; deadline?: number }) => data,
   )
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const { db } = getDb()
+  .handler(async ({ data, context: { db, userId } }) => {
     const trimmedName = data.name.trim()
     if (trimmedName.length === 0) {
       throw new Error('Project name cannot be empty')
@@ -203,6 +159,7 @@ export const createProject = createServerFn({ method: 'POST' })
   })
 
 export const updateProject = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator(
     (data: {
       projectId: string
@@ -212,24 +169,8 @@ export const updateProject = createServerFn({ method: 'POST' })
       deadline?: number | null
     }) => data,
   )
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const { db } = getDb()
-
-    const membership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, userId),
-        ),
-      )
-      .limit(1)
-
-    if (!membership[0] || membership[0].role !== 'ADMIN') {
-      throw new Error('Project not found or access denied')
-    }
+  .handler(async ({ data, context: { db, userId } }) => {
+    await requireProjectRole(db, data.projectId, userId, { roles: ['ADMIN'] })
 
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (data.name !== undefined) updates.name = data.name.trim()
@@ -258,32 +199,20 @@ export const updateProject = createServerFn({ method: 'POST' })
   })
 
 export const deleteProject = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { projectId: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const { db } = getDb()
-
-    const membership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, userId),
-          eq(projectMember.role, 'ADMIN'),
-        ),
-      )
-      .limit(1)
-
-    if (!membership[0]) {
-      throw new Error('Only project admins can delete a project')
-    }
+  .handler(async ({ data, context: { db, userId } }) => {
+    await requireProjectRole(db, data.projectId, userId, {
+      roles: ['ADMIN'],
+      message: 'Only project admins can delete a project',
+    })
 
     await db.delete(project).where(eq(project.id, data.projectId))
     return { success: true }
   })
 
 export const addProjectMember = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator(
     (data: {
       projectId: string
@@ -291,27 +220,13 @@ export const addProjectMember = createServerFn({ method: 'POST' })
       role?: 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'
     }) => data,
   )
-  .handler(async ({ data }) => {
-    const requesterId = await requireUserId()
-    const { db } = getDb()
-
-    const membership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, requesterId),
-        ),
-      )
-      .limit(1)
-
-    if (
-      !membership[0] ||
-      !['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
-    ) {
-      throw new Error('Project not found or access denied')
-    }
+  .handler(async ({ data, context: { db, userId: requesterId } }) => {
+    const requesterRole = await requireProjectRole(
+      db,
+      data.projectId,
+      requesterId,
+      { roles: MANAGER_ROLES },
+    )
 
     const existingMembership = await db
       .select()
@@ -329,7 +244,7 @@ export const addProjectMember = createServerFn({ method: 'POST' })
     }
 
     const requestedRole = data.role || 'TEAM_MEMBER'
-    if (membership[0].role === 'PROJECT_MANAGER' && requestedRole === 'ADMIN') {
+    if (requesterRole === 'PROJECT_MANAGER' && requestedRole === 'ADMIN') {
       throw new Error('Only project admins can assign ADMIN role')
     }
 
@@ -356,61 +271,14 @@ export const addProjectMember = createServerFn({ method: 'POST' })
   })
 
 export const removeProjectMember = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
   .validator((data: { projectId: string; userId: string }) => data)
-  .handler(async ({ data }) => {
-    const requesterId = await requireUserId()
-    const { db } = getDb()
-
-    const membership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, requesterId),
-        ),
-      )
-      .limit(1)
-
-    if (!membership[0]) {
-      throw new Error('Project not found or access denied')
-    }
-
-    const targetMembership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, data.userId),
-        ),
-      )
-      .limit(1)
-
-    if (!targetMembership[0]) {
-      throw new Error('Member not found')
-    }
-
-    const adminCount = await db
-      .select({ count: count() })
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.role, 'ADMIN'),
-        ),
-      )
-
-    if (data.userId !== requesterId && membership[0].role !== 'ADMIN') {
-      throw new Error('Only project admins can remove other members')
-    }
-
-    if (
-      targetMembership[0].role === 'ADMIN' &&
-      (adminCount[0]?.count || 0) <= 1
-    ) {
-      throw new Error('Cannot remove the last project admin')
-    }
+  .handler(async ({ data, context: { db, userId: requesterId } }) => {
+    const requesterRole = await requireProjectRole(
+      db,
+      data.projectId,
+      requesterId,
+    )
 
     const [targetMember] = await db
       .select({ id: projectMember.id, role: projectMember.role })
@@ -422,6 +290,29 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
         ),
       )
       .limit(1)
+
+    if (!targetMember) {
+      throw new Error('Member not found')
+    }
+
+    if (data.userId !== requesterId && requesterRole !== 'ADMIN') {
+      throw new Error('Only project admins can remove other members')
+    }
+
+    if (targetMember.role === 'ADMIN') {
+      const [adminCount] = await db
+        .select({ count: count() })
+        .from(projectMember)
+        .where(
+          and(
+            eq(projectMember.projectId, data.projectId),
+            eq(projectMember.role, 'ADMIN'),
+          ),
+        )
+      if ((adminCount?.count || 0) <= 1) {
+        throw new Error('Cannot remove the last project admin')
+      }
+    }
 
     await db
       .delete(projectMember)
@@ -438,7 +329,7 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
       projectId: data.projectId,
       action: 'PROJECT_MEMBER_REMOVED',
       entityType: 'member',
-      entityId: targetMember?.id || data.userId,
+      entityId: targetMember.id,
       metadata: { userId: data.userId },
     })
 
@@ -446,25 +337,10 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
   })
 
 export const listProjectMembers = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .validator((data: { projectId: string }) => data)
-  .handler(async ({ data }) => {
-    const userId = await requireUserId()
-    const { db } = getDb()
-
-    const membership = await db
-      .select({ role: projectMember.role })
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, userId),
-        ),
-      )
-      .get()
-
-    if (!membership) {
-      throw new Error('Project not found or access denied')
-    }
+  .handler(async ({ data, context: { db, userId } }) => {
+    const myRole = await requireProjectRole(db, data.projectId, userId)
 
     const items = await db
       .select({
@@ -482,6 +358,6 @@ export const listProjectMembers = createServerFn({ method: 'GET' })
 
     return {
       items: items.map((m) => ({ ...m, isMe: m.userId === userId })),
-      myRole: membership.role,
+      myRole,
     }
   })
