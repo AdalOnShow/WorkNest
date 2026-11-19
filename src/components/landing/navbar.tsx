@@ -16,24 +16,6 @@ import { Loader2, Menu, Sprout, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-// Mock data - replace with real data from context/auth
-const MOCK_NOTIFICATIONS = [
-  {
-    id: '1',
-    title: 'Task assigned to you',
-    description: 'Fix login bug has been assigned to you',
-    read: false,
-    createdAt: '2 hours ago',
-  },
-  {
-    id: '2',
-    title: 'Task status updated',
-    description: 'Add tests — Completed',
-    read: true,
-    createdAt: '5 hours ago',
-  },
-]
-
 interface NavbarProps {
   isAuthenticated?: boolean
   userName?: string
@@ -156,11 +138,7 @@ export function Navbar({
 
             {isAuthenticated ? (
               <>
-                <NotificationBell
-                  notifications={MOCK_NOTIFICATIONS}
-                  onMarkRead={() => {}}
-                  onMarkAllRead={() => {}}
-                />
+                <NotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button

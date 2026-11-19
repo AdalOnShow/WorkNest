@@ -18,42 +18,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import { createProjectInvitation } from '#/server-functions/invitations'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  createProjectInvitation,
+  listInvitableProjects,
+} from '#/server-functions/invitations'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Copy, Check, Loader2, Mail } from 'lucide-react'
+import { Bell, Check, Copy, Loader2, Mail } from 'lucide-react'
+
+type Role = 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'
 
 interface InviteMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  projectId: string
+  /** Fixed project. When omitted, the dialog shows a project picker. */
+  projectId?: string
+  /** The inviter's role in `projectId`. Project Managers can't grant Admin. */
+  myRole?: Role
 }
 
 export function InviteMemberDialog({
   open,
   onOpenChange,
-  projectId,
+  projectId: fixedProjectId,
+  myRole: fixedRole,
 }: InviteMemberDialogProps) {
   const queryClient = useQueryClient()
+  const [pickedProjectId, setPickedProjectId] = useState('')
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'>(
-    'TEAM_MEMBER',
-  )
+  const [role, setRole] = useState<Role>('TEAM_MEMBER')
   const [invitationLink, setInvitationLink] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
+  const { data: invitableProjects, isLoading: projectsLoading } = useQuery({
+    queryKey: ['invitations', 'invitable-projects'],
+    queryFn: () => listInvitableProjects(),
+    enabled: open && !fixedProjectId,
+  })
+
+  const projectId = fixedProjectId ?? pickedProjectId
+  const myRole =
+    fixedRole ?? invitableProjects?.find((p) => p.id === pickedProjectId)?.role
+  const canInviteAdmin = myRole !== 'PROJECT_MANAGER'
+
   const inviteMutation = useMutation({
     mutationFn: () =>
-      createProjectInvitation({
-        data: {
-          projectId,
-          email,
-          role,
-        },
-      }),
+      createProjectInvitation({ data: { projectId, email, role } }),
     onSuccess: (result) => {
       setInvitationLink(result.invitationLink)
-      toast.success('Invitation created successfully')
+      void queryClient.invalidateQueries({ queryKey: ['invitations'] })
+      toast.success('Invitation sent')
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create invitation')
@@ -61,6 +75,7 @@ export function InviteMemberDialog({
   })
 
   function resetForm() {
+    setPickedProjectId('')
     setEmail('')
     setRole('TEAM_MEMBER')
     setInvitationLink(null)
@@ -69,7 +84,7 @@ export function InviteMemberDialog({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email.trim()) return
+    if (!email.trim() || !projectId) return
     inviteMutation.mutate()
   }
 
@@ -90,30 +105,37 @@ export function InviteMemberDialog({
     }
   }
 
+  const noInvitableProjects =
+    !fixedProjectId && !projectsLoading && invitableProjects?.length === 0
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border text-foreground sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-xl">Invite Member</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Send an invitation link to add a new member to this project.
+            Invite someone to join a project with a role.
           </DialogDescription>
         </DialogHeader>
 
         {invitationLink ? (
           <div className="space-y-4 mt-2">
-            <div className="rounded-lg bg-accent/50 border border-border p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Mail className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">
-                  Invitation Link Ready
-                </span>
+            <div className="rounded-lg bg-accent/50 border border-border p-4 space-y-3">
+              <div className="flex items-start gap-2">
+                <Bell className="w-4 h-4 mt-0.5 text-primary shrink-0" />
+                <p className="text-sm text-foreground">
+                  <span className="font-medium">{email}</span> will see this
+                  invitation in their notifications when they sign in with that
+                  email.
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground mb-3">
-                Share this link with{' '}
-                <span className="font-medium text-foreground">{email}</span>.
-                The link expires in 7 days.
-              </p>
+              <div className="flex items-start gap-2">
+                <Mail className="w-4 h-4 mt-0.5 text-muted-foreground shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  Not on WorkNest yet? Share this link with them. It expires in
+                  7 days.
+                </p>
+              </div>
               <div className="flex items-center gap-2">
                 <Input
                   value={invitationLink}
@@ -123,7 +145,8 @@ export function InviteMemberDialog({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={copyToClipboard}
+                  aria-label="Copy invitation link"
+                  onClick={() => void copyToClipboard()}
                   className="h-9 w-9 shrink-0 border-border hover:bg-accent"
                 >
                   {copied ? (
@@ -138,15 +161,63 @@ export function InviteMemberDialog({
             <DialogFooter className="flex gap-2 sm:justify-end">
               <Button
                 variant="outline"
-                onClick={() => handleOpenChange(false)}
+                onClick={() => {
+                  setEmail('')
+                  setInvitationLink(null)
+                  setCopied(false)
+                }}
                 className="border-border bg-transparent text-foreground hover:bg-accent rounded-full"
+              >
+                Invite another
+              </Button>
+              <Button
+                onClick={() => handleOpenChange(false)}
+                className="rounded-full"
               >
                 Done
               </Button>
             </DialogFooter>
           </div>
+        ) : noInvitableProjects ? (
+          <p className="text-sm text-muted-foreground mt-2">
+            You need to be an Admin or Project Manager of a project to invite
+            people. Create a project first, or ask a project admin.
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+            {!fixedProjectId && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">
+                  Project <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={pickedProjectId}
+                  onValueChange={(v) => {
+                    setPickedProjectId(v)
+                    setRole('TEAM_MEMBER')
+                  }}
+                  disabled={projectsLoading}
+                >
+                  <SelectTrigger className="w-full bg-background border-border text-foreground rounded-lg h-10">
+                    <SelectValue
+                      placeholder={
+                        projectsLoading ? 'Loading…' : 'Choose a project'
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border">
+                    <SelectGroup>
+                      {invitableProjects?.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label
                 htmlFor="invite-email"
@@ -167,13 +238,8 @@ export function InviteMemberDialog({
 
             <div className="space-y-2">
               <Label className="text-sm text-muted-foreground">Role</Label>
-              <Select
-                value={role}
-                onValueChange={(v) =>
-                  setRole(v as 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER')
-                }
-              >
-                <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
+              <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+                <SelectTrigger className="w-full bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border">
@@ -182,7 +248,9 @@ export function InviteMemberDialog({
                     <SelectItem value="PROJECT_MANAGER">
                       Project Manager
                     </SelectItem>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
+                    {canInviteAdmin && (
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                    )}
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -207,7 +275,9 @@ export function InviteMemberDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={!email.trim() || inviteMutation.isPending}
+                disabled={
+                  !email.trim() || !projectId || inviteMutation.isPending
+                }
                 className="bg-primary text-primary-foreground hover:bg-primary/85 rounded-full font-medium"
               >
                 {inviteMutation.isPending ? (

@@ -1,5 +1,5 @@
 import { createDb } from '#/db'
-import { project, projectMember, task } from '#/db/schema'
+import { project, projectMember, task, user } from '#/db/schema'
 import { logActivity } from '#/lib/activity'
 import { createAuth } from '#/lib/auth'
 import { getCloudflareEnv } from '#/lib/request-context'
@@ -443,4 +443,45 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
     })
 
     return { success: true }
+  })
+
+export const listProjectMembers = createServerFn({ method: 'GET' })
+  .validator((data: { projectId: string }) => data)
+  .handler(async ({ data }) => {
+    const userId = await requireUserId()
+    const { db } = getDb()
+
+    const membership = await db
+      .select({ role: projectMember.role })
+      .from(projectMember)
+      .where(
+        and(
+          eq(projectMember.projectId, data.projectId),
+          eq(projectMember.userId, userId),
+        ),
+      )
+      .get()
+
+    if (!membership) {
+      throw new Error('Project not found or access denied')
+    }
+
+    const items = await db
+      .select({
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        role: projectMember.role,
+        joinedAt: projectMember.createdAt,
+      })
+      .from(projectMember)
+      .innerJoin(user, eq(projectMember.userId, user.id))
+      .where(eq(projectMember.projectId, data.projectId))
+      .orderBy(projectMember.createdAt)
+
+    return {
+      items: items.map((m) => ({ ...m, isMe: m.userId === userId })),
+      myRole: membership.role,
+    }
   })

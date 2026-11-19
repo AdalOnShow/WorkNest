@@ -43,7 +43,9 @@ function InvitationPage() {
   const acceptMutation = useMutation({
     mutationFn: () => acceptProjectInvitation({ data: { token } }),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      void queryClient.invalidateQueries({ queryKey: ['projects'] })
+      void queryClient.invalidateQueries({ queryKey: ['invitations'] })
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('You have joined the project!')
       if (result.projectId) {
         navigate({
@@ -70,6 +72,7 @@ function InvitationPage() {
   const rejectMutation = useMutation({
     mutationFn: () => rejectProjectInvitation({ data: { token } }),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['invitations'] })
       toast.success('Invitation declined')
       navigate({ to: '/projects' })
     },

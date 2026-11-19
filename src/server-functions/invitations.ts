@@ -5,7 +5,7 @@ import { createAuth } from '#/lib/auth'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { and, count, desc, eq, gt, or } from 'drizzle-orm'
+import { and, count, desc, eq, gt, inArray } from 'drizzle-orm'
 
 function getDb() {
   const env = getCloudflareEnv()
@@ -23,6 +23,11 @@ async function requireUserId() {
   const session = await auth.api.getSession({ headers: request.headers })
   if (!session) throw new Error('Unauthorized')
   return session.user.id
+}
+
+function buildInvitationLink(token: string) {
+  const baseUrl = getCloudflareEnv().BETTER_AUTH_URL || 'http://localhost:3000'
+  return `${baseUrl}/invitations/${token}`
 }
 
 function generateInvitationToken(): string {
@@ -159,9 +164,7 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
       },
     })
 
-    const baseUrl =
-      getCloudflareEnv().BETTER_AUTH_URL || 'http://localhost:3000'
-    const invitationLink = `${baseUrl}/invitations/${token}`
+    const invitationLink = buildInvitationLink(token)
 
     return {
       id: invitationId,
@@ -361,13 +364,12 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
     const page = Math.max(1, Math.floor(data.page || 1))
     const pageSize = Math.min(100, Math.max(1, Math.floor(data.pageSize || 20)))
 
+    // Accepted invitations show up as project members instead.
     const where = and(
       eq(projectInvitation.projectId, data.projectId),
-      or(
-        eq(projectInvitation.status, 'PENDING'),
-        eq(projectInvitation.status, 'ACCEPTED'),
-      ),
+      eq(projectInvitation.status, 'PENDING'),
     )
+    const canManage = ['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
 
     const [invitations, countResult] = await Promise.all([
       db
@@ -376,6 +378,7 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
           email: projectInvitation.email,
           role: projectInvitation.role,
           status: projectInvitation.status,
+          token: projectInvitation.token,
           expiresAt: projectInvitation.expiresAt,
           createdAt: projectInvitation.createdAt,
           inviterName: user.name,
@@ -389,8 +392,10 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
       db.select({ count: count() }).from(projectInvitation).where(where),
     ])
 
-    const items = invitations.map((inv) => ({
+    const items = invitations.map(({ token, ...inv }) => ({
       ...inv,
+      // Only people who can invite may see (and copy) the invite links.
+      invitationLink: canManage ? buildInvitationLink(token) : null,
       expiresAt: inv.expiresAt.getTime(),
       createdAt: inv.createdAt.getTime(),
       isExpired: new Date(inv.expiresAt) < new Date(),
@@ -399,7 +404,7 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
     const total = countResult[0]?.count || 0
     const totalPages = Math.ceil(total / pageSize)
 
-    return { items, total, totalPages, page }
+    return { items, total, totalPages, page, canManage }
   })
 
 export const revokeProjectInvitation = createServerFn({ method: 'POST' })
@@ -443,3 +448,63 @@ export const revokeProjectInvitation = createServerFn({ method: 'POST' })
 
     return { success: true }
   })
+
+/**
+ * Pending, unexpired invitations addressed to the signed-in user's email.
+ * Matching on email (not user id) means people who sign up after being
+ * invited still see their invitations.
+ */
+export const listMyPendingInvitations = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  const auth = getAuth()
+  const session = await auth.api.getSession({ headers: getRequest().headers })
+  if (!session) throw new Error('Unauthorized')
+
+  const items = await getDb()
+    .select({
+      id: projectInvitation.id,
+      token: projectInvitation.token,
+      role: projectInvitation.role,
+      createdAt: projectInvitation.createdAt,
+      projectName: project.name,
+      inviterName: user.name,
+    })
+    .from(projectInvitation)
+    .innerJoin(project, eq(projectInvitation.projectId, project.id))
+    .leftJoin(user, eq(projectInvitation.invitedBy, user.id))
+    .where(
+      and(
+        eq(projectInvitation.email, session.user.email.toLowerCase()),
+        eq(projectInvitation.status, 'PENDING'),
+        gt(projectInvitation.expiresAt, new Date()),
+      ),
+    )
+    .orderBy(desc(projectInvitation.createdAt))
+    .limit(20)
+
+  return items.map((inv) => ({ ...inv, createdAt: inv.createdAt.getTime() }))
+})
+
+/** Projects where the signed-in user is allowed to invite people. */
+export const listInvitableProjects = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const userId = await requireUserId()
+
+    return getDb()
+      .select({
+        id: project.id,
+        name: project.name,
+        role: projectMember.role,
+      })
+      .from(projectMember)
+      .innerJoin(project, eq(projectMember.projectId, project.id))
+      .where(
+        and(
+          eq(projectMember.userId, userId),
+          inArray(projectMember.role, ['ADMIN', 'PROJECT_MANAGER']),
+        ),
+      )
+      .orderBy(project.name)
+  },
+)

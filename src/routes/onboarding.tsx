@@ -12,10 +12,12 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronRight,
   Copy,
   FolderKanban,
   Info,
   Loader2,
+  Mail,
   MessageSquare,
   Sprout,
   Users,
@@ -36,7 +38,10 @@ import { parseLocalDate } from '#/lib/date-utils'
 import { cn } from '#/lib/utils'
 import { getSession } from '#/server-functions/auth'
 import { createProject, getProject } from '#/server-functions/projects'
-import { createProjectInvitation } from '#/server-functions/invitations'
+import {
+  createProjectInvitation,
+  listMyPendingInvitations,
+} from '#/server-functions/invitations'
 import {
   completeOnboarding,
   getOnboardingStatus,
@@ -238,6 +243,10 @@ function WelcomeStep() {
   const { user } = Route.useRouteContext()
   const navigate = useNavigate()
   const firstName = user.name.split(' ')[0] || 'there'
+  const { data: invites = [] } = useQuery({
+    queryKey: ['invitations', 'mine'],
+    queryFn: () => listMyPendingInvitations(),
+  })
 
   const plan = [
     {
@@ -276,7 +285,50 @@ function WelcomeStep() {
         </p>
       </div>
 
-      <ol className="mt-8 space-y-3">
+      {invites.length > 0 && (
+        <div className="hiw-rise mt-8" style={{ animationDelay: '250ms' }}>
+          <p className="mb-3 text-sm font-medium text-foreground">
+            You’ve been invited to join
+          </p>
+          <ul className="space-y-2">
+            {invites.map((inv) => (
+              <li key={inv.id}>
+                <Link
+                  to="/invitations/$token"
+                  params={{ token: inv.token }}
+                  className="group flex items-center gap-3 rounded-xl border border-primary/40 bg-primary/5 p-4 hover:bg-primary/10 transition-colors"
+                >
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                    <Mail className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-foreground">
+                      {inv.projectName}
+                    </p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {inv.inviterName ?? 'Someone'} invited you as{' '}
+                      {inv.role === 'PROJECT_MANAGER'
+                        ? 'Project Manager'
+                        : inv.role === 'ADMIN'
+                          ? 'Admin'
+                          : 'Team Member'}
+                    </p>
+                  </div>
+                  <span className="hidden sm:inline text-sm font-medium text-primary">
+                    Review
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 text-sm text-muted-foreground">
+            Or set up your own project:
+          </p>
+        </div>
+      )}
+
+      <ol className={cn('space-y-3', invites.length > 0 ? 'mt-3' : 'mt-8')}>
         {plan.map((item, i) => (
           <li
             key={item.title}

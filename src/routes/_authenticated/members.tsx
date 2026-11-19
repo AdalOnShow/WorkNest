@@ -13,10 +13,11 @@ import {
   TableRow,
 } from '#/components/ui/table'
 import { UserAvatar } from '#/components/ui/user-avatar'
+import { InviteMemberDialog } from '#/components/projects/invite-member-dialog'
 import { listMembers } from '#/server-functions/members'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Plus, Trash2, Users } from 'lucide-react'
+import { Plus, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/_authenticated/members')({
@@ -30,6 +31,7 @@ function MembersPage() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [inviteOpen, setInviteOpen] = useState(false)
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -56,12 +58,15 @@ function MembersPage() {
           <div>
             <h1 className="headline-sm text-foreground">Members</h1>
             <p className="body-md text-muted-foreground mt-1">
-              Manage team members
+              People in your projects. Open a project to manage its members.
             </p>
           </div>
-          <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
+          <Button
+            onClick={() => setInviteOpen(true)}
+            className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+          >
             <Plus data-icon="inline-start" className="w-4 h-4" />
-            Add Member
+            Invite Member
           </Button>
         </div>
 
@@ -99,9 +104,6 @@ function MembersPage() {
                     </TableHead>
                     <TableHead className="text-muted-foreground font-medium">
                       Role
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium text-right">
-                      Actions
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -146,17 +148,6 @@ function MembersPage() {
                               : member.role}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={`Remove ${member.name}`}
-                          disabled
-                          className="h-8 w-8 text-muted-foreground"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -173,6 +164,8 @@ function MembersPage() {
           </>
         )}
       </div>
+
+      <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
     </PageContainer>
   )
 }

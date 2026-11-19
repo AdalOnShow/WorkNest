@@ -4,9 +4,10 @@ import { LoadingState } from '#/components/ui/loading-state'
 import { ErrorState } from '#/components/ui/error-state'
 import { Button } from '#/components/ui/button'
 import { EditProjectDialog } from '#/components/projects/edit-project-dialog'
+import { ProjectMembersPanel } from '#/components/projects/project-members-panel'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { getProject } from '#/server-functions/projects'
+import { getProject, listProjectMembers } from '#/server-functions/projects'
 import { ArrowLeft, Calendar, CheckSquare, Pencil, Users } from 'lucide-react'
 import { useState } from 'react'
 
@@ -25,6 +26,12 @@ function RouteComponent() {
   } = useQuery({
     queryKey: ['project', projectId],
     queryFn: () => getProject({ data: { projectId } }),
+  })
+
+  // Shares its cache with ProjectMembersPanel.
+  const { data: members } = useQuery({
+    queryKey: ['project-members', projectId],
+    queryFn: () => listProjectMembers({ data: { projectId } }),
   })
 
   if (isLoading) {
@@ -103,7 +110,9 @@ function RouteComponent() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Members</p>
-                <p className="text-2xl font-bold text-foreground">—</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {members?.items.length ?? '—'}
+                </p>
               </div>
             </div>
           </div>
@@ -127,6 +136,8 @@ function RouteComponent() {
             </div>
           </div>
         </div>
+
+        <ProjectMembersPanel projectId={projectId} />
       </div>
 
       <EditProjectDialog
