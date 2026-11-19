@@ -23,6 +23,7 @@ import {
   Users,
 } from 'lucide-react'
 import { Button } from '#/components/ui/button'
+import { DatePicker } from '#/components/ui/date-picker'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Textarea } from '#/components/ui/textarea'
@@ -449,12 +450,12 @@ function ProjectStep() {
               (optional)
             </span>
           </Label>
-          <Input
+          <DatePicker
             id="ob-deadline"
-            type="date"
             value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-            className="h-11 rounded-lg bg-background"
+            onChange={setDeadline}
+            disablePast
+            className="h-11"
           />
         </div>
 

@@ -530,15 +530,13 @@ export const updateTask = createServerFn({ method: 'POST' })
     }
     if (added.length > 0) {
       const now = new Date()
-      await db
-        .insert(taskAssignee)
-        .values(
-          added.map((id) => ({
-            taskId: data.taskId,
-            userId: id,
-            createdAt: now,
-          })),
-        )
+      await db.insert(taskAssignee).values(
+        added.map((id) => ({
+          taskId: data.taskId,
+          userId: id,
+          createdAt: now,
+        })),
+      )
     }
 
     const statusChanged = data.status && data.status !== ctx.status

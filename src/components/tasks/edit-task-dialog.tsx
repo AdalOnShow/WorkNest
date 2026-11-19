@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import { DatePicker } from '#/components/ui/date-picker'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import {
@@ -215,12 +216,11 @@ export function EditTaskDialog({
             >
               Deadline
             </Label>
-            <Input
+            <DatePicker
               id="edit-task-deadline"
-              type="date"
               value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className={inputClass}
+              onChange={setDeadline}
+              className="h-10"
             />
           </div>
 

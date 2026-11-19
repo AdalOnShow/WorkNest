@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { Button } from '#/components/ui/button'
+import { DatePicker } from '#/components/ui/date-picker'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Textarea } from '#/components/ui/textarea'
@@ -193,12 +194,11 @@ export function EditProjectDialog({
             >
               Deadline
             </Label>
-            <Input
+            <DatePicker
               id="edit-project-deadline"
-              type="date"
               value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40"
+              onChange={setDeadline}
+              className="h-10"
             />
           </div>
 
