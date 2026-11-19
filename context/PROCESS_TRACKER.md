@@ -58,7 +58,7 @@ Track high-level development phases and milestones.
 | #   | Task                                      | Status | Notes                                         |
 | --- | ----------------------------------------- | ------ | --------------------------------------------- |
 | 25  | auth.ts configured (D1 adapter)           | [x]    | drizzleAdapter with authSchema, session cache |
-| 26  | Email + password enabled (behind toggle)  | [ ]    | Not implemented — social-only for now         |
+| 26  | Email + password enabled (behind toggle)  | [x]    | ENABLE_EMAIL_PASSWORD, sign-in only, PBKDF2     |
 | 27  | Google OAuth configured                   | [x]    | Dynamic — enabled if GOOGLE_CLIENT_* set      |
 | 28  | GitHub OAuth configured                   | [x]    | Dynamic — enabled if GITHUB_CLIENT_* set      |
 | 29  | Auth client configured                    | [x]    | src/lib/auth-client.ts                        |
@@ -312,7 +312,7 @@ Track high-level development phases and milestones.
 | ------------------ | ------- | -------- | ----------- | ----------- |
 | 1. Infrastructure  | 9       | 9        | 0           | 0           |
 | 2. Database Schema | 13      | 13       | 0           | 0           |
-| 3. Authentication  | 12      | 11       | 0           | 1           |
+| 3. Authentication  | 12      | 12       | 0           | 0           |
 | 4. Projects        | 13      | 13       | 0           | 0           |
 | 5. Tasks           | 13      | 13       | 0           | 0           |
 | 6. Dashboard       | 9       | 6        | 0           | 3           |
@@ -321,7 +321,7 @@ Track high-level development phases and milestones.
 | 9. Project Chat    | 7       | 6        | 0           | 1           |
 | 10. Polish         | 13      | 10       | 1           | 2           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **109** | **92**   | **3**       | **14**      |
+| **Total**          | **109** | **93**   | **3**       | **13**      |
 
 Phase 2 excludes the n/a attachment row.
 

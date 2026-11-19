@@ -29,7 +29,10 @@ To apply migrations to the local D1 that `pnpm dev` uses, run `pnpm wrangler d1 
 
 - **Runtime secrets** go in `.dev.vars` for local dev (see `.dev.vars.example`) and `wrangler secret put` for production. They are listed under `secrets.required` in `wrangler.jsonc`. Keys: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google/GitHub OAuth pairs, and `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`.
 - **Drizzle Kit** reads `.env.local` (`CLOUDFLARE_ACCOUNT_ID`, `D1_DATABASE_ID`, `CLOUDFLARE_API_TOKEN`) because it uses the `d1-http` driver against the remote D1.
-- `createAuth` throws at request time if `DB` or `BETTER_AUTH_SECRET` is missing, or if neither the Google nor the GitHub OAuth pair is set. Sign-in is social-only; there is no email/password.
+- `createAuth` throws at request time if `DB` or `BETTER_AUTH_SECRET` is missing, or if no sign-in method is configured.
+- Social sign-in is enabled per provider when its OAuth pair is set.
+- Email/password is enabled only when the var `ENABLE_EMAIL_PASSWORD="true"` (it defaults to `"false"` in wrangler vars). It is sign-in only (`disableSignUp`), for seeded/demo accounts.
+- Passwords are hashed with Web Crypto PBKDF2 (`src/lib/password.ts`), not Better Auth's default scrypt, to stay within the Workers free-tier CPU limit. Hashes live in `account.password` (`provider_id = 'credential'`).
 
 ## Architecture
 

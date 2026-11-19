@@ -58,6 +58,8 @@ export const account = sqliteTable(
       mode: 'timestamp_ms',
     }),
     scope: text('scope'),
+    /** Credential (email/password) accounts only. See src/lib/password.ts. */
+    password: text('password'),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),

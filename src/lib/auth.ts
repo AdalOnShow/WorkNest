@@ -2,6 +2,7 @@ import { createDb } from '#/db'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter'
 import { betterAuth } from 'better-auth'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
+import { hashPassword, verifyPassword } from '#/lib/password'
 import * as authSchema from '../db/schema/auth'
 import { userProfile } from '../db/schema/users'
 
@@ -13,6 +14,12 @@ export interface AuthEnv {
   GOOGLE_CLIENT_SECRET?: string
   GITHUB_CLIENT_ID?: string
   GITHUB_CLIENT_SECRET?: string
+  /** "true" enables email/password sign-in (no sign-up; for seeded/demo accounts). */
+  ENABLE_EMAIL_PASSWORD?: string
+}
+
+export function isEmailPasswordEnabled(env: AuthEnv) {
+  return env.ENABLE_EMAIL_PASSWORD === 'true'
 }
 
 interface SocialProviderCredentials {
@@ -79,9 +86,10 @@ export function createAuth(env: AuthEnv) {
 
   const db = createDb(dbBinding)
   const socialProviders = resolveSocialProviders(env)
-  if (Object.keys(socialProviders).length === 0) {
+  const emailPassword = isEmailPasswordEnabled(env)
+  if (Object.keys(socialProviders).length === 0 && !emailPassword) {
     throw new Error(
-      '[auth] No supported social providers are configured. Set GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET and/or GITHUB_CLIENT_ID/GITHUB_CLIENT_SECRET to enable sign-in.',
+      '[auth] No sign-in method is configured. Set GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET and/or GITHUB_CLIENT_ID/GITHUB_CLIENT_SECRET, or ENABLE_EMAIL_PASSWORD=true.',
     )
   }
 
@@ -97,6 +105,15 @@ export function createAuth(env: AuthEnv) {
     },
     socialProviders:
       Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
+    // Sign-in only: accounts are created by the seed script. New users still
+    // register through Google/GitHub.
+    emailAndPassword: emailPassword
+      ? {
+          enabled: true,
+          disableSignUp: true,
+          password: { hash: hashPassword, verify: verifyPassword },
+        }
+      : undefined,
     databaseHooks: {
       user: {
         create: {

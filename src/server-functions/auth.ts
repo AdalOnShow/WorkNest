@@ -1,7 +1,17 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { createAuth } from '#/lib/auth'
+import { createAuth, isEmailPasswordEnabled } from '#/lib/auth'
 import { getCloudflareEnv } from '#/lib/request-context'
+
+/** Public: which sign-in methods the login page should show. */
+export const getAuthConfig = createServerFn({ method: 'GET' }).handler(() => {
+  const env = getCloudflareEnv()
+  return {
+    emailPassword: isEmailPasswordEnabled(env),
+    google: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+    github: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+  }
+})
 
 export const getSession = createServerFn({ method: 'GET' }).handler(
   async () => {
