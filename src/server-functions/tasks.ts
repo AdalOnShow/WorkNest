@@ -1,11 +1,18 @@
 import { createDb } from '#/db'
-import { comment, project, projectMember, task, user } from '#/db/schema'
+import {
+  comment,
+  project,
+  projectMember,
+  task,
+  taskAssignee,
+  user,
+} from '#/db/schema'
 import { logActivity, notifyUsers } from '#/lib/activity'
 import { createAuth } from '#/lib/auth'
 import { getCloudflareEnv } from '#/lib/request-context'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/sqlite-core'
 
 const creator = alias(user, 'creator')
@@ -215,16 +222,17 @@ export const createTask = createServerFn({ method: 'POST' })
       projectId: string
       title: string
       description?: string
+      status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
       priority?: 'HIGH' | 'MEDIUM' | 'LOW'
-      assigneeId?: string
+      assigneeIds?: Array<string>
       deadline?: number
     }) => data,
   )
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
-    const membership = await db
-      .select({ id: projectMember.id })
+    const [membership] = await db
+      .select({ role: projectMember.role })
       .from(projectMember)
       .where(
         and(
@@ -234,47 +242,60 @@ export const createTask = createServerFn({ method: 'POST' })
       )
       .limit(1)
 
-    if (!membership[0]) {
+    if (!membership) {
       throw new Error('Project not found or access denied')
+    }
+    if (membership.role === 'TEAM_MEMBER') {
+      throw new Error('Only admins and project managers can create tasks')
     }
     const trimmedTitle = data.title.trim()
     if (trimmedTitle.length === 0) {
       throw new Error('Task title cannot be empty')
     }
 
-    if (data.assigneeId) {
-      const assigneeMembership = await db
-        .select({ id: projectMember.id })
+    const assigneeIds = [...new Set(data.assigneeIds ?? [])]
+    if (assigneeIds.length > 0) {
+      const valid = await db
+        .select({ userId: projectMember.userId })
         .from(projectMember)
         .where(
           and(
             eq(projectMember.projectId, data.projectId),
-            eq(projectMember.userId, data.assigneeId),
+            inArray(projectMember.userId, assigneeIds),
           ),
         )
-        .limit(1)
-
-      if (assigneeMembership.length === 0) {
-        throw new Error('Assignee must belong to the project')
+      if (valid.length !== assigneeIds.length) {
+        throw new Error('All assignees must belong to the project')
       }
     }
 
     const taskId = crypto.randomUUID()
     const now = new Date()
+    const status = data.status ?? 'TODO'
 
     await db.insert(task).values({
       id: taskId,
       projectId: data.projectId,
       title: trimmedTitle,
       description: data.description?.trim() || null,
-      status: 'TODO',
+      status,
       priority: data.priority || 'MEDIUM',
-      assigneeId: data.assigneeId || null,
+      // Legacy single-assignee column mirrors the first assignee.
+      assigneeId: assigneeIds[0] ?? null,
       creatorId: userId,
       deadline: data.deadline ? new Date(data.deadline) : null,
       createdAt: now,
       updatedAt: now,
+      completedAt: status === 'COMPLETED' ? now : null,
     })
+
+    if (assigneeIds.length > 0) {
+      await db
+        .insert(taskAssignee)
+        .values(
+          assigneeIds.map((id) => ({ taskId, userId: id, createdAt: now })),
+        )
+    }
 
     await logActivity({
       db,
@@ -289,7 +310,7 @@ export const createTask = createServerFn({ method: 'POST' })
     await notifyUsers({
       db,
       actorId: userId,
-      recipientIds: [data.assigneeId],
+      recipientIds: assigneeIds,
       type: 'TASK_ASSIGNED',
       title: 'New Task Assigned',
       message: `You were assigned to "${trimmedTitle}"`,

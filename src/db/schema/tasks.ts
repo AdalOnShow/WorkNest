@@ -4,6 +4,7 @@ import {
   integer,
   index,
   unique,
+  primaryKey,
 } from 'drizzle-orm/sqlite-core'
 import { project } from './projects'
 import { user } from './auth'
@@ -42,5 +43,22 @@ export const task = sqliteTable(
     idxProject: index('idx_task_project').on(table.projectId),
     idxAssignee: index('idx_task_assignee').on(table.assigneeId),
     idxStatus: index('idx_task_status').on(table.status),
+  }),
+)
+
+export const taskAssignee = sqliteTable(
+  'task_assignee',
+  {
+    taskId: text('task_id')
+      .notNull()
+      .references(() => task.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.taskId, table.userId] }),
+    idxUser: index('idx_task_assignee_user').on(table.userId),
   }),
 )

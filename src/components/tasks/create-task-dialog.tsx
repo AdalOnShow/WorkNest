@@ -22,7 +22,9 @@ import {
 import { createTask } from '#/server-functions/tasks'
 import { parseLocalDate } from '#/lib/date-utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { listMembers } from '#/server-functions/members'
+import { listProjectMembers } from '#/server-functions/projects'
+import { Checkbox } from '#/components/ui/checkbox'
+import { UserAvatar } from '#/components/ui/user-avatar'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
@@ -41,12 +43,15 @@ export function CreateTaskDialog({
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM')
-  const [assigneeId, setAssigneeId] = useState<string>('')
+  const [status, setStatus] = useState<'TODO' | 'IN_PROGRESS' | 'COMPLETED'>(
+    'TODO',
+  )
+  const [assigneeIds, setAssigneeIds] = useState<Array<string>>([])
   const [deadline, setDeadline] = useState('')
 
   const { data: membersData } = useQuery({
-    queryKey: ['members'],
-    queryFn: () => listMembers({ data: { pageSize: 100 } }),
+    queryKey: ['project-members', projectId],
+    queryFn: () => listProjectMembers({ data: { projectId } }),
     enabled: open,
   })
 
@@ -58,13 +63,17 @@ export function CreateTaskDialog({
           title,
           description: description || undefined,
           priority,
-          assigneeId: assigneeId || undefined,
+          status,
+          assigneeIds,
           deadline: deadline ? parseLocalDate(deadline).getTime() : undefined,
         },
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
       queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Task created')
       onOpenChange(false)
       resetForm()
@@ -78,7 +87,8 @@ export function CreateTaskDialog({
     setTitle('')
     setDescription('')
     setPriority('MEDIUM')
-    setAssigneeId('')
+    setStatus('TODO')
+    setAssigneeIds([])
     setDeadline('')
   }
 
@@ -94,6 +104,12 @@ export function CreateTaskDialog({
   }
 
   const members = membersData?.items || []
+
+  function toggleAssignee(id: string, checked: boolean) {
+    setAssigneeIds((prev) =>
+      checked ? [...prev, id] : prev.filter((x) => x !== id),
+    )
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -162,22 +178,60 @@ export function CreateTaskDialog({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Assignee</Label>
-              <Select value={assigneeId} onValueChange={setAssigneeId}>
+              <Label className="text-sm text-muted-foreground">Status</Label>
+              <Select
+                value={status}
+                onValueChange={(v) =>
+                  setStatus(v as 'TODO' | 'IN_PROGRESS' | 'COMPLETED')
+                }
+              >
                 <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
-                  <SelectValue placeholder="Unassigned" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border">
                   <SelectGroup>
-                    <SelectItem value="">Unassigned</SelectItem>
-                    {members.map((member) => (
-                      <SelectItem key={member.id} value={member.id}>
-                        {member.name || member.email}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="TODO">To do</SelectItem>
+                    <SelectItem value="IN_PROGRESS">In progress</SelectItem>
+                    <SelectItem value="COMPLETED">Completed</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm text-muted-foreground">
+              Assignees
+              {assigneeIds.length > 0 && ` (${assigneeIds.length})`}
+            </Label>
+            <div className="max-h-40 overflow-y-auto rounded-lg border border-border bg-background divide-y divide-border">
+              {members.length === 0 ? (
+                <p className="p-3 text-sm text-muted-foreground">
+                  No members found.
+                </p>
+              ) : (
+                members.map((member) => (
+                  <label
+                    key={member.userId}
+                    className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-accent"
+                  >
+                    <Checkbox
+                      checked={assigneeIds.includes(member.userId)}
+                      onCheckedChange={(c) =>
+                        toggleAssignee(member.userId, c === true)
+                      }
+                    />
+                    <UserAvatar
+                      name={member.name || member.email}
+                      image={member.image ?? undefined}
+                      size="sm"
+                    />
+                    <span className="text-sm text-foreground truncate">
+                      {member.name || member.email}
+                    </span>
+                  </label>
+                ))
+              )}
             </div>
           </div>
 

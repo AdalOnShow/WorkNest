@@ -3,12 +3,20 @@ import { StatusBadge } from '#/components/ui/status-badge'
 import { LoadingState } from '#/components/ui/loading-state'
 import { ErrorState } from '#/components/ui/error-state'
 import { Button } from '#/components/ui/button'
+import { CreateTaskDialog } from '#/components/tasks/create-task-dialog'
 import { EditProjectDialog } from '#/components/projects/edit-project-dialog'
 import { ProjectMembersPanel } from '#/components/projects/project-members-panel'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getProject, listProjectMembers } from '#/server-functions/projects'
-import { ArrowLeft, Calendar, CheckSquare, Pencil, Users } from 'lucide-react'
+import {
+  ArrowLeft,
+  Calendar,
+  CheckSquare,
+  Pencil,
+  Plus,
+  Users,
+} from 'lucide-react'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/_authenticated/projects/$projectId')({
@@ -18,6 +26,7 @@ export const Route = createFileRoute('/_authenticated/projects/$projectId')({
 function RouteComponent() {
   const { projectId } = Route.useParams()
   const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showTaskDialog, setShowTaskDialog] = useState(false)
 
   const {
     data: project,
@@ -77,6 +86,12 @@ function RouteComponent() {
           </div>
           <div className="flex items-center gap-3">
             <StatusBadge status={project.status} />
+            {members && members.myRole !== 'TEAM_MEMBER' && (
+              <Button size="sm" onClick={() => setShowTaskDialog(true)}>
+                <Plus className="w-4 h-4 mr-1.5" />
+                Add task
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -139,6 +154,12 @@ function RouteComponent() {
 
         <ProjectMembersPanel projectId={projectId} />
       </div>
+
+      <CreateTaskDialog
+        open={showTaskDialog}
+        onOpenChange={setShowTaskDialog}
+        projectId={projectId}
+      />
 
       <EditProjectDialog
         open={showEditDialog}
