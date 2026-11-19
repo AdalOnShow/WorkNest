@@ -225,7 +225,11 @@ function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {[
-            { title: 'My Tasks', empty: 'No open tasks assigned to you', items: myOpenTasks },
+            {
+              title: 'My Tasks',
+              empty: 'No open tasks assigned to you',
+              items: myOpenTasks,
+            },
             {
               title: 'High Priority Tasks',
               empty: 'No open high priority tasks',

@@ -1,5 +1,9 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { AssigneeStack } from '#/components/tasks/assignee-stack'
+import { EditTaskDialog } from '#/components/tasks/edit-task-dialog'
 import { Button } from '#/components/ui/button'
+import { ConfirmDialog } from '#/components/ui/confirm-dialog'
+import { PriorityBadge } from '#/components/ui/priority-badge'
 import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
 import {
@@ -14,13 +18,14 @@ import { UserAvatar } from '#/components/ui/user-avatar'
 import {
   addTaskComment,
   changeTaskStatus,
+  deleteTask,
   getTask,
   getTaskComments,
   updateTask,
 } from '#/server-functions/tasks'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowLeft, Send, Trash2 } from 'lucide-react'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { ArrowLeft, Pencil, Send, Trash2 } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -34,7 +39,11 @@ export const Route = createFileRoute('/_authenticated/tasks/$taskId')({
 function TaskDetailPage() {
   const { taskId } = Route.useParams()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const { user: sessionUser } = Route.useRouteContext()
   const [comment, setComment] = useState('')
+  const [showEdit, setShowEdit] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [selectedPriority, setSelectedPriority] = useState<string | null>(null)
   const statusLabelId = useId()
@@ -91,6 +100,23 @@ function TaskDetailPage() {
     },
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteTask({ data: { taskId } }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+        queryClient.invalidateQueries({ queryKey: ['projects'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+      ])
+      toast.success('Task deleted')
+      void navigate({ to: '/tasks' })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to delete task')
+      setShowDelete(false)
+    },
+  })
+
   const addCommentMutation = useMutation({
     mutationFn: () => addTaskComment({ data: { taskId, content: comment } }),
     onSuccess: async () => {
@@ -116,9 +142,19 @@ function TaskDetailPage() {
     return (
       <PageContainer>
         <ErrorState
-          title="Task not found"
-          message="We could not find this task."
-          onRetry={() => window.location.reload()}
+          title={
+            error && !/not found/i.test(error.message)
+              ? 'Something went wrong'
+              : 'Task not found'
+          }
+          message={
+            error && !/not found/i.test(error.message)
+              ? 'We could not load this task. Please try again.'
+              : 'We could not find this task.'
+          }
+          onRetry={() =>
+            void queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+          }
         />
       </PageContainer>
     )
@@ -137,17 +173,29 @@ function TaskDetailPage() {
 
         <div className="flex items-start justify-between">
           <h1 className="headline-sm text-foreground">{task.title}</h1>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              aria-label={`Delete ${task.title}`}
-              className="border-border text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 data-icon="inline-start" className="w-4 h-4" />
-              Delete
-            </Button>
-          </div>
+          {task.canManage && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowEdit(true)}
+                className="border-border text-card-foreground hover:bg-accent"
+              >
+                <Pencil className="w-4 h-4 mr-1.5" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label={`Delete ${task.title}`}
+                onClick={() => setShowDelete(true)}
+                className="border-border text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 data-icon="inline-start" className="w-4 h-4" />
+                Delete
+              </Button>
+            </div>
+          )}
         </div>
 
         <div>
@@ -162,6 +210,7 @@ function TaskDetailPage() {
                     Status
                   </label>
                   <Select
+                    disabled={!task.canManage && !task.isAssignee}
                     value={selectedStatus || task.status}
                     onValueChange={(value) => {
                       setSelectedStatus(value)
@@ -192,37 +241,48 @@ function TaskDetailPage() {
                   >
                     Priority
                   </label>
-                  <Select
-                    value={selectedPriority || task.priority}
-                    onValueChange={(value) => {
-                      setSelectedPriority(value)
-                      void priorityMutation.mutateAsync(
-                        value as 'HIGH' | 'MEDIUM' | 'LOW',
-                      )
-                    }}
-                  >
-                    <SelectTrigger
-                      aria-labelledby={priorityLabelId}
-                      className="bg-background border-border text-foreground rounded-lg"
+                  {task.canManage ? (
+                    <Select
+                      value={selectedPriority || task.priority}
+                      onValueChange={(value) => {
+                        setSelectedPriority(value)
+                        void priorityMutation.mutateAsync(
+                          value as 'HIGH' | 'MEDIUM' | 'LOW',
+                        )
+                      }}
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover border-border">
-                      <SelectGroup>
-                        <SelectItem value="HIGH">High</SelectItem>
-                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                        <SelectItem value="LOW">Low</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                      <SelectTrigger
+                        aria-labelledby={priorityLabelId}
+                        className="bg-background border-border text-foreground rounded-lg"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border">
+                        <SelectGroup>
+                          <SelectItem value="HIGH">High</SelectItem>
+                          <SelectItem value="MEDIUM">Medium</SelectItem>
+                          <SelectItem value="LOW">Low</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <PriorityBadge priority={task.priority} />
+                  )}
                 </div>
                 <div>
                   <label className="label-sm text-muted-foreground block mb-2">
-                    Assignee
+                    Assignees
                   </label>
-                  <p className="body-sm text-foreground">
-                    {task.assigneeName || 'Unassigned'}
-                  </p>
+                  {task.assignees.length === 0 ? (
+                    <p className="body-sm text-foreground">Unassigned</p>
+                  ) : (
+                    <div className="space-y-2">
+                      <AssigneeStack assignees={task.assignees} max={5} />
+                      <p className="text-xs text-muted-foreground">
+                        {task.assignees.map((a) => a.name).join(', ')}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="label-sm text-muted-foreground block mb-2">
@@ -230,6 +290,33 @@ function TaskDetailPage() {
                   </label>
                   <p className="body-sm text-foreground">{task.dueFormatted}</p>
                 </div>
+                <div>
+                  <label className="label-sm text-muted-foreground block mb-2">
+                    Created
+                  </label>
+                  <p className="body-sm text-foreground">
+                    {new Date(task.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                    {task.creatorName ? ` by ${task.creatorName}` : ''}
+                  </p>
+                </div>
+                {task.completedAt && (
+                  <div>
+                    <label className="label-sm text-muted-foreground block mb-2">
+                      Completed
+                    </label>
+                    <p className="body-sm text-foreground">
+                      {new Date(task.completedAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -278,7 +365,11 @@ function TaskDetailPage() {
               </div>
 
               <div className="flex gap-3 mt-6 pt-4 border-t border-border">
-                <UserAvatar name="You" size="sm" />
+                <UserAvatar
+                  name={sessionUser.name || 'You'}
+                  image={sessionUser.image || undefined}
+                  size="sm"
+                />
                 <div className="flex-1 flex gap-2">
                   <input
                     type="text"
@@ -302,6 +393,21 @@ function TaskDetailPage() {
           </div>
         </div>
       </div>
+
+      {task.canManage && (
+        <EditTaskDialog
+          open={showEdit}
+          onOpenChange={setShowEdit}
+          task={task}
+        />
+      )}
+      <ConfirmDialog
+        open={showDelete}
+        onOpenChange={setShowDelete}
+        title="Delete task"
+        description="This action cannot be undone. The task and all its comments will be permanently deleted."
+        onConfirm={() => deleteMutation.mutate()}
+      />
     </PageContainer>
   )
 }

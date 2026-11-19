@@ -1,4 +1,5 @@
 import { createDb } from '#/db'
+import type { Database } from '#/db'
 import {
   comment,
   project,
@@ -45,7 +46,7 @@ async function requireUserId() {
 type ProjectRole = 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
 type TaskPriority = 'HIGH' | 'MEDIUM' | 'LOW'
-type Db = ReturnType<typeof getDb>
+type Db = Database
 
 export interface TaskAssignee {
   id: string
@@ -532,7 +533,11 @@ export const updateTask = createServerFn({ method: 'POST' })
       await db
         .insert(taskAssignee)
         .values(
-          added.map((id) => ({ taskId: data.taskId, userId: id, createdAt: now })),
+          added.map((id) => ({
+            taskId: data.taskId,
+            userId: id,
+            createdAt: now,
+          })),
         )
     }
 
@@ -609,7 +614,9 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
     const db = getDb()
     const ctx = await requireTaskContext(data.taskId, userId)
     if (!canManage(ctx.role) && !ctx.isAssignee) {
-      throw new Error('Only assignees, admins and project managers can change status')
+      throw new Error(
+        'Only assignees, admins and project managers can change status',
+      )
     }
 
     await db

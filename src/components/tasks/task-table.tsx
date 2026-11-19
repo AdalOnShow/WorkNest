@@ -46,7 +46,9 @@ export function TaskTable({
         <TableHeader>
           <TableRow className="border-border hover:bg-transparent">
             <TableHead className={headClass}>Title</TableHead>
-            {showProject && <TableHead className={headClass}>Project</TableHead>}
+            {showProject && (
+              <TableHead className={headClass}>Project</TableHead>
+            )}
             <TableHead className={headClass}>Assignees</TableHead>
             <TableHead className={headClass}>Status</TableHead>
             <TableHead className={headClass}>Priority</TableHead>

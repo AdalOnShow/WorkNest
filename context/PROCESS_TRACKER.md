@@ -106,12 +106,12 @@ Track high-level development phases and milestones.
 | 53  | Delete task                                            | [x]    | deleteTask                                     |
 | 54  | Assign task                                            | [x]    | assignTask                                     |
 | 55  | Change task status                                     | [x]    | changeTaskStatus — auto-sets completedAt       |
-| 56  | Task validation                                        | [ ]    |                                                |
+| 56  | Task validation                                        | [x]    | Duplicate title, past deadline, completed-reassign block, RBAC |
 | 57  | Task list page                                         | [x]    | Real D1 data via TanStack Query                |
 | 58  | Task detail page                                       | [x]    | Real D1 data with comments                     |
 | 59  | Search (by title)                                      | [x]    | Server-side search via like()                  |
-| 60  | Filter (project, status, priority, assignee, deadline) | [x]    | Server-side filter via eq()                    |
-| 61  | Sort                                                   | [ ]    |                                                |
+| 60  | Filter (project, status, priority, assignee, deadline) | [x]    | Server-side; assignee via task_assignee        |
+| 61  | Sort                                                   | [x]    | created / deadline / priority / updated        |
 | 62  | Pagination                                             | [x]    | Server-side pagination                         |
 
 ---
@@ -130,7 +130,7 @@ Track high-level development phases and milestones.
 | 68  | Member workload section        | [ ]    |                                                      |
 | 69  | Recent activities section      | [x]    | Real D1 data from activity table                     |
 | 70  | Upcoming deadlines section     | [x]    | Real D1 data with task count per project             |
-| 71  | High priority tasks section    | [ ]    |                                                      |
+| 71  | High priority tasks section    | [x]    | Dashboard widgets: My Tasks + High Priority          |
 
 ---
 

@@ -3,6 +3,8 @@ import { StatusBadge } from '#/components/ui/status-badge'
 import { LoadingState } from '#/components/ui/loading-state'
 import { ErrorState } from '#/components/ui/error-state'
 import { Button } from '#/components/ui/button'
+import { TaskTable } from '#/components/tasks/task-table'
+import { listTasks } from '#/server-functions/tasks'
 import { CreateTaskDialog } from '#/components/tasks/create-task-dialog'
 import { EditProjectDialog } from '#/components/projects/edit-project-dialog'
 import { ProjectMembersPanel } from '#/components/projects/project-members-panel'
@@ -41,6 +43,11 @@ function RouteComponent() {
   const { data: members } = useQuery({
     queryKey: ['project-members', projectId],
     queryFn: () => listProjectMembers({ data: { projectId } }),
+  })
+
+  const { data: taskData } = useQuery({
+    queryKey: ['tasks', 'project', projectId],
+    queryFn: () => listTasks({ data: { projectId, pageSize: 50 } }),
   })
 
   if (isLoading) {
@@ -151,6 +158,17 @@ function RouteComponent() {
             </div>
           </div>
         </div>
+
+        <section className="space-y-3">
+          <h2 className="label-lg text-foreground">Tasks</h2>
+          {taskData && taskData.items.length > 0 ? (
+            <TaskTable items={taskData.items} showProject={false} />
+          ) : (
+            <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+              No tasks yet.
+            </div>
+          )}
+        </section>
 
         <ProjectMembersPanel projectId={projectId} />
       </div>

@@ -97,19 +97,19 @@ export function CreateTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-card border-border text-foreground sm:max-w-[500px]">
+      <DialogContent className="bg-card border-border text-foreground sm:max-w-[460px] p-4 gap-3 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Create Task</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
+          <DialogTitle className="text-lg">Create Task</DialogTitle>
+          <DialogDescription className="sr-only">
             Add a new task to this project.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="space-y-1">
             <Label
               htmlFor="task-title"
-              className="text-sm text-muted-foreground"
+              className="text-xs text-muted-foreground"
             >
               Title <span className="text-destructive">*</span>
             </Label>
@@ -118,37 +118,38 @@ export function CreateTaskDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Design homepage mockup"
-              className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg h-10 focus-visible:ring-primary/40"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg h-8 text-sm focus-visible:ring-primary/40"
               autoFocus
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label
               htmlFor="task-description"
-              className="text-sm text-muted-foreground"
+              className="text-xs text-muted-foreground"
             >
               Description
             </Label>
             <Textarea
               id="task-description"
+              rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the task..."
-              className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg min-h-[80px] focus-visible:ring-primary/40"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg min-h-[52px] py-1.5 text-sm focus-visible:ring-primary/40"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Priority</Label>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Priority</Label>
               <Select
                 value={priority}
                 onValueChange={(v) =>
                   setPriority(v as 'HIGH' | 'MEDIUM' | 'LOW')
                 }
               >
-                <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
+                <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-8 text-sm focus-visible:ring-primary/40">
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border">
@@ -161,15 +162,15 @@ export function CreateTaskDialog({
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Status</Label>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Status</Label>
               <Select
                 value={status}
                 onValueChange={(v) =>
                   setStatus(v as 'TODO' | 'IN_PROGRESS' | 'COMPLETED')
                 }
               >
-                <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40">
+                <SelectTrigger className="bg-background border-border text-foreground rounded-lg h-8 text-sm focus-visible:ring-primary/40">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border">
@@ -181,6 +182,22 @@ export function CreateTaskDialog({
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-1">
+              <Label
+                htmlFor="task-deadline"
+                className="text-xs text-muted-foreground"
+              >
+                Deadline
+              </Label>
+              <Input
+                id="task-deadline"
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="bg-background border-border text-foreground rounded-lg h-8 text-sm focus-visible:ring-primary/40"
+              />
+            </div>
           </div>
 
           <AssigneePicker
@@ -190,25 +207,10 @@ export function CreateTaskDialog({
             enabled={open}
           />
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="task-deadline"
-              className="text-sm text-muted-foreground"
-            >
-              Deadline
-            </Label>
-            <Input
-              id="task-deadline"
-              type="date"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className="bg-background border-border text-foreground rounded-lg h-10 focus-visible:ring-primary/40"
-            />
-          </div>
-
-          <DialogFooter className="mt-6 flex gap-2 sm:justify-end">
+          <DialogFooter className="flex-row gap-2 sm:justify-end">
             <Button
               type="button"
+              size="sm"
               variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={createMutation.isPending}
@@ -218,6 +220,7 @@ export function CreateTaskDialog({
             </Button>
             <Button
               type="submit"
+              size="sm"
               disabled={!title.trim() || createMutation.isPending}
               className=" font-semibold"
             >
