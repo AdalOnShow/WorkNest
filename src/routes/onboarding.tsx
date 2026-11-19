@@ -136,7 +136,7 @@ function OnboardingPage() {
               {skipMutation.isPending ? 'Skipping…' : 'Skip setup'}
             </button>
           ) : (
-            <span className="w-[72px]" />
+            <span className="w-18" />
           )}
         </div>
         {/* Mobile progress */}
@@ -387,7 +387,7 @@ function ProjectStep() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What is this project about?"
-            className="min-h-[88px] rounded-lg bg-background"
+            className="min-h-22 rounded-lg bg-background"
           />
         </div>
         <div className="space-y-2">
@@ -524,7 +524,7 @@ function TeamStep() {
         <Select value={role} onValueChange={(v) => setRole(v as Role)}>
           <SelectTrigger
             aria-label="Role"
-            className="h-11! rounded-lg bg-background sm:w-[170px]"
+            className="h-11! rounded-lg bg-background sm:w-42.5"
           >
             <SelectValue />
           </SelectTrigger>
@@ -608,8 +608,9 @@ function TeamStep() {
         <Info className="mt-0.5 size-3.5 shrink-0" />
         <p>
           WorkNest doesn’t send emails. Copy each link and share it with your
-          teammate. Links expire after 7 days, and you can invite more people
-          later from the project’s Members page.
+          teammate. They must sign in with the same email you invited to accept.
+          Links expire after 7 days, and you can invite more people later from
+          the project’s Members page.
         </p>
       </div>
 

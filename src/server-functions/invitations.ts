@@ -19,7 +19,7 @@ function getAuth() {
 
 async function requireUserId() {
   const request = getRequest()
-  const { auth } = getAuth()
+  const auth = getAuth()
   const session = await auth.api.getSession({ headers: request.headers })
   if (!session) throw new Error('Unauthorized')
   return session.user.id
@@ -35,7 +35,13 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
       projectId: string
       email: string
       role?: 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'
-    }) => data,
+    }) => {
+      const role = data.role ?? 'TEAM_MEMBER'
+      if (!['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER'].includes(role)) {
+        throw new Error('Invalid role')
+      }
+      return { ...data, email: data.email.trim(), role }
+    },
   )
   .handler(async ({ data }) => {
     const requesterId = await requireUserId()
@@ -59,7 +65,7 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
       throw new Error('Project not found or access denied')
     }
 
-    const requestedRole = data.role || 'TEAM_MEMBER'
+    const requestedRole = data.role
     if (membership[0].role === 'PROJECT_MANAGER' && requestedRole === 'ADMIN') {
       throw new Error('Only project admins can assign ADMIN role')
     }
@@ -219,7 +225,7 @@ export const acceptProjectInvitation = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const userId = await requireUserId()
     const db = getDb()
-    const { auth } = getAuth()
+    const auth = getAuth()
 
     const session = await auth.api.getSession({
       headers: getRequest().headers,
