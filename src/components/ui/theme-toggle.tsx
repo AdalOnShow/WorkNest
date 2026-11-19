@@ -5,6 +5,11 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 const themes = ['dark', 'light', 'system'] as const
+type ThemeName = (typeof themes)[number]
+
+function isThemeName(value: string | undefined): value is ThemeName {
+  return themes.includes(value as ThemeName)
+}
 const icons = {
   dark: Moon,
   light: Sun,
@@ -25,11 +30,11 @@ export function ThemeToggle({ className }: { className?: string }) {
     setMounted(true)
   }, [])
 
-  const currentIndex = themes.indexOf(
-    (theme as (typeof themes)[number]) ?? 'dark',
-  )
-  const nextTheme = themes[(currentIndex + 1) % themes.length]
-  const Icon = icons[theme as keyof typeof icons] ?? Monitor
+  // next-themes reports `undefined` until it has read the stored theme.
+  const current: ThemeName = isThemeName(theme) ? theme : 'system'
+  const nextTheme =
+    themes[(themes.indexOf(current) + 1) % themes.length] ?? 'system'
+  const Icon = icons[current]
 
   const handleToggle = () => {
     setAnimating(true)
@@ -64,7 +69,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       variant="ghost"
       size="icon"
       onClick={handleToggle}
-      title={labels[theme as keyof typeof labels] ?? 'System'}
+      title={labels[current]}
       className={cn(
         'text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
         animating && 'pointer-events-none',
@@ -80,8 +85,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         <Icon className="w-5 h-5" />
       </span>
       <span className="sr-only">
-        Theme: {labels[theme as keyof typeof labels] ?? 'System'} — click for{' '}
-        {labels[nextTheme]}
+        Theme: {labels[current]} — click for {labels[nextTheme]}
       </span>
     </Button>
   )

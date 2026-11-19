@@ -149,7 +149,7 @@ export function getCloudinaryPublicId(imageUrl: string): string | null {
     const match = url.pathname.match(
       /\/image\/upload\/(?:v\d+\/)?(.+?)\.[^.]+$/,
     )
-    return match ? match[1] : null
+    return match?.[1] ?? null
   } catch {
     return null
   }

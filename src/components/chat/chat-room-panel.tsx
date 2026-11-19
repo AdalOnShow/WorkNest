@@ -663,14 +663,14 @@ function OnlinePanel({
 }
 
 function TypingIndicator({ users }: { users: ChatUser[] }) {
-  const text =
-    users.length === 0
-      ? ''
-      : users.length === 1
-        ? `${users[0].name} is typing…`
-        : users.length === 2
-          ? `${users[0].name} and ${users[1].name} are typing…`
-          : 'Several people are typing…'
+  const [first, second] = users
+  const text = !first
+    ? ''
+    : !second
+      ? `${first.name} is typing…`
+      : users.length === 2
+        ? `${first.name} and ${second.name} are typing…`
+        : 'Several people are typing…'
   return (
     <div
       aria-live="polite"

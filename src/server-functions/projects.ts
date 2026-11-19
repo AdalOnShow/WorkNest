@@ -130,7 +130,7 @@ export const getProject = createServerFn({ method: 'GET' })
       )
       .limit(1)
 
-    if (membershipResult.count === 0) {
+    if (!membershipResult || membershipResult.count === 0) {
       throw new Error('Project not found or access denied')
     }
 
@@ -151,7 +151,7 @@ export const getProject = createServerFn({ method: 'GET' })
 
     return {
       ...projectRow,
-      taskCount: taskCountResult.count || 0,
+      taskCount: taskCountResult?.count ?? 0,
     }
   })
 
@@ -227,14 +227,14 @@ export const updateProject = createServerFn({ method: 'POST' })
       )
       .limit(1)
 
-    if (membership.length === 0 || membership[0].role !== 'ADMIN') {
+    if (!membership[0] || membership[0].role !== 'ADMIN') {
       throw new Error('Project not found or access denied')
     }
 
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (data.name !== undefined) updates.name = data.name.trim()
     if (data.description !== undefined)
-      updates.description = data.description?.trim() || null
+      updates.description = data.description.trim() || null
     if (data.status !== undefined) updates.status = data.status
     if (data.deadline !== undefined)
       updates.deadline = data.deadline ? new Date(data.deadline) : null
@@ -275,7 +275,7 @@ export const deleteProject = createServerFn({ method: 'POST' })
       )
       .limit(1)
 
-    if (membership.length === 0) {
+    if (!membership[0]) {
       throw new Error('Only project admins can delete a project')
     }
 
@@ -307,7 +307,7 @@ export const addProjectMember = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (
-      membership.length === 0 ||
+      !membership[0] ||
       !['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
     ) {
       throw new Error('Project not found or access denied')
@@ -372,7 +372,7 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
       )
       .limit(1)
 
-    if (membership.length === 0) {
+    if (!membership[0]) {
       throw new Error('Project not found or access denied')
     }
 
@@ -387,7 +387,7 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
       )
       .limit(1)
 
-    if (targetMembership.length === 0) {
+    if (!targetMembership[0]) {
       throw new Error('Member not found')
     }
 

@@ -312,7 +312,9 @@ export function HowItWorks() {
   })
 
   const running = isVisible && !paused
-  const Visual = steps[active].visual
+  const current = steps[active]
+  if (!current) return null
+  const Visual = current.visual
 
   return (
     <section id="how-it-works" className="py-24 border-t border-border">
@@ -421,7 +423,7 @@ export function HowItWorks() {
                 key={active}
                 className="hiw-rise ml-3 truncate text-xs text-muted-foreground"
               >
-                {steps[active].label}
+                {current.label}
               </span>
             </div>
             <div className="flex min-h-[360px] items-center px-6 py-10">

@@ -147,7 +147,7 @@ function OnboardingPage() {
         {/* Mobile progress */}
         <div className="sm:hidden px-4 pb-3">
           <p className="text-xs text-muted-foreground mb-2">
-            Step {stepIndex + 1} of {STEPS.length} · {STEPS[stepIndex].label}
+            Step {stepIndex + 1} of {STEPS.length} · {STEPS[stepIndex]?.label}
           </p>
           <div className="h-1 rounded-full bg-muted overflow-hidden">
             <div

@@ -70,8 +70,8 @@ function TaskDetailPage() {
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
       ])
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update status')
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to update status')
       if (task) setSelectedStatus(task.status)
     },
   })
@@ -85,8 +85,8 @@ function TaskDetailPage() {
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
       ])
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update priority')
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to update priority')
       if (task) setSelectedPriority(task.priority)
     },
   })
@@ -99,8 +99,8 @@ function TaskDetailPage() {
         queryKey: ['taskComments', taskId],
       })
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to send comment')
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to send comment')
     },
   })
 

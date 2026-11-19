@@ -368,6 +368,7 @@ function insertMessage(
 
   // Pages are newest-first, so live messages go to the front of page 0.
   const [first, ...rest] = data.pages
+  if (!first) return
   queryClient.setQueryData<ChatHistoryData>(key, {
     ...data,
     pages: [{ ...first, items: [message, ...first.items] }, ...rest],

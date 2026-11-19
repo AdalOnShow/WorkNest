@@ -26,8 +26,7 @@ async function requireUserId() {
 }
 
 function buildInvitationLink(token: string) {
-  const baseUrl = getCloudflareEnv().BETTER_AUTH_URL || 'http://localhost:3000'
-  return `${baseUrl}/invitations/${token}`
+  return `${getCloudflareEnv().BETTER_AUTH_URL}/invitations/${token}`
 }
 
 function generateInvitationToken(): string {
@@ -64,7 +63,7 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (
-      membership.length === 0 ||
+      !membership[0] ||
       !['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
     ) {
       throw new Error('Project not found or access denied')
@@ -86,7 +85,7 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
       .where(eq(user.email, data.email.toLowerCase()))
       .limit(1)
 
-    if (existingUser.length > 0) {
+    if (existingUser[0]) {
       const alreadyMember = await db
         .select({ id: projectMember.id })
         .from(projectMember)
@@ -257,7 +256,7 @@ export const acceptProjectInvitation = createServerFn({ method: 'POST' })
       throw new Error('Invitation has expired')
     }
 
-    if (session.user.email?.toLowerCase() !== invitation.email.toLowerCase()) {
+    if (session.user.email.toLowerCase() !== invitation.email.toLowerCase()) {
       throw new Error('This invitation was sent to a different email address')
     }
 
@@ -357,7 +356,7 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
       )
       .limit(1)
 
-    if (membership.length === 0) {
+    if (!membership[0]) {
       throw new Error('Project not found or access denied')
     }
 
@@ -435,7 +434,7 @@ export const revokeProjectInvitation = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (
-      membership.length === 0 ||
+      !membership[0] ||
       !['ADMIN', 'PROJECT_MANAGER'].includes(membership[0].role)
     ) {
       throw new Error('Project not found or access denied')

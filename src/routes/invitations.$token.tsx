@@ -56,8 +56,8 @@ function InvitationPage() {
         navigate({ to: '/projects' })
       }
     },
-    onError: (error: Error) => {
-      if (error.message === 'Unauthorized') {
+    onError: (err: Error) => {
+      if (err.message === 'Unauthorized') {
         toast.info('Sign in to accept this invitation')
         void navigate({
           to: '/login',
@@ -65,7 +65,7 @@ function InvitationPage() {
         })
         return
       }
-      toast.error(error.message || 'Failed to accept invitation')
+      toast.error(err.message || 'Failed to accept invitation')
     },
   })
 
@@ -76,8 +76,8 @@ function InvitationPage() {
       toast.success('Invitation declined')
       navigate({ to: '/projects' })
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to decline invitation')
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to decline invitation')
     },
   })
 

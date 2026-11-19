@@ -49,7 +49,7 @@ async function requireTaskAccess(taskId: string, userId: string) {
     )
     .where(eq(task.id, taskId))
 
-  if (taskAccess.count === 0) {
+  if (!taskAccess || taskAccess.count === 0) {
     throw new Error('Task not found')
   }
 
@@ -59,6 +59,9 @@ async function requireTaskAccess(taskId: string, userId: string) {
     .where(eq(task.id, taskId))
     .limit(1)
 
+  if (!projectRow) {
+    throw new Error('Task not found')
+  }
   return projectRow.projectId
 }
 
@@ -231,7 +234,7 @@ export const createTask = createServerFn({ method: 'POST' })
       )
       .limit(1)
 
-    if (membership.length === 0) {
+    if (!membership[0]) {
       throw new Error('Project not found or access denied')
     }
     const trimmedTitle = data.title.trim()
@@ -316,7 +319,7 @@ export const updateTask = createServerFn({ method: 'POST' })
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (data.title !== undefined) updates.title = data.title.trim()
     if (data.description !== undefined)
-      updates.description = data.description?.trim() || null
+      updates.description = data.description.trim() || null
     if (data.status !== undefined) {
       updates.status = data.status
       if (data.status === 'COMPLETED') {
