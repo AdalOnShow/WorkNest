@@ -604,7 +604,7 @@ export const getTaskComments = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator((data: { taskId: string }) => data)
   .handler(async ({ data, context: { db, userId } }) => {
-    await requireTaskContext(db, data.taskId, userId)
+    const ctx = await requireTaskContext(db, data.taskId, userId)
     const comments = await db
       .select({
         id: comment.id,
@@ -613,13 +613,100 @@ export const getTaskComments = createServerFn({ method: 'GET' })
         authorName: user.name,
         authorImage: user.image,
         createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
       })
       .from(comment)
       .leftJoin(user, eq(comment.authorId, user.id))
       .where(eq(comment.taskId, data.taskId))
       .orderBy(desc(comment.createdAt))
 
-    return comments
+    return comments.map((c) => {
+      const isAuthor = c.authorId === userId
+      return {
+        ...c,
+        edited: c.updatedAt.getTime() > c.createdAt.getTime(),
+        canEdit: isAuthor,
+        canDelete: isAuthor || canManage(ctx.role),
+      }
+    })
+  })
+
+/**
+ * Loads a comment with its task context. Throws "Comment not found" when the
+ * comment is missing or the caller can't see its task.
+ */
+async function requireCommentContext(
+  db: Db,
+  commentId: string,
+  userId: string,
+) {
+  const [row] = await db
+    .select({ taskId: comment.taskId, authorId: comment.authorId })
+    .from(comment)
+    .where(eq(comment.id, commentId))
+    .limit(1)
+  if (!row) throw new Error('Comment not found')
+  const ctx = await requireTaskContext(db, row.taskId, userId).catch(() => {
+    throw new Error('Comment not found')
+  })
+  return { ...ctx, taskId: row.taskId, authorId: row.authorId }
+}
+
+export const updateTaskComment = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator((data: { commentId: string; content: string }) => data)
+  .handler(async ({ data, context: { db, userId } }) => {
+    const ctx = await requireCommentContext(db, data.commentId, userId)
+    if (ctx.authorId !== userId) {
+      throw new Error('You can only edit your own comments')
+    }
+    const trimmedContent = data.content.trim()
+    if (trimmedContent.length === 0) {
+      throw new Error('Comment content cannot be empty')
+    }
+
+    await db
+      .update(comment)
+      .set({ content: trimmedContent, updatedAt: new Date() })
+      .where(eq(comment.id, data.commentId))
+
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId: ctx.projectId,
+      action: 'COMMENT_UPDATED',
+      entityType: 'comment',
+      entityId: data.commentId,
+      metadata: { taskId: ctx.taskId, taskTitle: ctx.title },
+    })
+
+    return { success: true }
+  })
+
+export const deleteTaskComment = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .validator((data: { commentId: string }) => data)
+  .handler(async ({ data, context: { db, userId } }) => {
+    const ctx = await requireCommentContext(db, data.commentId, userId)
+    if (ctx.authorId !== userId && !canManage(ctx.role)) {
+      throw new Error(
+        'Only the author, admins and project managers can delete comments',
+      )
+    }
+
+    await db.delete(comment).where(eq(comment.id, data.commentId))
+
+    await logActivity({
+      db,
+      actorId: userId,
+      projectId: ctx.projectId,
+      action: 'COMMENT_DELETED',
+      entityType: 'comment',
+      entityId: data.commentId,
+      metadata: { taskId: ctx.taskId, taskTitle: ctx.title },
+    })
+
+    return { success: true }
   })
 
 export const addTaskComment = createServerFn({ method: 'POST' })

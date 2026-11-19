@@ -22,6 +22,8 @@ export type ActivityAction =
   | 'TASK_ASSIGNED'
   | 'TASK_DELETED'
   | 'COMMENT_ADDED'
+  | 'COMMENT_UPDATED'
+  | 'COMMENT_DELETED'
 
 export type ActivityEntityType = 'project' | 'task' | 'member' | 'comment'
 

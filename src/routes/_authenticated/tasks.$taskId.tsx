@@ -1,6 +1,7 @@
 import { PageContainer } from '#/components/layout/page-container'
 import { AssigneeStack } from '#/components/tasks/assignee-stack'
 import { EditTaskDialog } from '#/components/tasks/edit-task-dialog'
+import { TaskComment } from '#/components/tasks/task-comment'
 import { Button } from '#/components/ui/button'
 import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { PriorityBadge } from '#/components/ui/priority-badge'
@@ -335,32 +336,7 @@ function TaskDetailPage() {
               </h3>
               <div className="space-y-4">
                 {comments.map((c) => (
-                  <div key={c.id} className="flex gap-3">
-                    <UserAvatar
-                      name={c.authorName || 'User'}
-                      image={c.authorImage || undefined}
-                      size="sm"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="label-sm text-foreground">
-                          {c.authorName || 'Unknown'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          ·{' '}
-                          {new Date(c.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                          })}
-                        </span>
-                      </div>
-                      <p className="body-sm text-card-foreground mt-1">
-                        {c.content}
-                      </p>
-                    </div>
-                  </div>
+                  <TaskComment key={c.id} taskId={taskId} comment={c} />
                 ))}
               </div>
 

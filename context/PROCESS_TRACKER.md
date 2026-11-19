@@ -141,8 +141,8 @@ Track high-level development phases and milestones.
 | #   | Task                               | Status | Notes                                                                       |
 | --- | ---------------------------------- | ------ | --------------------------------------------------------------------------- |
 | 72  | Add comment                        | [x]    | addTaskComment server function                                              |
-| 73  | Edit comment                       | [ ]    |                                                                             |
-| 74  | Delete comment                     | [ ]    |                                                                             |
+| 73  | Edit comment                       | [x]    | updateTaskComment — author only; "(edited)" from updatedAt > createdAt     |
+| 74  | Delete comment                     | [x]    | deleteTaskComment — author or project ADMIN/PM; ConfirmDialog              |
 | 75  | Activity logging (server)          | [x]    | logActivity in src/lib/activity.ts (D1 only), project/task/invite mutations |
 | 76  | Notification creation (server)     | [x]    | notifyUsers in src/lib/activity.ts (D1 only, skips actor, dedupes)          |
 | 77  | Notification UI (bell, list, read) | [x]    | Real D1 data + mark read mutations                                          |
@@ -316,12 +316,12 @@ Track high-level development phases and milestones.
 | 4. Projects        | 13      | 13       | 0           | 0           |
 | 5. Tasks           | 13      | 13       | 0           | 0           |
 | 6. Dashboard       | 9       | 6        | 0           | 3           |
-| 7. Collaboration   | 7       | 5        | 0           | 2           |
+| 7. Collaboration   | 7       | 7        | 0           | 0           |
 | 8. Profile Photos  | 3       | 3        | 0           | 0           |
 | 9. Project Chat    | 7       | 6        | 0           | 1           |
 | 10. Polish         | 13      | 10       | 1           | 2           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **109** | **90**   | **3**       | **16**      |
+| **Total**          | **109** | **92**   | **3**       | **14**      |
 
 Phase 2 excludes the n/a attachment row.
 
