@@ -120,6 +120,25 @@ Then, for every release:
 pnpm deploy          # build + apply remote migrations + wrangler deploy
 ```
 
-Optional: to enable the demo accounts in production, set `"ENABLE_EMAIL_PASSWORD": "true"` in `wrangler.jsonc` vars and run `pnpm db:seed -- --remote`. Anyone who knows the demo password can then sign in.
+### Existing database: one-time upgrade to `version_1`
+
+The migration history was squashed into `migrations/0000_version_1.sql`. A brand-new D1 database just runs it through `pnpm deploy`. The existing `worknest-db` already applied the old `0000`–`0005`, so it needs one upgrade **before** the next deploy:
+
+```bash
+pnpm wrangler d1 migrations list worknest-db --remote          # must show only the old 0006–0009 as pending
+pnpm wrangler d1 export worknest-db --remote --output prod-backup.sql
+pnpm wrangler d1 execute worknest-db --remote --file scripts/prod-upgrade-to-version1.sql
+pnpm wrangler d1 migrations list worknest-db --remote          # now: "No migrations to apply"
+```
+
+### Demo data in production (optional)
+
+```bash
+# 1. In wrangler.jsonc vars: "ENABLE_EMAIL_PASSWORD": "true"
+pnpm deploy                 # ships the flag
+pnpm db:seed --remote       # creates the demo-* rows in the remote D1
+```
+
+Anyone who knows the demo password (`worknest-demo`) can then sign in, so change `DEMO_PASSWORD` in `scripts/seed.ts` first if the site is public. To remove the demo data later, delete the `demo-%` rows: `pnpm wrangler d1 execute worknest-db --remote --command "DELETE FROM project WHERE id LIKE 'demo-%'; DELETE FROM user WHERE id LIKE 'demo-%';"`.
 
 Update `BETTER_AUTH_URL` and the custom domain in `wrangler.jsonc` to match your domain, and register the OAuth callback URLs with Google and GitHub.

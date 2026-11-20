@@ -5,71 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1786728412725,
-      "tag": "0000_rapid_joseph",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1786790116023,
-      "tag": "0001_minor_exiles",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1795003479475,
-      "tag": "0002_project_invitation",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1795003480322,
-      "tag": "0003_drop_attachment",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1795004190988,
-      "tag": "0004_chat_message",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1795074462132,
-      "tag": "0005_onboarding_completed",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1795099914893,
-      "tag": "0006_true_mantis",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1795100537060,
-      "tag": "0007_backfill_task_assignee",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "6",
-      "when": 1795103372608,
-      "tag": "0008_account_password",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "6",
-      "when": 1795152587824,
-      "tag": "0009_task_project_status_index",
+      "when": 1795153287312,
+      "tag": "0000_version_1",
       "breakpoints": true
     }
   ]

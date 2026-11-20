@@ -45,7 +45,7 @@ Track high-level development phases and milestones.
 | 18  | Activity schema              | [x]    | activity table                                 |
 | 19  | All relations defined        | [x]    | relations.ts — all one/many relations          |
 | 21  | All indexes defined          | [x]    | Indexes on all tables (creator, assignee, etc) |
-| 22  | Migrations generated         | [x]    | 0000_rapid_joseph.sql, 0001_minor_exiles.sql   |
+| 22  | Migrations generated         | [x]    | Squashed into 0000_version_1.sql               |
 | 23  | Migrations applied locally   | [x]    | dev.db exists with tables                      |
 | 24  | Schema verified              | [x]    | All tables, relations, indexes in place        |
 
@@ -196,7 +196,7 @@ Track high-level development phases and milestones.
 | 93  | Empty states (all pages)               | [x]    | EmptyState component wired to list pages   |
 | 94  | Confirmation dialogs                   | [x]    | ConfirmDialog on delete actions            |
 | 95  | Accessibility audit                    | [x]    | AA text contrast tokens, labels, focus, hydration |
-| 96  | Performance review                     | [x]    | Lazy Recharts chunk, staleTime 30s, index 0009 |
+| 96  | Performance review                     | [x]    | Lazy Recharts chunk, staleTime 30s, composite index |
 
 ---
 
@@ -333,4 +333,4 @@ Phase 2 excludes the n/a attachment row.
 
 **Remaining (out of scope until deployment):** tasks 108–112, 114 and 117. These are the production D1, Cloudinary, Durable Objects, secrets, OAuth callbacks, the first deploy, and a final QA pass on production. `README.md` → *Deploying to Cloudflare* lists the exact commands.
 
-Migrations `0008_account_password` and `0009_task_project_status_index` are applied locally only. `pnpm deploy` applies them remotely.
+Migrations were squashed into `migrations/0000_version_1.sql`. Production had applied the old 0000–0005, so run `scripts/prod-upgrade-to-version1.sql` there once before the next `pnpm deploy` (see README → *Deploying to Cloudflare*).

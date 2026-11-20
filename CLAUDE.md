@@ -57,8 +57,8 @@ To apply migrations to the local D1 that `pnpm dev` uses, run `pnpm wrangler d1 
 
 **Real-time is project chat only** (in progress; see `context/PROCESS_TRACKER.md` Phase 9). There is one `ChatRoom` DO per project (`idFromName(projectId)`) using WebSocket Hibernation. Messages persist in D1, and history loads through a normal server function, so reading history never wakes the DO. The spec is in `context/PROJECT_OVERVIEW.md` §23–25.
 
-**Database (`src/db/schema/`).** These are Drizzle `sqliteTable` definitions, one file per domain. `auth.ts` holds the Better Auth tables. Everything is re-exported from `schema/index.ts`, and relations live separately in `src/db/relations.ts`. After a schema change, run `pnpm db:generate`, commit the SQL in `migrations/`, and let `pnpm deploy` apply it remotely.
+**Database (`src/db/schema/`).** These are Drizzle `sqliteTable` definitions, one file per domain. `auth.ts` holds the Better Auth tables. Everything is re-exported from `schema/index.ts`, and relations live separately in `src/db/relations.ts`. After a schema change, run `pnpm db:generate`, commit the SQL in `migrations/`, and let `pnpm deploy` apply it remotely. History was squashed into `0000_version_1.sql`; new migrations start at `0001_`. Never edit `0000_version_1.sql`, because databases record it as applied.
 
-**No file attachments.** They were removed in migration `0003_drop_attachment`. The only upload is the profile photo, sent to Cloudinary (`src/lib/cloudinary.ts`). R2 is not used.
+**No file attachments.** They were removed from the schema, and no attachment table exists. The only upload is the profile photo, sent to Cloudinary (`src/lib/cloudinary.ts`). R2 is not used.
 
 **Imports** use the `#/*` alias for `src/*`, defined in package.json `imports` and tsconfig paths. Prefer it over relative paths.
