@@ -174,7 +174,7 @@ Track high-level development phases and milestones.
 | 100 | Chat WebSocket route                    | [x]    | src/chat/upgrade.ts; session, Origin, membership |
 | 101 | useChatRoom client hook                 | [x]    | src/hooks/use-chat-room.ts; backoff, cache merge |
 | 102 | Messages page rebuild                   | [x]    | src/components/chat/*, messages.tsx rebuilt      |
-| 103 | Verify (build, 2 sessions, permissions) | [ ]    |                                                  |
+| 103 | Verify (build, 2 sessions, permissions) | [x]    | Prod build via wrangler dev: handshake 401/403/404/426, 2-client protocol, pagination, removal (4003), reconnect |
 
 ---
 
@@ -318,10 +318,10 @@ Track high-level development phases and milestones.
 | 6. Dashboard       | 9       | 9        | 0           | 0           |
 | 7. Collaboration   | 7       | 7        | 0           | 0           |
 | 8. Profile Photos  | 3       | 3        | 0           | 0           |
-| 9. Project Chat    | 7       | 6        | 0           | 1           |
+| 9. Project Chat    | 7       | 7        | 0           | 0           |
 | 10. Polish         | 13      | 10       | 1           | 2           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **109** | **96**   | **3**       | **10**      |
+| **Total**          | **109** | **97**   | **3**       | **9**       |
 
 Phase 2 excludes the n/a attachment row.
 
