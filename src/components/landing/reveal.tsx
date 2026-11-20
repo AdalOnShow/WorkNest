@@ -28,27 +28,55 @@ export function Reveal({
   )
 }
 
+/** Shared page width for every landing section. */
+export function Container({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div
+      className={cn(
+        'mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-10',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
 export function SectionHeading({
   eyebrow,
   title,
   description,
   className,
+  align = 'left',
 }: {
   eyebrow: string
   title: string
   description?: string
   className?: string
+  align?: 'left' | 'center'
 }) {
   return (
-    <Reveal className={cn('mb-12 max-w-2xl', className)}>
-      <p className="mb-3 text-sm font-semibold text-muted-foreground">
-        {eyebrow}
-      </p>
-      <h2 className="font-headline text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+    <Reveal
+      className={cn(
+        'mb-12 max-w-2xl',
+        align === 'center' && 'mx-auto text-center',
+        className,
+      )}
+    >
+      <p className="eyebrow mb-4">{eyebrow}</p>
+      <h2 className="text-3xl leading-[1.12] text-balance text-foreground sm:text-4xl lg:text-[2.75rem]">
         {title}
       </h2>
       {description && (
-        <p className="mt-4 text-lg text-description">{description}</p>
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          {description}
+        </p>
       )}
     </Reveal>
   )

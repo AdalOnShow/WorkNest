@@ -3,151 +3,163 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * WorkNest "Sage" design system — see context/DESIGN.md.
- * Light: soft sage-white surfaces, ink buttons, blue / lime / sky accents.
- * Dark: the same roles on a neutral near-black.
+ * WorkNest design system — see context/DESIGN.md.
+ * Monochrome neutral surfaces, one blue accent (#2f80ff), Geist for UI,
+ * Source Serif 4 for headlines, chamfered (cut-corner) buttons.
  */
 
 :root {
-  --background: #eceee9;
-  --foreground: #1c1f1d;
-  --card: #f7f9f5;
-  --card-foreground: #24272a;
-  --popover: #fbfcfa;
-  --popover-foreground: #1c1f1d;
-  --primary: #5880da;
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #2f80ff;
   --primary-foreground: #ffffff;
-  --secondary: #e9ece6;
-  --secondary-foreground: #24272a;
-  --muted: #eef0eb;
-  /* Darkened from #767b74 for WCAG AA (4.5:1) on card, background and accent. */
-  --muted-foreground: #62675f;
-  --accent: #e5e8e1;
-  --accent-foreground: #1c1f1d;
-  /* Darkened from #e5484d so red text (errors, overdue) meets 4.5:1. */
-  --destructive: #c22f35;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f5f5f5;
+  /* #737373 gives 4.7:1 on white (WCAG AA). */
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #0a0a0a;
+  --destructive: #d92d33;
   --destructive-foreground: #ffffff;
-  --border: #e0e3dc;
-  --input: #e0e3dc;
-  --ring: #5880da;
-  --description: #4a4e4a;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #0a0a0a;
+  --description: #525252;
 
-  /* Brand */
-  --ink: #23262b;
+  /* Brand roles (names kept from the old system so variants keep working) */
+  --ink: #0a0a0a;
   --ink-foreground: #ffffff;
-  --lime: #c9f17e;
-  --lime-foreground: #1f2a0a;
-  --sky: #bcdbfa;
-  --sky-foreground: #14243f;
-  --highlight: #f6d24a;
-  --highlight-foreground: #2a2200;
+  --lime: #e6eeff;
+  --lime-foreground: #0a235c;
+  --sky: #f5f5f5;
+  --sky-foreground: #0a0a0a;
+  --highlight: #fdf3d1;
+  --highlight-foreground: #6b4e00;
 
-  --status-active: #5880da;
-  --status-in-progress: #8db6f2;
-  --status-completed: #9fd04f;
-  --status-on-hold: #e8b931;
-  --status-todo: #a3a8a0;
+  /* Blue ramp */
+  --blue-1: #e6eeff;
+  --blue-2: #9bc0ff;
+  --blue-3: #3b76ff;
+  --blue-4: #2f80ff;
+
+  --status-active: #2f80ff;
+  --status-in-progress: #9bc0ff;
+  --status-completed: #2f80ff;
+  --status-on-hold: #d4a017;
+  --status-todo: #a3a3a3;
   --priority-high: #e5484d;
-  --priority-medium: #e8b931;
-  --priority-low: #a3a8a0;
+  --priority-medium: #d4a017;
+  --priority-low: #a3a3a3;
 
-  --chart-1: #5880da;
-  --chart-2: #c9f17e;
-  --chart-3: #bcdbfa;
-  --chart-4: #f6d24a;
-  --chart-5: #23262b;
-  /* Dashboard charts — validated (dataviz validate_palette.js) vs --card. */
-  --warning-text: #7a6000;
-  --chart-series: #5880da;
+  --chart-1: #2f80ff;
+  --chart-2: #9bc0ff;
+  --chart-3: #3b76ff;
+  --chart-4: #e6eeff;
+  --chart-5: #0a0a0a;
+  --warning-text: #7a5a00;
+  --chart-series: #2f80ff;
   --chart-priority-high: #e5484d;
-  --chart-priority-medium: #d4a017;
-  --chart-priority-low: #5880da;
+  --chart-priority-medium: #2f80ff;
+  --chart-priority-low: #9bc0ff;
 
-  --sidebar: #f7f9f5;
-  --sidebar-foreground: #24272a;
-  --sidebar-primary: #23262b;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #0a0a0a;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eceee9;
-  --sidebar-accent-foreground: #1c1f1d;
-  --sidebar-border: #e0e3dc;
-  --sidebar-ring: #5880da;
+  --sidebar-accent: #f0f0f0;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #0a0a0a;
 
-  --font-sans: 'Urbanist', ui-sans-serif, system-ui, sans-serif;
-  --font-heading: 'Urbanist', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: 'Source Serif 4', ui-serif, Georgia, 'Times New Roman', serif;
+  --font-heading: var(--font-serif);
   --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --radius: 0.75rem;
+  --radius: 0.5rem;
+  /* Chamfer size for cut-corner buttons and cards */
+  --cut: 8px;
 
-  --shadow-2xs: 0 1px 1px 0 rgb(28 31 29 / 0.03);
-  --shadow-xs: 0 1px 2px 0 rgb(28 31 29 / 0.04);
-  --shadow-sm: 0 1px 3px 0 rgb(28 31 29 / 0.05);
-  --shadow: 0 2px 6px -1px rgb(28 31 29 / 0.06);
-  --shadow-md: 0 6px 16px -6px rgb(28 31 29 / 0.08);
-  --shadow-lg: 0 12px 28px -12px rgb(28 31 29 / 0.12);
-  --shadow-xl: 0 20px 40px -16px rgb(28 31 29 / 0.14);
-  --shadow-2xl: 0 28px 56px -20px rgb(28 31 29 / 0.18);
+  --shadow-2xs: 0 1px 1px 0 rgb(0 0 0 / 0.03);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 2px 6px -1px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 6px 16px -6px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 12px 28px -12px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 40px -16px rgb(0 0 0 / 0.12);
+  --shadow-2xl: 0 28px 56px -20px rgb(0 0 0 / 0.16);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
 
 .dark {
-  --background: #0f1420;
-  --foreground: #e8ecf4;
-  --card: #161c2a;
-  --card-foreground: #dde2ec;
-  --popover: #1d2435;
-  --popover-foreground: #e8ecf4;
-  --primary: #7c9be6;
-  --primary-foreground: #0e1220;
-  --secondary: #1d2435;
-  --secondary-foreground: #dde2ec;
-  --muted: #1a2030;
-  --muted-foreground: #8e97ab;
-  --accent: #222a3d;
-  --accent-foreground: #e8ecf4;
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #0a0a0a;
+  --card-foreground: #fafafa;
+  --popover: #121212;
+  --popover-foreground: #fafafa;
+  --primary: #4d9bff;
+  --primary-foreground: #0a0a0a;
+  --secondary: #171717;
+  --secondary-foreground: #fafafa;
+  --muted: #171717;
+  --muted-foreground: #a3a3a3;
+  --accent: #1c1c1c;
+  --accent-foreground: #fafafa;
   --destructive: #f0595e;
   --destructive-foreground: #ffffff;
-  --border: #283043;
-  --input: #283043;
-  --ring: #7c9be6;
-  --description: #b4bccc;
+  --border: #262626;
+  --input: #262626;
+  --ring: #fafafa;
+  --description: #c4c4c4;
 
-  --ink: #e8ecf4;
-  --ink-foreground: #0f1420;
-  --lime: #c9f17e;
-  --lime-foreground: #1a2108;
-  --sky: #263a62;
-  --sky-foreground: #dbe8ff;
-  --highlight: #f6d24a;
-  --highlight-foreground: #2a2200;
+  --ink: #fafafa;
+  --ink-foreground: #0a0a0a;
+  --lime: #0a235c;
+  --lime-foreground: #cfe0ff;
+  --sky: #171717;
+  --sky-foreground: #fafafa;
+  --highlight: #3a2e05;
+  --highlight-foreground: #f6d24a;
 
-  --status-active: #7c9be6;
-  --status-in-progress: #a8c9f6;
-  --status-completed: #c9f17e;
-  --status-on-hold: #f6d24a;
-  --status-todo: #737d93;
+  --blue-1: #05122e;
+  --blue-2: #0a235c;
+  --blue-3: #1466ff;
+  --blue-4: #4d9bff;
+
+  --status-active: #4d9bff;
+  --status-in-progress: #1466ff;
+  --status-completed: #4d9bff;
+  --status-on-hold: #e0b02a;
+  --status-todo: #737373;
   --priority-high: #f0595e;
-  --priority-medium: #f6d24a;
-  --priority-low: #737d93;
+  --priority-medium: #e0b02a;
+  --priority-low: #737373;
 
-  --chart-1: #7c9be6;
-  --chart-2: #c9f17e;
-  --chart-3: #a8c9f6;
-  --chart-4: #f6d24a;
-  --chart-5: #e8ecf4;
+  --chart-1: #4d9bff;
+  --chart-2: #1466ff;
+  --chart-3: #0a235c;
+  --chart-4: #05122e;
+  --chart-5: #fafafa;
   --warning-text: #f6d24a;
-  --chart-series: #6d8ee0;
-  --chart-priority-high: #cc3a40;
-  --chart-priority-medium: #bc890e;
-  --chart-priority-low: #6d8ee0;
+  --chart-series: #4d9bff;
+  --chart-priority-high: #e5484d;
+  --chart-priority-medium: #4d9bff;
+  --chart-priority-low: #1466ff;
 
-  --sidebar: #131826;
-  --sidebar-foreground: #dde2ec;
-  --sidebar-primary: #e8ecf4;
-  --sidebar-primary-foreground: #0f1420;
-  --sidebar-accent: #1d2435;
-  --sidebar-accent-foreground: #e8ecf4;
-  --sidebar-border: #283043;
-  --sidebar-ring: #7c9be6;
+  --sidebar: #0d0d0d;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1c1c1c;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #262626;
+  --sidebar-ring: #fafafa;
 
   --shadow-2xs: 0 1px 1px 0 rgb(0 0 0 / 0.2);
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.25);
@@ -189,6 +201,10 @@
   --color-sky-foreground: var(--sky-foreground);
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
+  --color-blue-1: var(--blue-1);
+  --color-blue-2: var(--blue-2);
+  --color-blue-3: var(--blue-3);
+  --color-blue-4: var(--blue-4);
 
   --color-status-active: var(--status-active);
   --color-status-in-progress: var(--status-in-progress);
@@ -222,6 +238,7 @@
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
   --font-heading: var(--font-heading);
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -246,59 +263,86 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    /* Urbanist runs thin; 500 reads like a regular weight */
-    font-weight: 500;
   }
   h1,
-  h2,
-  h3 {
+  h2 {
     font-family: var(--font-heading);
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: -0.01em;
   }
+  h3 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Cut-corner shape used by buttons and feature cards */
+@utility chamfer {
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
 }
 
 /* Typography utilities */
 
 @utility font-headline {
   font-family: var(--font-heading);
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 
 @utility headline-sm {
   font-family: var(--font-heading);
-  font-size: 1.625rem;
-  line-height: 2rem;
-  font-weight: 600;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  font-weight: 400;
   letter-spacing: -0.01em;
 }
 
 @utility headline-md {
   font-family: var(--font-heading);
   font-size: 2.25rem;
-  line-height: 2.625rem;
-  font-weight: 600;
-  letter-spacing: -0.015em;
+  line-height: 1.12;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 @utility headline-lg {
   font-family: var(--font-heading);
-  font-size: 3.25rem;
-  line-height: 1.05;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 3.5rem;
+  line-height: 1.08;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Small mono eyebrow label ("Planning · Projects") */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
 }
 
 @utility label-sm {
   font-size: 0.8125rem;
   line-height: 1.125rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 @utility label-lg {
-  font-size: 1.125rem;
-  line-height: 1.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 @utility body-sm {
@@ -311,10 +355,10 @@
   line-height: 1.625rem;
 }
 
-/* Big light numbers for KPIs ("76", "$12,076") */
+/* KPI figures */
 @utility stat-number {
-  font-family: var(--font-heading);
-  font-size: 2.75rem;
+  font-family: var(--font-sans);
+  font-size: 1.75rem;
   line-height: 1;
   font-weight: 600;
   letter-spacing: -0.02em;

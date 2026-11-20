@@ -1,87 +1,72 @@
-# WorkNest Design System: Sage
+# WorkNest Design System: Mono
 
-A calm, light-first dashboard style. It has soft sage-white surfaces, ink-black buttons, and blue, lime and sky accents used as flat colour blocks. The font is Urbanist. There are **no gradients, glows or gradient text.** Depth comes from surface steps and thin borders.
-
-The style is based on a reference dashboard shot ("LeadNest"). WorkNest keeps its own name, logo and content.
+A quiet, monochrome product style. Surfaces are white and near-black, there is a single blue accent, and hairline borders do the structural work. UI text is Geist; headlines are set in Source Serif 4 at a regular weight. The signature shape is the **chamfer**: buttons and feature cards have two cut corners (top-left and bottom-right). There are **no gradients, glows or gradient text.**
 
 Every value is a CSS variable in `src/styles.css` (`:root` = light, `.dark` = dark). The `@theme inline` block maps them to Tailwind utilities. **Never hard-code hex values in components.**
 
-## Brand palette
+## Palette
 
-| Swatch     | Hex       | Use                                                                   |
-| ---------- | --------- | --------------------------------------------------------------------- |
-| Blue       | `#5880DA` | `--primary`: links, focus, active, charts, "info" chips               |
-| Lime       | `#C9F17E` | `--lime`: positive chips (`+6%`), completed, "new"                    |
-| Sky        | `#BCDBFA` | `--sky`: highlighted / priority cards, light chart fill               |
-| Sage white | `#F7F9F5` | `--card`: cards, sidebar                                              |
-| Ink        | `#23262B` | `--ink`: primary buttons, count badges, logo mark, dark callout cards |
-| Yellow     | `#F6D24A` | `--highlight`: follow-up / warning chips, on hold                     |
+| Role        | Light     | Dark      | Token / utility                               |
+| ----------- | --------- | --------- | --------------------------------------------- |
+| Background  | `#FFFFFF` | `#0A0A0A` | `bg-background`, `bg-card`                    |
+| Foreground  | `#0A0A0A` | `#FAFAFA` | `text-foreground`, `bg-ink`, `bg-foreground`  |
+| Muted       | `#F5F5F5` | `#171717` | `bg-muted`, `bg-secondary`, `bg-accent`       |
+| Muted text  | `#737373` | `#A3A3A3` | `text-muted-foreground`                       |
+| Border      | `#E5E5E5` | `#262626` | `border-border` (use `/60` inside app panels) |
+| Accent blue | `#2F80FF` | `#4D9BFF` | `bg-primary`, `text-primary`                  |
+| Destructive | `#D92D33` | `#F0595E` | `bg-destructive`, overdue, high priority      |
 
-## Tokens
+**Blue ramp** for chart and heat fills: `bg-blue-1` … `bg-blue-4`
+(light `#E6EEFF #9BC0FF #3B76FF #2F80FF`, dark `#05122E #0A235C #1466FF #4D9BFF`).
 
-| Token                | Utility                                  | Light              | Dark                              |
-| -------------------- | ---------------------------------------- | ------------------ | --------------------------------- |
-| `--background`       | `bg-background`                          | `#ECEEE9`          | `#111311`                         |
-| `--card`             | `bg-card`                                | `#F7F9F5`          | `#191B19`                         |
-| `--muted`            | `bg-muted`                               | `#EEF0EB`          | `#202320`                         |
-| `--accent`           | `bg-accent` (hover/active)               | `#E5E8E1`          | `#262926`                         |
-| `--border`           | `border-border`                          | `#E0E3DC`          | `#2A2D2A`                         |
-| `--foreground`       | `text-foreground`                        | `#1C1F1D`          | `#EEF1EA`                         |
-| `--muted-foreground` | `text-muted-foreground`                  | `#62675F`          | `#8F948B`                         |
-| `--primary`          | `bg-primary`, `text-primary`             | `#5880DA`          | `#7C9BE6`                         |
-| `--ink`              | `bg-ink`, `text-ink-foreground`          | `#23262B` on white | `#EEF1EA` on `#111311` (inverted) |
-| `--lime`             | `bg-lime text-lime-foreground`           | `#C9F17E`          | `#C9F17E`                         |
-| `--sky`              | `bg-sky text-sky-foreground`             | `#BCDBFA`          | `#243250`                         |
-| `--highlight`        | `bg-highlight text-highlight-foreground` | `#F6D24A`          | `#F6D24A`                         |
-| `--destructive`      | `bg-destructive`                         | `#C22F35`          | `#F0595E`                         |
-| `--warning-text`     | `text-warning-text`                      | `#7A6000`          | `#F6D24A`                         |
+The old role names still exist so existing variants keep working:
 
-**Status:**
+- `lime` is a pale blue chip (`#E6EEFF` / `#0A235C`) for positive states.
+- `sky` is a neutral muted chip.
+- `highlight` is a pale amber chip for warnings.
 
-- active: blue
-- in-progress: light blue
-- completed: lime-green
-- on-hold: yellow
-- todo: grey
-
-**Priority:** high is red, medium is yellow, low is grey.
-
-**Charts:** blue, lime, sky, yellow, ink.
-
-**Dark mode** keeps the same roles on a slate-blue near-black (background `#0F1420`, cards `#161C2A`, borders `#283043`). Ink inverts to off-white, so primary buttons become light with dark text. Lime and yellow stay bright. Sky becomes a deep blue tint.
+**Status:** todo is neutral grey, in progress is light blue, active and completed are accent blue, on hold is amber.
+**Priority (charts):** low is light blue, medium is accent blue, high is red.
 
 ## Typography
 
-- **Font:** Urbanist for everything (`font-sans` and `font-headline`), plus Geist Mono for code. Both load from Google Fonts in `__root.tsx`.
-- **Weights:** Urbanist runs thin, so body text is **500**, headings are **600**, and emphasis (names, card titles, buttons) is **600–700**. Don't use 300–400 except for deliberately quiet text.
+- **Geist** (`font-sans`) is the body and UI font, at weight 400–600.
+- **Source Serif 4** (`font-serif`, `--font-heading`) is used for `h1` and `h2` at **weight 400**, with `tracking-[-0.01em]` and tight leading (1.08–1.12).
+  - Hero `h1`: `text-4xl sm:text-5xl lg:text-[3.5rem]`.
+  - Section `h2`: `text-3xl sm:text-4xl lg:text-[2.75rem]`.
+  - `h3` stays in Geist at 600 with tight tracking.
+- **Geist Mono** (`font-mono`) is for dates, counts, step numbers and the `eyebrow` labels.
+- App UI is small and dense:
+  - Panel titles are `text-[13px] font-semibold tracking-tight`.
+  - Meta text is `text-[11px] text-muted-foreground`.
+  - KPI numbers use `stat-number`.
+- Utilities: `headline-sm|md|lg` (serif), `eyebrow` (mono, uppercase, 11px), `label-sm`, `label-lg`, `body-sm`, `body-md`, `stat-number`.
 
-| Utility               | Size / weight       | Use                               |
-| --------------------- | ------------------- | --------------------------------- |
-| `headline-lg`         | 52px / 700          | Hero                              |
-| `headline-md`         | 36px / 600          | Page sections                     |
-| `headline-sm`         | 26px / 600          | Page titles                       |
-| `label-lg`            | 18px / 600          | Card titles ("Tasks in progress") |
-| `label-sm`            | 13px / 600          | Captions                          |
-| `body-md` / `body-sm` | 16px / 14px, 500    | Body text                         |
-| `stat-number`         | 44px / 600, tabular | KPI numbers ("76")                |
+## Shape
 
-## Components
+- `--radius` is `0.5rem`. App panels and KPI tiles use `rounded-lg border border-border/60 bg-background`.
+- `chamfer` is a utility that applies the cut-corner `clip-path`; its size comes from `--cut` (8px default; override with `[--cut:14px]`).
+  - Button `default`, `outline`, `secondary` and `destructive` are chamfered. Their focus rings are inset, because `clip-path` hides outer rings.
+  - For a chamfered card with a hairline border, nest two chamfers: an outer `bg-border p-px` and an inner `bg-background`.
+- Badges are `rounded-[3px]`, `text-[11px]` and semibold.
+- Progress and share bars are 6px tall with `rounded-[2px]`.
 
-- **Cards:** `rounded-xl` (16px), `bg-card`, `border border-border`, no shadow.
-- **Primary button:** `bg-ink text-ink-foreground`, `rounded-lg` (12px). This is the Button `default` variant. Secondary buttons use the `outline` variant on `bg-card`.
-- **Chips / tags:** `rounded-md`, 13px medium. Badge variants are `lime`, `blue`, `sky`, `yellow` and `default` (ink).
-- **Count badges:** an ink circle with a white number.
-- **Highlighted card:** `bg-sky text-sky-foreground` with no border, for the single most important item.
-- **Logo mark:** the Sprout icon in an ink circle.
+## Layout
+
+- Landing sections sit in `Container` (`max-w-[1440px] px-5 sm:px-8 lg:px-10`) and are spaced with `pb-24 sm:pb-32`.
+- The landing nav is fixed and transparent at the top. Once the page scrolls, it gains `bg-background/85`, a backdrop blur and a border.
+- The app sidebar is 212px wide, uses `bg-sidebar`, has a mono "Workspace" label and 13px items.
+- The dashboard runs, top to bottom: a status pill, the serif "Overview" title, four KPI tiles, then panels on a 3-column grid with `gap-3`.
 
 ## Do
 
-- Use colour as flat blocks: chips, highlighted cards, chart fills.
-- Keep one ink CTA per view.
-- Check both themes.
+- Use hierarchy from size, weight and muted text, not from colour.
+- Keep blue for the one thing that matters in each view: an active state, the main data series, or a positive delta.
+- Use hairline borders (`border-border/60`) and plenty of whitespace.
 
 ## Don't
 
-- Don't use gradients, glows, gradient text or coloured shadows.
-- Don't use thin (300–400) weights for body text or headings.
-- Don't use raw hex or Tailwind palette colours like `bg-green-500` in components. Add a token instead.
+- Gradients, glows, coloured shadows or gradient text.
+- Bold serif headlines. The serif is always 400.
+- More than one accent colour per view, apart from red for errors and overdue items.
+- Raw hex in components.

@@ -124,7 +124,7 @@ function OnboardingPage() {
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-full bg-ink">
+            <span className="flex size-8 items-center justify-center chamfer bg-ink">
               <Sprout className="size-5 text-ink-foreground" />
             </span>
             <span className="font-semibold text-foreground">WorkNest</span>

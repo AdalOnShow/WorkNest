@@ -34,11 +34,11 @@ export function ProjectProgress({
             <Link
               to="/projects/$projectId"
               params={{ projectId: p.id }}
-              className="body-sm truncate font-semibold text-foreground hover:underline"
+              className="truncate text-[13px] font-medium text-foreground hover:underline"
             >
               {p.name}
             </Link>
-            <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
+            <span className="shrink-0 font-mono text-[11px] text-muted-foreground tabular-nums">
               {p.total === 0
                 ? 'No tasks'
                 : `${p.completed}/${p.total} · ${p.percent}%`}
@@ -51,10 +51,10 @@ export function ProjectProgress({
             aria-valuemax={100}
             aria-valuenow={p.percent}
             aria-valuetext={`${p.percent}% — ${p.completed} of ${p.total} tasks completed`}
-            className="h-1.5 overflow-hidden rounded-full bg-muted"
+            className="h-1.5 overflow-hidden rounded-[2px] bg-muted"
           >
             <div
-              className="h-full rounded-full bg-chart-series transition-[width]"
+              className="h-full rounded-[2px] bg-chart-series transition-[width]"
               style={{ width: `${p.percent}%` }}
             />
           </div>

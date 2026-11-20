@@ -16,7 +16,7 @@ A team collaboration app for projects, tasks and real-time project chat. It runs
 - **Notifications and activity log:** stored in D1 and refreshed with TanStack Query.
 - **Per-project roles:** `ADMIN`, `PROJECT_MANAGER` and `TEAM_MEMBER`, enforced on the server.
 - **Auth:** Google or GitHub OAuth, plus optional email/password sign-in for demo accounts.
-- **Themes and layout:** light and dark themes (Sage design system), with responsive desktop, tablet and phone layouts.
+- **Themes and layout:** light and dark themes (Mono design system), with responsive desktop, tablet and phone layouts.
 
 ## Stack
 

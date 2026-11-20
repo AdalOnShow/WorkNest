@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '#/components/ui/accordion'
-import { Reveal, SectionHeading } from './reveal'
+import { Container, Reveal, SectionHeading } from './reveal'
 
 const faqs = [
   {
@@ -35,28 +35,36 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section id="faq" className="border-t border-border py-24">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16 lg:px-8">
+    <section id="faq" className="scroll-mt-24 pb-24 sm:pb-32">
+      <Container className="grid gap-8 lg:grid-cols-[1fr_1.35fr] lg:gap-16">
         <SectionHeading
           eyebrow="FAQ"
           title="Questions, answered"
           className="mb-0"
         />
         <Reveal>
-          <Accordion type="single" collapsible>
+          <Accordion
+            type="single"
+            collapsible
+            className="border-t border-border/60"
+          >
             {faqs.map((item) => (
-              <AccordionItem key={item.q} value={item.q}>
-                <AccordionTrigger className="text-base">
+              <AccordionItem
+                key={item.q}
+                value={item.q}
+                className="border-border/60"
+              >
+                <AccordionTrigger className="py-5 text-[15px] font-semibold tracking-tight hover:no-underline">
                   {item.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-description">
+                <AccordionContent className="max-w-xl text-sm leading-relaxed text-muted-foreground">
                   {item.a}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
         </Reveal>
-      </div>
+      </Container>
     </section>
   )
 }

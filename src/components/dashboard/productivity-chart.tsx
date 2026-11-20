@@ -26,10 +26,8 @@ export function ProductivityChart({
 
   return (
     <div>
-      <p className="mb-6 flex items-baseline gap-2 text-sm text-muted-foreground">
-        <span className="font-headline text-4xl font-semibold text-foreground tabular-nums">
-          {total}
-        </span>
+      <p className="mb-5 flex items-baseline gap-2 text-[11px] text-muted-foreground">
+        <span className="stat-number text-foreground">{total}</span>
         in the last {data.length} days
       </p>
       {total === 0 ? (
@@ -39,11 +37,11 @@ export function ProductivityChart({
       ) : (
         <ChartContainer
           config={config}
-          className="aspect-auto h-64 w-full"
+          className="aspect-auto h-64 w-full text-[11px]"
           aria-hidden
         >
           <BarChart data={data} margin={{ left: -20, right: 4, top: 4 }}>
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={false} strokeDasharray="2 4" />
             <XAxis
               dataKey="label"
               tickLine={false}
@@ -66,7 +64,7 @@ export function ProductivityChart({
             <Bar
               dataKey="completed"
               fill="var(--color-completed)"
-              radius={[4, 4, 0, 0]}
+              radius={[2, 2, 0, 0]}
               maxBarSize={28}
               isAnimationActive={false}
             />

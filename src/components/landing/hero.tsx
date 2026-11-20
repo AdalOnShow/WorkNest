@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { ProductMockup } from './product-mockup'
+import { Container } from './reveal'
 
 export function Hero() {
   const scrollToSection = (id: string) => {
@@ -8,38 +9,35 @@ export function Hero() {
   }
 
   return (
-    <section className="relative overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24 lg:flex lg:min-h-[min(100svh,960px)] lg:items-center">
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16 lg:px-8">
-        <div className="animate-fade-in-up">
-          <h1 className="font-headline text-foreground text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-            Tasks, roles and a chat room for every project
+    <section className="relative overflow-hidden pt-32 pb-24 sm:pt-40">
+      <Container>
+        <div className="animate-fade-in-up mx-auto flex max-w-3xl flex-col items-center text-center">
+          <p className="eyebrow mb-6">Project workspace for small teams</p>
+          <h1 className="text-4xl leading-[1.1] text-balance text-foreground sm:text-5xl lg:text-[3.5rem]">
+            Run every project from one quiet workspace
           </h1>
-
-          <p className="mt-6 max-w-md text-lg text-description">
-            WorkNest gives each project its own task board, member roles and
-            real-time chat, so your team knows who is doing what and what is due
-            next
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-[17px]">
+            Tasks, per-project roles and a real-time chat room for each project,
+            with a dashboard that shows what is moving and what is late.
           </p>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" asChild className="w-full sm:w-auto">
-              <Link to="/login">Get started free</Link>
+          <div className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Button asChild className="w-full sm:w-auto">
+              <Link to="/login">Get started</Link>
             </Button>
             <Button
-              size="lg"
               variant="outline"
-              onClick={() => scrollToSection('how-it-works')}
+              onClick={() => scrollToSection('platform')}
               className="w-full sm:w-auto"
             >
-              See how it works
+              See the platform
             </Button>
           </div>
         </div>
 
-        <div className="animate-fade-in-up animation-delay-200 lg:w-[calc(100%+8rem)]">
+        <div className="animate-fade-in-up animation-delay-200 mx-auto mt-16 max-w-[1200px] sm:mt-20">
           <ProductMockup />
         </div>
-      </div>
+      </Container>
     </section>
   )
 }

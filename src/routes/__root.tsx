@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Urbanist:wght@300..800&family=Geist+Mono:wght@400..600&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@400..600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap',
       },
       {
         rel: 'stylesheet',
@@ -161,7 +161,7 @@ function NotFoundPage() {
   return (
     <main className="flex min-h-screen flex-col bg-background px-6 py-8 text-foreground">
       <Link to="/" className="inline-flex items-center gap-2.5 self-start">
-        <span className="flex size-9 items-center justify-center rounded-full bg-ink">
+        <span className="flex size-9 items-center justify-center chamfer bg-ink">
           <Sprout className="size-5 text-ink-foreground" />
         </span>
         <span className="text-lg font-semibold tracking-tight">WorkNest</span>

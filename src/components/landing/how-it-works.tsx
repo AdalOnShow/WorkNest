@@ -4,7 +4,7 @@ import { Bell, Check, Mail } from 'lucide-react'
 import { useScrollAnimation } from '#/hooks/use-scroll-animation'
 import { cn } from '#/lib/utils'
 import { Initials, PriorityDot } from './product-mockup'
-import { SectionHeading } from './reveal'
+import { Container, SectionHeading } from './reveal'
 
 const STEP_MS = 5000
 
@@ -136,7 +136,7 @@ function InviteVisual() {
         {invites.map((inv, i) => (
           <div
             key={inv.email}
-            className="hiw-rise flex items-center gap-3 rounded-xl border border-border bg-background p-3"
+            className="hiw-rise flex items-center gap-3 rounded-lg border border-border/60 bg-background p-3"
             style={delay(400 + i * 450)}
           >
             <Initials>{inv.who}</Initials>
@@ -171,7 +171,7 @@ function PlanVisual() {
         {tasks.map((t, i) => (
           <div
             key={t.title}
-            className="hiw-rise flex items-center gap-3 rounded-xl border border-border bg-background p-3"
+            className="hiw-rise flex items-center gap-3 rounded-lg border border-border/60 bg-background p-3"
             style={delay(200 + i * 300)}
           >
             <span className="relative flex size-4 shrink-0 items-center justify-center rounded-full border border-border">
@@ -216,7 +216,7 @@ function SyncVisual() {
   return (
     <div className="relative mx-auto w-full max-w-sm">
       <div
-        className="hiw-pop mb-5 flex items-start gap-2.5 rounded-xl border border-border bg-background p-3"
+        className="hiw-pop mb-5 flex items-start gap-2.5 rounded-lg border border-border/60 bg-background p-3"
         style={delay(1900)}
       >
         <Bell className="size-4 mt-0.5 text-muted-foreground" />
@@ -235,7 +235,7 @@ function SyncVisual() {
             style={delay(200 + i * 600)}
           >
             <Initials>{m.who}</Initials>
-            <div className="rounded-xl bg-background px-3 py-2">
+            <div className="rounded-lg bg-muted px-3 py-2">
               <p className="text-xs font-semibold text-foreground">{m.name}</p>
               <p className="text-sm text-muted-foreground">{m.text}</p>
             </div>
@@ -243,7 +243,7 @@ function SyncVisual() {
         ))}
         <div className="hiw-rise flex items-center gap-2.5" style={delay(1300)}>
           <Initials>SR</Initials>
-          <div className="flex gap-1 rounded-xl bg-background px-3 py-3">
+          <div className="flex gap-1 rounded-lg bg-muted px-3 py-3">
             {[0, 150, 300].map((d) => (
               <span
                 key={d}
@@ -317,22 +317,22 @@ export function HowItWorks() {
   const Visual = current.visual
 
   return (
-    <section id="how-it-works" className="py-24 border-t border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="platform" className="scroll-mt-24 pb-24 sm:pb-32">
+      <Container>
         <SectionHeading
-          eyebrow="How it works"
-          title="From sign-in to shipped in five steps"
-          description="Sign in, set up a project and bring your team in. Each step below shows the screen you will see."
+          eyebrow="Platform"
+          title="Total visibility across every project"
+          description="Sign in, set up a project and bring your team in. Each step shows the screen you will see."
         />
 
         <div
           ref={ref}
           onPointerEnter={(e) => e.pointerType === 'mouse' && setPaused(true)}
           onPointerLeave={() => setPaused(false)}
-          className="mx-auto grid max-w-5xl items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12"
+          className="grid items-start gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12"
         >
           {/* Step list */}
-          <ol className="relative space-y-1">
+          <ol className="relative border-t border-border/60">
             {steps.map((step, i) => {
               const isActive = i === active
               const isDone = i < active
@@ -343,30 +343,29 @@ export function HowItWorks() {
                     onClick={() => setActive(i)}
                     aria-current={isActive ? 'step' : undefined}
                     className={cn(
-                      'group relative w-full overflow-hidden rounded-xl border p-4 text-left transition-colors duration-200',
-                      isActive
-                        ? 'border-border bg-card'
-                        : 'border-transparent hover:bg-card/50',
+                      'group relative w-full overflow-hidden border-b border-border/60 py-5 pr-2 text-left transition-colors duration-200',
+                      !isActive && 'hover:bg-muted/30',
                     )}
                   >
                     <div className="flex gap-4">
                       <span
                         className={cn(
-                          'flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold tabular-nums transition-colors duration-200',
-                          isActive &&
-                            'border-primary bg-primary text-primary-foreground',
-                          isDone && 'border-primary text-primary',
-                          !isActive &&
-                            !isDone &&
-                            'border-border text-muted-foreground',
+                          'flex h-6 w-8 shrink-0 items-center font-mono text-[11px] tabular-nums transition-colors duration-200',
+                          isActive || isDone
+                            ? 'text-primary'
+                            : 'text-muted-foreground',
                         )}
                       >
-                        {isDone ? <Check className="size-4" /> : i + 1}
+                        {isDone ? (
+                          <Check className="size-3.5" />
+                        ) : (
+                          String(i + 1).padStart(2, '0')
+                        )}
                       </span>
                       <div className="min-w-0">
                         <h3
                           className={cn(
-                            'font-semibold transition-colors duration-200',
+                            'text-lg font-semibold tracking-tight transition-colors duration-200',
                             isActive
                               ? 'text-foreground'
                               : 'text-muted-foreground group-hover:text-foreground',
@@ -375,7 +374,7 @@ export function HowItWorks() {
                           {step.title}
                         </h3>
                         {isActive && (
-                          <p className="hiw-rise mt-1 text-sm leading-relaxed text-description">
+                          <p className="hiw-rise mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">
                             {step.description}
                           </p>
                         )}
@@ -383,7 +382,7 @@ export function HowItWorks() {
                     </div>
 
                     {isActive && (
-                      <span className="absolute inset-x-4 bottom-0 h-0.5 overflow-hidden rounded-full bg-border">
+                      <span className="absolute inset-x-0 -bottom-px h-px overflow-hidden bg-border">
                         <span
                           key={active}
                           className="hiw-progress block h-full bg-primary"
@@ -406,25 +405,22 @@ export function HowItWorks() {
           {/* Live preview */}
           <div
             aria-hidden="true"
-            className="relative overflow-hidden rounded-xl border border-border bg-card select-none lg:sticky lg:top-24"
+            className="relative bg-border p-px select-none lg:sticky lg:top-24"
           >
-            <div className="flex h-10 items-center gap-2 border-b border-border px-4">
-              <span className="size-2.5 rounded-full bg-muted" />
-              <span className="size-2.5 rounded-full bg-muted" />
-              <span className="size-2.5 rounded-full bg-muted" />
+            <div className="flex h-9 items-center gap-2 border-b border-border/60 bg-background px-4">
               <span
                 key={active}
-                className="hiw-rise ml-3 truncate font-mono text-xs text-muted-foreground"
+                className="hiw-rise truncate font-mono text-[11px] text-muted-foreground"
               >
                 {current.label}
               </span>
             </div>
-            <div className="flex min-h-[360px] items-center px-6 py-10">
+            <div className="flex min-h-[420px] items-center bg-background px-6 py-10">
               {isVisible && <Visual key={active} />}
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   )
 }

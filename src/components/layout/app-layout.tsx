@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { SidebarProvider, SidebarInset } from '#/components/ui/sidebar'
 import { AppSidebar } from '#/components/layout/sidebar'
 import { Header } from '#/components/layout/header'
@@ -28,7 +29,11 @@ export function AppLayout({ children, user }: AppLayoutProps) {
   }, [])
 
   return (
-    <SidebarProvider open={open} onOpenChange={setOpen}>
+    <SidebarProvider
+      open={open}
+      onOpenChange={setOpen}
+      style={{ '--sidebar-width': '212px' } as CSSProperties}
+    >
       <Header user={user} />
       <AppSidebar user={user} />
       <SidebarInset>

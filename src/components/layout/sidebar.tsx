@@ -16,6 +16,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -48,20 +49,26 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const location = useLocation()
 
   return (
-    <SidebarComponent collapsible="icon" className="bg-sidebar">
-      <SidebarHeader className="p-4 h-16 flex items-center border-b border-sidebar-border group-data-[collapsible=icon]:px-1.5">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-ink">
-            <Sprout className="w-5 h-5 text-ink-foreground" />
-          </div>
-          <span className="text-lg font-semibold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
+    <SidebarComponent
+      collapsible="icon"
+      className="border-r border-sidebar-border/60 bg-sidebar"
+    >
+      <SidebarHeader className="flex h-16 justify-center border-b border-sidebar-border/60 px-4 group-data-[collapsible=icon]:px-2">
+        <Link to="/" className="flex items-center gap-2">
+          <span className="chamfer flex size-7 shrink-0 items-center justify-center bg-foreground [--cut:6px]">
+            <Sprout className="size-4 text-background" />
+          </span>
+          <span className="text-[15px] font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:hidden">
             WorkNest
           </span>
         </Link>
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup className="pt-4">
+        <SidebarGroup className="pt-3">
+          <SidebarGroupLabel className="eyebrow h-7 px-2.5">
+            Workspace
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {NAV_ITEMS.map((item) => (
@@ -74,12 +81,12 @@ export function AppSidebar({ user }: AppSidebarProps) {
                       location.pathname.startsWith(item.to + '/')
                     }
                     className={cn(
-                      'h-9 font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-accent',
-                      'data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-semibold',
+                      'h-8 text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground',
+                      'data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-foreground',
                     )}
                   >
                     <Link to={item.to}>
-                      <item.icon className="size-[18px]" />
+                      <item.icon className="size-4" />
                       <span>{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -98,27 +105,27 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 asChild
                 tooltip={item.label}
                 isActive={location.pathname === item.to}
-                className="h-9 font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-accent data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-semibold"
+                className="h-8 text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
               >
                 <Link to={item.to}>
-                  <item.icon className="size-[18px]" />
+                  <item.icon className="size-4" />
                   <span>{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-        <div className="mt-2 flex items-center gap-3 border-t border-sidebar-border px-2 pt-4 pb-2 group-data-[collapsible=icon]:hidden">
+        <div className="mt-2 flex items-center gap-3 border-t border-sidebar-border/60 px-2 pt-3 pb-1 group-data-[collapsible=icon]:hidden">
           <UserAvatar
             name={user?.name ?? 'U'}
             image={user?.image ?? undefined}
             size="sm"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-sidebar-foreground truncate">
+            <p className="truncate text-[13px] font-semibold text-sidebar-foreground">
               {user?.name ?? 'Account'}
             </p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="truncate text-[11px] text-muted-foreground">
               {user?.email ?? ''}
             </p>
           </div>

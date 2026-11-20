@@ -48,7 +48,7 @@ export function MemberWorkload({
     <div>
       <ChartContainer
         config={config}
-        className="aspect-auto w-full"
+        className="aspect-auto w-full text-[11px]"
         style={{ height }}
         aria-hidden
       >
@@ -82,9 +82,9 @@ export function MemberWorkload({
               stackId="workload"
               fill={`var(--color-${key})`}
               // 2px surface gap between stacked segments.
-              stroke="var(--card)"
+              stroke="var(--background)"
               strokeWidth={2}
-              radius={i === SEGMENTS.length - 1 ? [0, 4, 4, 0] : 0}
+              radius={i === SEGMENTS.length - 1 ? [0, 2, 2, 0] : 0}
               maxBarSize={20}
               // Static bars so the end-of-bar total always renders.
               isAnimationActive={false}

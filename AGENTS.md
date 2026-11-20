@@ -33,7 +33,7 @@ Load skills proactively when a task matches their description. Use the skill too
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PROJECT_OVERVIEW.md`       | Master project specification (1650 lines). Tech stack, features, constraints, role-based access, state management rules, all 50 sections of the spec                                                                                                                                                           |
 | `TECHNICAL_FLOW.md`         | Complete technical/user flows for all 18 features: Auth, Authorization, Projects, Tasks, Dashboard, Comments, Project Chat, Notifications, Theme, Responsive Design, Search/Filter/Sort, Pagination, Error Handling, State Management, Data Flow Summary, Feature Interaction Map, Security Enforcement Points |
-| `DESIGN.md`                 | **Sage** design system. Palette (blue #5880DA, lime #C9F17E, sky #BCDBFA, sage-white #F7F9F5, ink #23262B, yellow #F6D24A), Urbanist font, light-first with a matching dark mode, flat cards, ink buttons, chip variants, status/priority tokens, do's and don'ts                                              |
+| `DESIGN.md`                 | **Mono** design system. Monochrome neutral surfaces (white / #0A0A0A), single blue accent #2F80FF with a blue ramp for charts, Geist UI + Source Serif 4 headlines (weight 400), chamfered (cut-corner) buttons and cards, hairline borders, status/priority tokens, do's and don'ts                           |
 | `ARCHITECTURE_DECISIONS.md` | (To be populated) Architecture decision records                                                                                                                                                                                                                                                                |
 | `DATABASE_SCHEMA.md`        | (To be populated) Drizzle ORM schema definitions for D1                                                                                                                                                                                                                                                        |
 | `FEATURES.md`               | (To be populated) Feature implementation status tracker                                                                                                                                                                                                                                                        |
@@ -41,13 +41,13 @@ Load skills proactively when a task matches their description. Use the skill too
 
 ### Design System
 
-This project follows the **Sage** design system defined in `context/DESIGN.md`. All values live as tokens in `src/styles.css`. Use the tokens and utilities, never raw hex. Key rules:
+This project follows the **Mono** design system defined in `context/DESIGN.md`. All values live as tokens in `src/styles.css`. Use the tokens and utilities, never raw hex. Key rules:
 
 - **Themes:** light-first (`:root`) with a matching dark mode (`.dark`). The default follows the OS (`defaultTheme="system"`).
-- **Palette:** blue #5880DA (`primary`), lime #C9F17E (`lime`), sky #BCDBFA (`sky`), sage-white #F7F9F5 (`card`), ink #23262B (`ink`), yellow #F6D24A (`highlight`).
-- **Typography:** Urbanist everywhere. Body text is 500, headings are 600, and emphasis is 600–700 (Urbanist runs thin). Use `stat-number` for KPI figures.
-- **Buttons:** ink (`bg-ink`, the Button default variant) with `rounded-lg`. Chips use `rounded-md` Badge variants `lime`, `blue`, `sky`, `yellow`.
-- **Surfaces:** flat `bg-card` cards with `rounded-xl` and `border-border`. **No gradients, glows or gradient text.**
+- **Palette:** monochrome neutral (`background` #FFF / #0A0A0A, `muted` #F5F5F5, `border` #E5E5E5) with one blue accent #2F80FF (`primary`). Charts use the blue ramp (`blue-1`…`blue-4`, `chart-*`). Legacy chip roles `lime`, `sky`, `highlight` map to pale blue, neutral and pale amber.
+- **Typography:** Geist for UI (body 400). `h1`/`h2` are Source Serif 4 at weight 400 with -0.01em tracking. Geist Mono for `eyebrow` labels, dates and counts. App UI is dense: 13px panel titles, 11px meta text. Use `stat-number` for KPI figures.
+- **Buttons:** Button `default` is `bg-foreground` with the `chamfer` cut-corner shape; `outline` is a chamfered hairline. Badges are `rounded-[3px]`, 11px.
+- **Surfaces:** `rounded-lg border border-border/60 bg-background` panels. Chamfered cards use an outer `bg-border p-px` wrapper. **No gradients, glows or gradient text.**
 
 ---
 
@@ -55,7 +55,7 @@ This project follows the **Sage** design system defined in `context/DESIGN.md`. 
 
 ### styles.css
 
-`src/styles.css` holds the Sage tokens (`:root` = light, `.dark` = dark), the `@theme inline` mapping, and the custom utilities (`headline-*`, `label-*`, `body-*`, `stat-number`). Add new colors there as tokens, not as hex in components.
+`src/styles.css` holds the Mono tokens (`:root` = light, `.dark` = dark), the `@theme inline` mapping, and the custom utilities (`headline-*`, `eyebrow`, `label-*`, `body-*`, `stat-number`, `chamfer`). Add new colors there as tokens, not as hex in components.
 
 ### shadcn/ui Components
 

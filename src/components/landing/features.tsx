@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Bell, Check, Plus } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import { Initials, PreviewFrame, PriorityDot } from './product-mockup'
-import { Reveal, SectionHeading } from './reveal'
+import { Container, Reveal, SectionHeading } from './reveal'
 
 function TasksVisual() {
   const tasks = [
@@ -69,7 +69,7 @@ function RolesVisual() {
           <div key={m.name} className="flex h-12 items-center gap-3">
             <Initials>{m.who}</Initials>
             <span className="flex-1 text-sm text-foreground">{m.name}</span>
-            <span className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground">
+            <span className="rounded-[3px] bg-muted px-1.5 py-1 text-[11px] leading-none font-semibold text-foreground">
               {m.role}
             </span>
           </div>
@@ -123,15 +123,18 @@ function DashboardVisual() {
       <div className="p-5">
         <div className="mb-4 grid grid-cols-3 gap-3">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-lg bg-background p-3">
-              <p className="font-headline text-2xl font-semibold text-foreground tabular-nums">
+            <div
+              key={s.label}
+              className="rounded-lg border border-border/60 bg-background p-3"
+            >
+              <p className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
                 {s.value}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
             </div>
           ))}
         </div>
-        <div className="flex items-start gap-3 rounded-lg border border-border p-3">
+        <div className="flex items-start gap-3 rounded-lg border border-border/60 p-3">
           <Bell className="mt-0.5 size-4 text-muted-foreground" />
           <div>
             <p className="text-sm text-foreground">Task assigned to you</p>
@@ -153,7 +156,7 @@ const features: Array<{
   visual: ReactNode
 }> = [
   {
-    eyebrow: 'Tasks',
+    eyebrow: 'Execution · Tasks',
     title: 'Know what needs doing, and who is doing it',
     description:
       'Every task has a status, a priority, a due date and an owner. Search, filter and sort to find what matters right now.',
@@ -165,7 +168,7 @@ const features: Array<{
     visual: <TasksVisual />,
   },
   {
-    eyebrow: 'Roles',
+    eyebrow: 'Access · Roles',
     title: 'The right access for each person',
     description:
       'Permissions are set per project. Someone can run one project as an admin and be a team member on another.',
@@ -177,7 +180,7 @@ const features: Array<{
     visual: <RolesVisual />,
   },
   {
-    eyebrow: 'Project chat',
+    eyebrow: 'Together · Chat',
     title: 'A chat room for every project',
     description:
       'Conversations stay next to the work they are about. Messages arrive in real time and the history is saved.',
@@ -189,7 +192,7 @@ const features: Array<{
     visual: <ChatVisual />,
   },
   {
-    eyebrow: 'Dashboard',
+    eyebrow: 'Insight · Dashboard',
     title: 'See progress at a glance',
     description:
       'Your dashboard shows open work, upcoming deadlines and recent activity. Notifications tell you when something changes for you.',
@@ -204,45 +207,46 @@ const features: Array<{
 
 export function Features() {
   return (
-    <section id="features" className="border-t border-border py-24">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section id="features" className="scroll-mt-24 pb-24 sm:pb-32">
+      <Container>
         <SectionHeading
           eyebrow="Features"
-          title="What every project comes with"
+          title="One workspace that plans, tracks and ships"
           description="Tasks, roles, chat and a dashboard. Four building blocks that cover how most small teams work."
         />
 
-        <div className="space-y-16 md:space-y-24">
+        <div className="grid gap-5 md:grid-cols-2 lg:gap-6">
           {features.map((f, i) => (
             <Reveal
               key={f.eyebrow}
-              className="grid items-center gap-8 md:grid-cols-2 md:gap-16"
+              delay={(i % 2) * 80}
+              className="chamfer bg-border p-px [--cut:14px]"
             >
-              <div className={cn('max-w-md', i % 2 === 1 && 'md:order-2')}>
-                <p className="mb-3 text-sm font-semibold text-muted-foreground">
-                  {f.eyebrow}
-                </p>
-                <h3 className="font-headline mb-4 text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+              <article className="chamfer flex h-full flex-col bg-background p-6 [--cut:14px] sm:p-7">
+                <p className="eyebrow">{f.eyebrow}</p>
+                <h3 className="mt-4 text-lg font-semibold tracking-tight text-foreground">
                   {f.title}
                 </h3>
-                <p className="mb-6 text-description">{f.description}</p>
-                <ul className="space-y-2">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {f.description}
+                </p>
+                <ul className="mt-5 space-y-2">
                   {f.points.map((p) => (
                     <li
                       key={p}
-                      className="flex items-start gap-2 text-sm text-foreground"
+                      className="flex items-start gap-2 text-[13px] text-foreground"
                     >
-                      <Check className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      <Check className="mt-0.5 size-3.5 shrink-0 text-primary" />
                       {p}
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className={cn(i % 2 === 1 && 'md:order-1')}>{f.visual}</div>
+                <div className="mt-7 flex-1 content-end">{f.visual}</div>
+              </article>
             </Reveal>
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   )
 }

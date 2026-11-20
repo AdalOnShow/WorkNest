@@ -102,7 +102,7 @@ function RouteComponent() {
             <dt className="text-sm font-semibold text-muted-foreground">
               Tasks
             </dt>
-            <dd className="mt-2 font-headline text-3xl font-semibold text-foreground tabular-nums">
+            <dd className="mt-2 text-3xl font-semibold tracking-tight text-foreground tabular-nums">
               {project.taskCount}
             </dd>
           </div>
@@ -110,7 +110,7 @@ function RouteComponent() {
             <dt className="text-sm font-semibold text-muted-foreground">
               Members
             </dt>
-            <dd className="mt-2 font-headline text-3xl font-semibold text-foreground tabular-nums">
+            <dd className="mt-2 text-3xl font-semibold tracking-tight text-foreground tabular-nums">
               {members?.items.length ?? '—'}
             </dd>
           </div>
@@ -118,7 +118,7 @@ function RouteComponent() {
             <dt className="text-sm font-semibold text-muted-foreground">
               Deadline
             </dt>
-            <dd className="mt-2 font-headline text-3xl font-semibold text-foreground tabular-nums">
+            <dd className="mt-2 text-3xl font-semibold tracking-tight text-foreground tabular-nums">
               {project.deadline != null
                 ? new Date(project.deadline).toLocaleDateString('en-US', {
                     month: 'short',
