@@ -12,7 +12,18 @@ import { canManage, requireProjectRole } from '#/lib/authz'
 import { authMiddleware } from '#/lib/middleware'
 import { escapeLikePattern } from '#/lib/sql'
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  lt,
+  lte,
+  ne,
+  sql,
+} from 'drizzle-orm'
 import { alias } from 'drizzle-orm/sqlite-core'
 
 const creator = alias(user, 'creator')
@@ -196,12 +207,11 @@ export const listTasks = createServerFn({ method: 'GET' })
     }
     const now = new Date()
     if (data.deadline === 'overdue') {
-      conditions.push(
-        sql`${task.deadline} IS NOT NULL AND ${task.deadline} < ${now} AND ${task.status} != 'COMPLETED'`,
-      )
+      conditions.push(lt(task.deadline, now), ne(task.status, 'COMPLETED'))
     } else if (data.deadline === 'week') {
       conditions.push(
-        sql`${task.deadline} IS NOT NULL AND ${task.deadline} >= ${now} AND ${task.deadline} <= ${new Date(now.getTime() + 7 * DAY_MS)}`,
+        gte(task.deadline, now),
+        lte(task.deadline, new Date(now.getTime() + 7 * DAY_MS)),
       )
     } else if (data.deadline === 'none') {
       conditions.push(sql`${task.deadline} IS NULL`)

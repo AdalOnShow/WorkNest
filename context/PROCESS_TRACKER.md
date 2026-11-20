@@ -123,11 +123,11 @@ Track high-level development phases and milestones.
 | #   | Task                           | Status | Notes                                                |
 | --- | ------------------------------ | ------ | ---------------------------------------------------- |
 | 63  | KPI cards (server query)       | [x]    | Real D1 counts (projects, tasks, completed, overdue) |
-| 64  | Project progress chart         | [ ]    |                                                      |
+| 64  | Project progress chart         | [x]    | Per-project % complete meters (top 6 by task count)  |
 | 65  | Tasks by priority chart        | [x]    | Dynamic CSS bar chart with real data                 |
 | 66  | Task status distribution chart | [x]    | Dynamic circle chart with real data                  |
-| 67  | Team productivity chart        | [ ]    |                                                      |
-| 68  | Member workload section        | [ ]    |                                                      |
+| 67  | Team productivity chart        | [x]    | Recharts bars: tasks completed per day, last 14 days |
+| 68  | Member workload section        | [x]    | Recharts stacked bars: open tasks per assignee by priority |
 | 69  | Recent activities section      | [x]    | Real D1 data from activity table                     |
 | 70  | Upcoming deadlines section     | [x]    | Real D1 data with task count per project             |
 | 71  | High priority tasks section    | [x]    | Dashboard widgets: My Tasks + High Priority          |
@@ -315,13 +315,13 @@ Track high-level development phases and milestones.
 | 3. Authentication  | 12      | 12       | 0           | 0           |
 | 4. Projects        | 13      | 13       | 0           | 0           |
 | 5. Tasks           | 13      | 13       | 0           | 0           |
-| 6. Dashboard       | 9       | 6        | 0           | 3           |
+| 6. Dashboard       | 9       | 9        | 0           | 0           |
 | 7. Collaboration   | 7       | 7        | 0           | 0           |
 | 8. Profile Photos  | 3       | 3        | 0           | 0           |
 | 9. Project Chat    | 7       | 6        | 0           | 1           |
 | 10. Polish         | 13      | 10       | 1           | 2           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **109** | **93**   | **3**       | **13**      |
+| **Total**          | **109** | **96**   | **3**       | **10**      |
 
 Phase 2 excludes the n/a attachment row.
 

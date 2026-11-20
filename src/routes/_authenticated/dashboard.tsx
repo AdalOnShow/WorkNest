@@ -1,3 +1,6 @@
+import { MemberWorkload } from '#/components/dashboard/member-workload'
+import { ProductivityChart } from '#/components/dashboard/productivity-chart'
+import { ProjectProgress } from '#/components/dashboard/project-progress'
 import { PageContainer } from '#/components/layout/page-container'
 import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
@@ -74,6 +77,9 @@ function DashboardPage() {
   const upcomingDeadlines = data?.upcomingDeadlines || []
   const myOpenTasks = data?.myOpenTasks || []
   const highPriorityTasks = data?.highPriorityTasks || []
+  const projectProgress = data?.projectProgress || []
+  const productivity = data?.productivity || []
+  const memberWorkload = data?.memberWorkload || []
 
   const kpiCards = [
     {
@@ -135,6 +141,25 @@ function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <section className="bg-card border border-border rounded-xl p-6">
+            <h3 className="label-lg text-foreground mb-1">Team Productivity</h3>
+            <ProductivityChart data={productivity} />
+          </section>
+          <section className="bg-card border border-border rounded-xl p-6">
+            <h3 className="label-lg text-foreground mb-4">Project Progress</h3>
+            <ProjectProgress items={projectProgress} />
+          </section>
+        </div>
+
+        <section className="bg-card border border-border rounded-xl p-6">
+          <h3 className="label-lg text-foreground mb-1">Member Workload</h3>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Open tasks per assignee, by priority
+          </p>
+          <MemberWorkload items={memberWorkload} />
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-card border border-border rounded-xl p-6">
             <h3 className="label-lg text-foreground mb-4">Tasks by Status</h3>
             <div className="flex items-center justify-center h-48">
@@ -186,7 +211,7 @@ function DashboardPage() {
                 <>
                   <div className="flex flex-col items-center gap-2">
                     <div
-                      className="w-12 bg-(--color-priority-high) rounded-t-md"
+                      className="w-12 bg-chart-priority-high rounded-t-md"
                       style={{
                         height: `${Math.max(20, (tasksByPriority.HIGH / priorityTotal) * 160)}px`,
                       }}
@@ -197,7 +222,7 @@ function DashboardPage() {
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <div
-                      className="w-12 bg-(--color-priority-medium) rounded-t-md"
+                      className="w-12 bg-chart-priority-medium rounded-t-md"
                       style={{
                         height: `${Math.max(20, (tasksByPriority.MEDIUM / priorityTotal) * 160)}px`,
                       }}
@@ -208,7 +233,7 @@ function DashboardPage() {
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <div
-                      className="w-12 bg-(--color-priority-low) rounded-t-md"
+                      className="w-12 bg-chart-priority-low rounded-t-md"
                       style={{
                         height: `${Math.max(20, (tasksByPriority.LOW / priorityTotal) * 160)}px`,
                       }}

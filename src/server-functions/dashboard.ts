@@ -4,10 +4,16 @@ import {
   projectMember,
   task,
   taskAssignee,
+  user,
 } from '#/db/schema'
 import { authMiddleware } from '#/lib/middleware'
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { and, count, desc, eq, gt, gte, lt, ne, sql } from 'drizzle-orm'
+
+const DAY_MS = 86_400_000
+const PRODUCTIVITY_DAYS = 14
+const PROGRESS_LIMIT = 6
+const WORKLOAD_LIMIT = 8
 
 export const getDashboardData = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
@@ -48,7 +54,7 @@ export const getDashboardData = createServerFn({ method: 'GET' })
         .where(
           and(
             sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
-            sql`${task.deadline} IS NOT NULL AND ${task.deadline} < ${new Date()} AND ${task.status} != 'COMPLETED'`,
+            and(lt(task.deadline, new Date()), ne(task.status, 'COMPLETED')),
           ),
         ),
       db
@@ -101,12 +107,7 @@ export const getDashboardData = createServerFn({ method: 'GET' })
             sql`${task.status} != 'COMPLETED'`,
           ),
         )
-        .where(
-          and(
-            memberCondition,
-            sql`${project.deadline} IS NOT NULL AND ${project.deadline} > ${new Date()}`,
-          ),
-        )
+        .where(and(memberCondition, gt(project.deadline, new Date())))
         .groupBy(project.id)
         .orderBy(project.deadline)
         .limit(5),
@@ -152,6 +153,95 @@ export const getDashboardData = createServerFn({ method: 'GET' })
         .limit(5),
     ])
 
+    const myTaskCondition = sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+    const productivityStart = new Date(
+      today.getTime() - (PRODUCTIVITY_DAYS - 1) * DAY_MS,
+    )
+    const completedExpr = sql<number>`coalesce(sum(case when ${task.status} = 'COMPLETED' then 1 else 0 end), 0)`
+
+    const [progressRows, productivityRows, workloadRows] = await Promise.all([
+      // Completion per project, busiest projects first.
+      db
+        .select({
+          id: project.id,
+          name: project.name,
+          total: count(task.id),
+          completed: completedExpr,
+        })
+        .from(project)
+        .leftJoin(task, eq(task.projectId, project.id))
+        .where(memberCondition)
+        .groupBy(project.id)
+        .orderBy(desc(count(task.id)), project.name)
+        .limit(PROGRESS_LIMIT),
+      // Tasks completed per UTC day over the window.
+      db
+        .select({
+          day: sql<string>`strftime('%Y-%m-%d', ${task.completedAt}, 'unixepoch')`,
+          count: count(),
+        })
+        .from(task)
+        .where(
+          and(
+            myTaskCondition,
+            eq(task.status, 'COMPLETED'),
+            gte(task.completedAt, productivityStart),
+          ),
+        )
+        .groupBy(sql`1`),
+      // Open tasks per assignee, split by priority.
+      db
+        .select({
+          userId: user.id,
+          name: user.name,
+          image: user.image,
+          high: sql<number>`sum(case when ${task.priority} = 'HIGH' then 1 else 0 end)`,
+          medium: sql<number>`sum(case when ${task.priority} = 'MEDIUM' then 1 else 0 end)`,
+          low: sql<number>`sum(case when ${task.priority} = 'LOW' then 1 else 0 end)`,
+          total: count(),
+        })
+        .from(taskAssignee)
+        .innerJoin(task, eq(task.id, taskAssignee.taskId))
+        .innerJoin(user, eq(user.id, taskAssignee.userId))
+        .where(and(myTaskCondition, sql`${task.status} != 'COMPLETED'`))
+        .groupBy(user.id)
+        .orderBy(desc(count()), user.name)
+        .limit(WORKLOAD_LIMIT),
+    ])
+
+    const completedByDay = new Map(
+      productivityRows.map((r) => [r.day, r.count]),
+    )
+    const productivity = Array.from({ length: PRODUCTIVITY_DAYS }, (_, i) => {
+      const date = new Date(productivityStart.getTime() + i * DAY_MS)
+      const key = date.toISOString().slice(0, 10)
+      return {
+        date: key,
+        label: date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          timeZone: 'UTC',
+        }),
+        completed: completedByDay.get(key) ?? 0,
+      }
+    })
+
+    const projectProgress = progressRows.map((p) => ({
+      ...p,
+      completed: Number(p.completed),
+      percent:
+        p.total > 0 ? Math.round((Number(p.completed) / p.total) * 100) : 0,
+    }))
+
+    const memberWorkload = workloadRows.map((m) => ({
+      ...m,
+      high: Number(m.high),
+      medium: Number(m.medium),
+      low: Number(m.low),
+    }))
+
     const statusMap: Record<'COMPLETED' | 'IN_PROGRESS' | 'TODO', number> = {
       COMPLETED: 0,
       IN_PROGRESS: 0,
@@ -183,6 +273,9 @@ export const getDashboardData = createServerFn({ method: 'GET' })
       },
       tasksByStatus: statusMap,
       tasksByPriority: priorityMap,
+      projectProgress,
+      productivity,
+      memberWorkload,
       recentActivities: recentActivities.map((a) => ({
         ...a,
         timeAgo: getTimeAgo(a.createdAt),

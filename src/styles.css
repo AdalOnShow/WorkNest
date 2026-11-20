@@ -54,6 +54,11 @@
   --chart-3: #bcdbfa;
   --chart-4: #f6d24a;
   --chart-5: #23262b;
+  /* Dashboard charts — validated (dataviz validate_palette.js) vs --card. */
+  --chart-series: #5880da;
+  --chart-priority-high: #e5484d;
+  --chart-priority-medium: #d4a017;
+  --chart-priority-low: #5880da;
 
   --sidebar: #f7f9f5;
   --sidebar-foreground: #24272a;
@@ -126,6 +131,10 @@
   --chart-3: #a8c9f6;
   --chart-4: #f6d24a;
   --chart-5: #eef1ea;
+  --chart-series: #6d8ee0;
+  --chart-priority-high: #cc3a40;
+  --chart-priority-medium: #bc890e;
+  --chart-priority-low: #6d8ee0;
 
   --sidebar: #191b19;
   --sidebar-foreground: #e2e5de;
@@ -193,6 +202,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-series: var(--chart-series);
+  --color-chart-priority-high: var(--chart-priority-high);
+  --color-chart-priority-medium: var(--chart-priority-medium);
+  --color-chart-priority-low: var(--chart-priority-low);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
