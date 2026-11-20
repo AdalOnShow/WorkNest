@@ -27,13 +27,14 @@ Every value is a CSS variable in `src/styles.css` (`:root` = light, `.dark` = da
 | `--accent`           | `bg-accent` (hover/active)               | `#E5E8E1`          | `#262926`                         |
 | `--border`           | `border-border`                          | `#E0E3DC`          | `#2A2D2A`                         |
 | `--foreground`       | `text-foreground`                        | `#1C1F1D`          | `#EEF1EA`                         |
-| `--muted-foreground` | `text-muted-foreground`                  | `#767B74`          | `#8F948B`                         |
+| `--muted-foreground` | `text-muted-foreground`                  | `#62675F`          | `#8F948B`                         |
 | `--primary`          | `bg-primary`, `text-primary`             | `#5880DA`          | `#7C9BE6`                         |
 | `--ink`              | `bg-ink`, `text-ink-foreground`          | `#23262B` on white | `#EEF1EA` on `#111311` (inverted) |
 | `--lime`             | `bg-lime text-lime-foreground`           | `#C9F17E`          | `#C9F17E`                         |
 | `--sky`              | `bg-sky text-sky-foreground`             | `#BCDBFA`          | `#243250`                         |
 | `--highlight`        | `bg-highlight text-highlight-foreground` | `#F6D24A`          | `#F6D24A`                         |
-| `--destructive`      | `bg-destructive`                         | `#E5484D`          | `#F0595E`                         |
+| `--destructive`      | `bg-destructive`                         | `#C22F35`          | `#F0595E`                         |
+| `--warning-text`     | `text-warning-text`                      | `#7A6000`          | `#F6D24A`                         |
 
 **Status:**
 

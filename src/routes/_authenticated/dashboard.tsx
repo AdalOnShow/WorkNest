@@ -1,7 +1,7 @@
-import { MemberWorkload } from '#/components/dashboard/member-workload'
-import { ProductivityChart } from '#/components/dashboard/productivity-chart'
 import { ProjectProgress } from '#/components/dashboard/project-progress'
 import { PageContainer } from '#/components/layout/page-container'
+import { Skeleton } from '#/components/ui/skeleton'
+import { lazy, Suspense } from 'react'
 import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
 import { getDashboardData } from '#/server-functions/dashboard'
@@ -14,6 +14,18 @@ import {
   CheckSquare,
   FolderKanban,
 } from 'lucide-react'
+
+// Recharts is the bulk of this route's JS; load it after the KPIs and lists.
+const ProductivityChart = lazy(() =>
+  import('#/components/dashboard/productivity-chart').then((m) => ({
+    default: m.ProductivityChart,
+  })),
+)
+const MemberWorkload = lazy(() =>
+  import('#/components/dashboard/member-workload').then((m) => ({
+    default: m.MemberWorkload,
+  })),
+)
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   beforeLoad: async () => {
@@ -143,7 +155,9 @@ function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <section className="bg-card border border-border rounded-xl p-6">
             <h3 className="label-lg text-foreground mb-1">Team Productivity</h3>
-            <ProductivityChart data={productivity} />
+            <Suspense fallback={<Skeleton className="mt-3 h-52 w-full" />}>
+              <ProductivityChart data={productivity} />
+            </Suspense>
           </section>
           <section className="bg-card border border-border rounded-xl p-6">
             <h3 className="label-lg text-foreground mb-4">Project Progress</h3>
@@ -156,7 +170,9 @@ function DashboardPage() {
           <p className="mb-4 text-sm text-muted-foreground">
             Open tasks per assignee, by priority
           </p>
-          <MemberWorkload items={memberWorkload} />
+          <Suspense fallback={<Skeleton className="h-32 w-full" />}>
+            <MemberWorkload items={memberWorkload} />
+          </Suspense>
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -347,7 +363,7 @@ function DashboardPage() {
                         {item.taskCount} tasks remaining
                       </p>
                     </div>
-                    <span className="label-sm text-(--color-status-on-hold)">
+                    <span className="label-sm text-warning-text">
                       {item.deadlineFormatted}
                     </span>
                   </div>

@@ -1,0 +1,1 @@
+CREATE INDEX `idx_task_project_status_completed` ON `task` (`project_id`,`status`,`completed_at`);

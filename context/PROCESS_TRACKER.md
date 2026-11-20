@@ -189,14 +189,14 @@ Track high-level development phases and milestones.
 | 86  | Light mode                             | [x]    | :root variables defined                    |
 | 87  | System preference mode                 | [x]    | next-themes with enableSystem              |
 | 88  | Desktop layout                         | [x]    | Sidebar + header + mobile nav              |
-| 89  | Tablet layout                          | [~]    | Sidebar collapses, basic responsiveness    |
+| 89  | Tablet layout                          | [x]    | Icon-rail sidebar md–lg, narrower chat list |
 | 90  | Mobile layout                          | [x]    | Bottom nav, stacked layouts                |
 | 91  | Loading states (all pages)             | [x]    | LoadingState component wired to all pages  |
 | 92  | Error states (all pages)               | [x]    | ErrorState component wired to detail pages |
 | 93  | Empty states (all pages)               | [x]    | EmptyState component wired to list pages   |
 | 94  | Confirmation dialogs                   | [x]    | ConfirmDialog on delete actions            |
-| 95  | Accessibility audit                    | [ ]    |                                            |
-| 96  | Performance review                     | [ ]    |                                            |
+| 95  | Accessibility audit                    | [x]    | AA text contrast tokens, labels, focus, hydration |
+| 96  | Performance review                     | [x]    | Lazy Recharts chunk, staleTime 30s, index 0009 |
 
 ---
 
@@ -319,9 +319,9 @@ Track high-level development phases and milestones.
 | 7. Collaboration   | 7       | 7        | 0           | 0           |
 | 8. Profile Photos  | 3       | 3        | 0           | 0           |
 | 9. Project Chat    | 7       | 7        | 0           | 0           |
-| 10. Polish         | 13      | 10       | 1           | 2           |
+| 10. Polish         | 13      | 13       | 0           | 0           |
 | 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **109** | **97**   | **3**       | **9**       |
+| **Total**          | **109** | **100**  | **2**       | **7**       |
 
 Phase 2 excludes the n/a attachment row.
 

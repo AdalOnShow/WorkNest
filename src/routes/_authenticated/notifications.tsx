@@ -146,6 +146,7 @@ function NotificationsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={`Mark "${notification.title}" as read`}
                       className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-accent shrink-0"
                       onClick={(e) => {
                         e.stopPropagation()

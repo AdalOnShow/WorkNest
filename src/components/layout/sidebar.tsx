@@ -50,9 +50,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   return (
     <SidebarComponent collapsible="icon" className="bg-sidebar">
-      <SidebarHeader className="p-4 h-16 flex items-center border-b border-sidebar-border">
+      <SidebarHeader className="p-4 h-16 flex items-center border-b border-sidebar-border group-data-[collapsible=icon]:px-1.5">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-9 h-9 rounded-full bg-ink">
+          <div className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-ink">
             <Sprout className="w-5 h-5 text-ink-foreground" />
           </div>
           <span className="text-xl font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
@@ -72,6 +72,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton
                     asChild
+                    tooltip={item.label}
                     isActive={
                       location.pathname === item.to ||
                       location.pathname.startsWith(item.to + '/')
@@ -101,6 +102,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
             <SidebarMenuItem key={item.to}>
               <SidebarMenuButton
                 asChild
+                tooltip={item.label}
                 isActive={location.pathname === item.to}
                 className="text-muted-foreground hover:text-foreground hover:bg-accent data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-bold"
               >

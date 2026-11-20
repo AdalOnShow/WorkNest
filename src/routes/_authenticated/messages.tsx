@@ -32,7 +32,7 @@ function MessagesPage() {
       {/* On mobile, show either the list or the open room. */}
       <aside
         className={cn(
-          'min-h-0 w-full shrink-0 flex-col border-border md:flex md:w-72 md:border-r lg:w-80',
+          'min-h-0 w-full shrink-0 flex-col border-border md:flex md:w-60 md:border-r lg:w-72 xl:w-80',
           projectId ? 'hidden' : 'flex',
         )}
       >

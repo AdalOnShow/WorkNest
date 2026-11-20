@@ -20,10 +20,12 @@
   --secondary: #e9ece6;
   --secondary-foreground: #24272a;
   --muted: #eef0eb;
-  --muted-foreground: #767b74;
+  /* Darkened from #767b74 for WCAG AA (4.5:1) on card, background and accent. */
+  --muted-foreground: #62675f;
   --accent: #e5e8e1;
   --accent-foreground: #1c1f1d;
-  --destructive: #e5484d;
+  /* Darkened from #e5484d so red text (errors, overdue) meets 4.5:1. */
+  --destructive: #c22f35;
   --destructive-foreground: #ffffff;
   --border: #e0e3dc;
   --input: #e0e3dc;
@@ -55,6 +57,7 @@
   --chart-4: #f6d24a;
   --chart-5: #23262b;
   /* Dashboard charts — validated (dataviz validate_palette.js) vs --card. */
+  --warning-text: #7a6000;
   --chart-series: #5880da;
   --chart-priority-high: #e5484d;
   --chart-priority-medium: #d4a017;
@@ -131,6 +134,7 @@
   --chart-3: #a8c9f6;
   --chart-4: #f6d24a;
   --chart-5: #eef1ea;
+  --warning-text: #f6d24a;
   --chart-series: #6d8ee0;
   --chart-priority-high: #cc3a40;
   --chart-priority-medium: #bc890e;
@@ -202,6 +206,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-warning-text: var(--warning-text);
   --color-chart-series: var(--chart-series);
   --color-chart-priority-high: var(--chart-priority-high);
   --color-chart-priority-medium: var(--chart-priority-medium);

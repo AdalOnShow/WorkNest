@@ -12,7 +12,7 @@ import {
 import { createFileRoute } from '@tanstack/react-router'
 import { Camera, Loader2, Pencil, Save, X } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/settings')({
@@ -24,7 +24,12 @@ export const Route = createFileRoute('/_authenticated/settings')({
 
 function SettingsPage() {
   const { user } = Route.useRouteContext()
-  const { theme, setTheme } = useTheme()
+  const { theme: storedTheme, setTheme } = useTheme()
+  // next-themes only knows the stored theme on the client; mark the selection
+  // after mount so the server HTML and the first client render match.
+  const [themeMounted, setThemeMounted] = useState(false)
+  useEffect(() => setThemeMounted(true), [])
+  const theme = themeMounted ? storedTheme : undefined
 
   const [name, setName] = useState(user.name)
   const [isEditing, setIsEditing] = useState(false)
@@ -140,10 +145,20 @@ function SettingsPage() {
               {!isUploading && !isDeleting && (
                 <button
                   type="button"
+                  aria-label={
+                    user.image ? 'Change profile photo' : 'Upload profile photo'
+                  }
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute inset-0 rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
                 >
-                  <Camera className="w-5 h-5 text-white" />
+                  {/* Hover/focus overlay (pointer users). */}
+                  <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                    <Camera className="w-5 h-5 text-white" />
+                  </span>
+                  {/* Always-visible badge so touch users can find it too. */}
+                  <span className="absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full border-2 border-card bg-ink text-ink-foreground">
+                    <Camera className="size-3" />
+                  </span>
                 </button>
               )}
               <input
@@ -152,6 +167,8 @@ function SettingsPage() {
                 accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={handlePhotoSelect}
                 className="hidden"
+                tabIndex={-1}
+                aria-hidden
               />
             </div>
             <div className="flex-1">

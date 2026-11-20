@@ -43,6 +43,12 @@ export const task = sqliteTable(
     idxProject: index('idx_task_project').on(table.projectId),
     idxAssignee: index('idx_task_assignee').on(table.assigneeId),
     idxStatus: index('idx_task_status').on(table.status),
+    // Dashboard KPIs and the completed-per-day chart filter by project + status.
+    idxProjectStatusCompleted: index('idx_task_project_status_completed').on(
+      table.projectId,
+      table.status,
+      table.completedAt,
+    ),
   }),
 )
 

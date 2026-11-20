@@ -64,6 +64,13 @@
       "when": 1795103372608,
       "tag": "0008_account_password",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1795152587824,
+      "tag": "0009_task_project_status_index",
+      "breakpoints": true
     }
   ]
 }
