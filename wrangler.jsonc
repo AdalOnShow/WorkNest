@@ -24,7 +24,7 @@
   "vars": {
     "BETTER_AUTH_URL": "https://worknest.sadal.dev",
     // "true" shows the email/password form (sign-in only, for demo accounts).
-    "ENABLE_EMAIL_PASSWORD": "false",
+    "ENABLE_EMAIL_PASSWORD": "true",
   },
   "secrets": {
     "required": [

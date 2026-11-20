@@ -32,7 +32,7 @@ To apply migrations to the local D1 that `pnpm dev` uses, run `pnpm wrangler d1 
 - `createAuth` throws at request time if `DB` or `BETTER_AUTH_SECRET` is missing, or if no sign-in method is configured.
 - Social sign-in is enabled per provider when its OAuth pair is set.
 - Email/password is enabled only when the var `ENABLE_EMAIL_PASSWORD="true"` (it defaults to `"false"` in wrangler vars). It is sign-in only (`disableSignUp`), for seeded/demo accounts.
-- Passwords are hashed with Web Crypto PBKDF2 (`src/lib/password.ts`), not Better Auth's default scrypt, to stay within the Workers free-tier CPU limit. Hashes live in `account.password` (`provider_id = 'credential'`).
+- Passwords are hashed with Web Crypto PBKDF2 (`src/lib/password.ts`), not Better Auth's default scrypt. New hashes use 10k iterations, which costs about 3.4 ms of CPU per sign-in; 100k would cost about 37 ms and blow the free tier's 10 ms limit. Only the seed script (Node) hashes; the Worker only verifies, because sign-up is disabled. Each hash stores its own iteration count, so raising `ITERATIONS` on Workers Paid needs only a re-seed. Hashes live in `account.password` (`provider_id = 'credential'`).
 
 ## Architecture
 

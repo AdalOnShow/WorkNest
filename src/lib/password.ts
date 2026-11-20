@@ -1,18 +1,29 @@
 /**
  * Password hashing for Better Auth's email/password sign-in.
  *
- * Better Auth's default is scrypt in pure JS, which can exceed the Workers
- * free-tier CPU limit (10ms) on every sign-in. PBKDF2 through Web Crypto runs
- * natively in workerd. 100k iterations is the maximum workerd allows.
+ * Better Auth's default is scrypt in pure JS, far too slow for Workers. We use
+ * PBKDF2-SHA256 through Web Crypto (native code) instead.
  *
- * Only Web Crypto is used, so the same module also runs in Node (the seed
- * script imports it to create the demo account).
+ * CPU budget: the Workers free tier allows 10 ms of CPU per request, and a
+ * sign-in runs one derivation. Measured cost of one derivation:
+ * 100k iterations ≈ 37 ms, 25k ≈ 10 ms, 10k ≈ 3.4 ms. So new hashes use 10k.
+ * That is below OWASP's PBKDF2 guidance; it is acceptable here only because
+ * passwords exist solely for seeded demo accounts (whose password is public)
+ * and real users sign in with Google/GitHub. On Workers Paid, raise
+ * ITERATIONS and re-seed; old hashes keep working because each hash stores
+ * its own iteration count.
+ *
+ * Hashing only happens in the seed script (Node). The Worker only verifies,
+ * because sign-up is disabled.
  *
  * Format: `pbkdf2-sha256$<iterations>$<salt b64>$<hash b64>`
  */
 
 const ALGORITHM = 'pbkdf2-sha256'
-const ITERATIONS = 100_000
+/** Iterations for new hashes. */
+const ITERATIONS = 10_000
+/** Highest count verify accepts (workerd's PBKDF2 limit), for older hashes. */
+const MAX_ITERATIONS = 100_000
 const SALT_BYTES = 16
 const KEY_BITS = 256
 
@@ -68,7 +79,7 @@ export async function verifyPassword({
     algorithm !== ALGORITHM ||
     !Number.isInteger(iterations) ||
     iterations < 1 ||
-    iterations > ITERATIONS ||
+    iterations > MAX_ITERATIONS ||
     !saltB64 ||
     !hashB64
   ) {
