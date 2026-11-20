@@ -4,21 +4,21 @@ import { Reveal } from './reveal'
 
 export function CTA() {
   return (
-    <section className="py-24 border-t border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <Reveal className="relative max-w-3xl mx-auto overflow-hidden rounded-xl border border-border bg-card px-6 py-14 md:px-12 text-center">
-          <div className="relative">
-            <h2 className="font-headline text-foreground text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-              Start your first project today
+    <section className="border-t border-border py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <Reveal className="flex flex-col gap-8 rounded-xl border border-border bg-card p-8 md:flex-row md:items-center md:justify-between md:p-12">
+          <div className="max-w-xl">
+            <h2 className="font-headline text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+              Start your first project
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-              Sign in, create a project and invite your team. It takes about a
-              minute.
+            <p className="mt-4 text-lg text-description">
+              Sign in with Google or GitHub, create a project and invite your
+              team
             </p>
-            <Button size="lg" asChild>
-              <Link to="/login">Get started free</Link>
-            </Button>
           </div>
+          <Button size="lg" asChild className="w-full shrink-0 md:w-auto">
+            <Link to="/login">Get started free</Link>
+          </Button>
         </Reveal>
       </div>
     </section>

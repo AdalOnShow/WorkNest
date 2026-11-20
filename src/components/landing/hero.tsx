@@ -8,43 +8,35 @@ export function Hero() {
   }
 
   return (
-    <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center animate-fade-in-up">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-xs text-description backdrop-blur mb-6">
-            <span className="size-1.5 rounded-full bg-primary" />
-            Projects, tasks and team chat in one place
-          </span>
-
-          <h1 className="font-headline text-foreground text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight mb-6">
-            The simple workspace for teams that ship
+    <section className="relative overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24 lg:flex lg:min-h-[min(100svh,960px)] lg:items-center">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16 lg:px-8">
+        <div className="animate-fade-in-up">
+          <h1 className="font-headline text-foreground text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+            Tasks, roles and a chat room for every project
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            WorkNest gives every project its own task board, roles and chat
-            room, so your team always knows who is doing what and what is due
-            next.
+          <p className="mt-6 max-w-md text-lg text-description">
+            WorkNest gives each project its own task board, member roles and
+            real-time chat, so your team knows who is doing what and what is due
+            next
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button size="lg" asChild className="w-full sm:w-auto">
               <Link to="/login">Get started free</Link>
             </Button>
             <Button
               size="lg"
-              variant="outline"
+              variant="ghost"
               onClick={() => scrollToSection('how-it-works')}
               className="w-full sm:w-auto"
             >
               See how it works
             </Button>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Sign in with Google or GitHub. No credit card.
-          </p>
         </div>
 
-        <div className="mt-16 md:mt-20 max-w-5xl mx-auto animate-fade-in-up animation-delay-200">
+        <div className="animate-fade-in-up animation-delay-200 lg:w-[calc(100%+8rem)]">
           <ProductMockup />
         </div>
       </div>

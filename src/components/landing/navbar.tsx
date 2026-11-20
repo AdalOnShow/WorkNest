@@ -37,7 +37,7 @@ function AuthAwareAction({ className }: { className?: string }) {
   return (
     <Button asChild className={className}>
       <Link to={isLoggedIn ? '/dashboard' : '/login'}>
-        {isLoggedIn ? 'Dashboard' : 'Login'}
+        {isLoggedIn ? 'Dashboard' : 'Sign in'}
       </Link>
     </Button>
   )
@@ -98,7 +98,7 @@ export function Navbar({
                 <div className="flex items-center justify-center w-9 h-9 rounded-full bg-ink">
                   <Sprout className="w-5 h-5 text-ink-foreground" />
                 </div>
-                <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
+                <span className="text-lg font-semibold text-foreground tracking-tight group-data-[collapsible=icon]:hidden">
                   WorkNest
                 </span>
               </Link>
@@ -107,22 +107,22 @@ export function Navbar({
 
           {/* Desktop Navigation - Landing Page Only */}
           {isLandingPage && !isAuthenticated && (
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center gap-8">
               <button
                 onClick={() => scrollToSection('features')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToSection('how-it-works')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                How it Works
+                How it works
               </button>
               <button
                 onClick={() => scrollToSection('faq')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 FAQ
               </button>
@@ -217,7 +217,7 @@ export function Navbar({
               onClick={() => scrollToSection('how-it-works')}
               className="block w-full text-left px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
             >
-              How it Works
+              How it works
             </button>
             <button
               onClick={() => scrollToSection('faq')}

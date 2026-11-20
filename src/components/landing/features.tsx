@@ -1,76 +1,58 @@
 import type { ReactNode } from 'react'
-import { Bell, Check, MessageSquare } from 'lucide-react'
+import { Bell, Check, Plus } from 'lucide-react'
 import { cn } from '#/lib/utils'
-import { Initials, PriorityDot } from './product-mockup'
+import { Initials, PreviewFrame, PriorityDot } from './product-mockup'
 import { Reveal, SectionHeading } from './reveal'
-
-function Panel({ children }: { children: ReactNode }) {
-  return (
-    <div
-      aria-hidden="true"
-      className="rounded-xl border border-border bg-card p-5 select-none"
-    >
-      {children}
-    </div>
-  )
-}
 
 function TasksVisual() {
   const tasks = [
-    {
-      title: 'Fix login redirect',
-      status: 'In progress',
-      priority: 'High' as const,
-      due: 'Today',
-    },
-    {
-      title: 'Design settings page',
-      status: 'In progress',
-      priority: 'Medium' as const,
-      due: 'Fri',
-    },
+    { title: 'Fix login redirect', priority: 'High' as const, due: 'Today' },
+    { title: 'Design settings page', priority: 'Medium' as const, due: 'Fri' },
     {
       title: 'Write onboarding copy',
-      status: 'To do',
       priority: 'Medium' as const,
-      due: 'Next week',
+      due: 'Dec 9',
     },
     {
       title: 'Set up project board',
-      status: 'Completed',
       priority: 'Low' as const,
       due: 'Done',
+      done: true,
     },
   ]
   return (
-    <Panel>
-      <div className="divide-y divide-border">
+    <PreviewFrame path="Website Relaunch / Tasks">
+      <div className="divide-y divide-border px-5">
         {tasks.map((t) => (
-          <div
-            key={t.title}
-            className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
-          >
+          <div key={t.title} className="flex h-12 items-center gap-3">
             <span
               className={cn(
                 'flex size-4 shrink-0 items-center justify-center rounded-full border border-border',
-                t.status === 'Completed' && 'bg-primary border-primary',
+                t.done && 'border-foreground bg-foreground',
               )}
             >
-              {t.status === 'Completed' && (
-                <Check className="size-3 text-primary-foreground" />
-              )}
+              {t.done && <Check className="size-3 text-background" />}
             </span>
-            <span className="flex-1 text-sm text-foreground truncate">
+            <span
+              className={cn(
+                'flex-1 truncate text-sm',
+                t.done
+                  ? 'text-muted-foreground line-through'
+                  : 'text-foreground',
+              )}
+            >
               {t.title}
             </span>
-            <PriorityDot priority={t.priority} />
-            <span className="hidden sm:inline w-20 text-right text-xs text-muted-foreground">
+            <span className="w-20">
+              <PriorityDot priority={t.priority} />
+            </span>
+            <span className="hidden w-12 text-right font-mono text-xs text-muted-foreground sm:inline">
               {t.due}
             </span>
           </div>
         ))}
       </div>
-    </Panel>
+    </PreviewFrame>
   )
 }
 
@@ -81,22 +63,25 @@ function RolesVisual() {
     { name: 'Jordan Moss', who: 'JM', role: 'Team Member' },
   ]
   return (
-    <Panel>
-      <div className="space-y-3">
+    <PreviewFrame path="Website Relaunch / Members">
+      <div className="divide-y divide-border px-5">
         {members.map((m) => (
-          <div key={m.name} className="flex items-center gap-3">
+          <div key={m.name} className="flex h-12 items-center gap-3">
             <Initials>{m.who}</Initials>
             <span className="flex-1 text-sm text-foreground">{m.name}</span>
-            <span className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">
+            <span className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground">
               {m.role}
             </span>
           </div>
         ))}
-        <div className="rounded-full border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
-          + Invite a teammate
+        <div className="flex h-12 items-center gap-3 text-sm text-muted-foreground">
+          <span className="flex size-6 items-center justify-center">
+            <Plus className="size-4" />
+          </span>
+          Invite a teammate
         </div>
       </div>
-    </Panel>
+    </PreviewFrame>
   )
 }
 
@@ -107,26 +92,23 @@ function ChatVisual() {
       name: 'Jordan',
       text: 'Pushed the new header, can someone review?',
     },
-    { who: 'AK', name: 'Alex', text: 'On it. Looks good on mobile too.' },
-    { who: 'SR', name: 'Sam', text: 'Great, let’s ship it today.' },
+    { who: 'AK', name: 'Alex', text: 'On it. Looks good on mobile too' },
+    { who: 'SR', name: 'Sam', text: 'Great, let’s ship it today' },
   ]
   return (
-    <Panel>
-      <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
-        <MessageSquare className="size-3.5" /> # website-relaunch
-      </div>
-      <div className="space-y-3">
+    <PreviewFrame path="Website Relaunch / Chat">
+      <div className="space-y-4 p-5">
         {messages.map((m) => (
-          <div key={m.text} className="flex items-start gap-2.5">
+          <div key={m.text} className="flex items-start gap-3">
             <Initials>{m.who}</Initials>
             <div>
               <p className="text-xs font-semibold text-foreground">{m.name}</p>
-              <p className="text-sm text-muted-foreground">{m.text}</p>
+              <p className="text-sm text-description">{m.text}</p>
             </div>
           </div>
         ))}
       </div>
-    </Panel>
+    </PreviewFrame>
   )
 }
 
@@ -137,25 +119,29 @@ function DashboardVisual() {
     { label: 'Completed', value: '38' },
   ]
   return (
-    <Panel>
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-xl bg-background/60 p-3">
-            <p className="text-xl font-bold text-foreground">{s.value}</p>
-            <p className="text-[11px] text-muted-foreground">{s.label}</p>
+    <PreviewFrame path="Dashboard">
+      <div className="p-5">
+        <div className="mb-4 grid grid-cols-3 gap-3">
+          {stats.map((s) => (
+            <div key={s.label} className="rounded-lg bg-background p-3">
+              <p className="font-headline text-2xl font-semibold text-foreground tabular-nums">
+                {s.value}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-start gap-3 rounded-lg border border-border p-3">
+          <Bell className="mt-0.5 size-4 text-muted-foreground" />
+          <div>
+            <p className="text-sm text-foreground">Task assigned to you</p>
+            <p className="text-xs text-muted-foreground">
+              Alex assigned you “Fix login redirect”
+            </p>
           </div>
-        ))}
-      </div>
-      <div className="flex items-start gap-2.5 rounded-xl border border-border p-3">
-        <Bell className="size-4 mt-0.5 text-muted-foreground" />
-        <div>
-          <p className="text-sm text-foreground">Task assigned to you</p>
-          <p className="text-xs text-muted-foreground">
-            Alex assigned you “Fix login redirect”
-          </p>
         </div>
       </div>
-    </Panel>
+    </PreviewFrame>
   )
 }
 
@@ -218,35 +204,35 @@ const features: Array<{
 
 export function Features() {
   return (
-    <section id="features" className="py-24 border-t border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="features" className="border-t border-border py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           eyebrow="Features"
-          title="Everything your team needs, nothing it doesn’t"
-          description="Four building blocks that cover how most small teams actually work."
+          title="What every project comes with"
+          description="Tasks, roles, chat and a dashboard. Four building blocks that cover how most small teams work."
         />
 
-        <div className="space-y-20 md:space-y-28 max-w-5xl mx-auto">
+        <div className="space-y-16 md:space-y-24">
           {features.map((f, i) => (
             <Reveal
               key={f.eyebrow}
-              className="grid items-center gap-10 md:grid-cols-2 md:gap-16"
+              className="grid items-center gap-8 md:grid-cols-2 md:gap-16"
             >
-              <div className={cn(i % 2 === 1 && 'md:order-2')}>
-                <p className="text-sm font-semibold text-primary mb-3">
+              <div className={cn('max-w-md', i % 2 === 1 && 'md:order-2')}>
+                <p className="mb-3 text-sm font-semibold text-muted-foreground">
                   {f.eyebrow}
                 </p>
-                <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground mb-4">
+                <h3 className="font-headline mb-4 text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
                   {f.title}
                 </h3>
-                <p className="text-muted-foreground mb-6">{f.description}</p>
+                <p className="mb-6 text-description">{f.description}</p>
                 <ul className="space-y-2">
                   {f.points.map((p) => (
                     <li
                       key={p}
                       className="flex items-start gap-2 text-sm text-foreground"
                     >
-                      <Check className="size-4 mt-0.5 shrink-0 text-primary" />
+                      <Check className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                       {p}
                     </li>
                   ))}

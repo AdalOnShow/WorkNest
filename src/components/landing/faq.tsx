@@ -35,17 +35,21 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section id="faq" className="py-24 border-t border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeading eyebrow="FAQ" title="Questions, answered" />
-        <Reveal className="max-w-2xl mx-auto">
+    <section id="faq" className="border-t border-border py-24">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16 lg:px-8">
+        <SectionHeading
+          eyebrow="FAQ"
+          title="Questions, answered"
+          className="mb-0"
+        />
+        <Reveal>
           <Accordion type="single" collapsible>
             {faqs.map((item) => (
               <AccordionItem key={item.q} value={item.q}>
                 <AccordionTrigger className="text-base">
                   {item.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
+                <AccordionContent className="text-description">
                   {item.a}
                 </AccordionContent>
               </AccordionItem>

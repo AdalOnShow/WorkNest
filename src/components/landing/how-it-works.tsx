@@ -42,7 +42,7 @@ function useTypewriter(text: string, startMs = 300, speedMs = 70) {
 function SignInVisual() {
   return (
     <div className="mx-auto w-full max-w-xs text-center">
-      <p className="hiw-rise text-lg font-bold text-foreground mb-1">
+      <p className="hiw-rise text-lg font-semibold text-foreground mb-1">
         Welcome to WorkNest
       </p>
       <p
@@ -53,20 +53,20 @@ function SignInVisual() {
       </p>
       <div className="space-y-2.5">
         <div
-          className="hiw-rise rounded-full border border-border bg-background/60 px-4 py-2.5 text-sm text-foreground"
+          className="hiw-rise rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground"
           style={delay(300)}
         >
           Continue with Google
         </div>
         <div
-          className="hiw-rise relative rounded-full border border-primary bg-background/60 px-4 py-2.5 text-sm text-foreground"
+          className="hiw-rise relative rounded-lg border border-primary bg-background px-4 py-2.5 text-sm text-foreground"
           style={delay(450)}
         >
           Continue with GitHub
         </div>
       </div>
       <div
-        className="hiw-pop mt-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs text-primary"
+        className="hiw-pop mt-6 inline-flex items-center gap-2 rounded-md bg-lime px-3 py-1.5 text-xs font-semibold text-lime-foreground"
         style={delay(1400)}
       >
         <Check className="size-3.5" /> Signed in as Sam
@@ -84,7 +84,7 @@ function CreateProjectVisual() {
       </p>
       <div className="hiw-rise" style={delay(100)}>
         <p className="text-xs text-muted-foreground mb-1.5">Project name</p>
-        <div className="rounded-lg border border-primary bg-background/60 px-3 py-2 text-sm text-foreground h-9">
+        <div className="rounded-lg border border-primary bg-background px-3 py-2 text-sm text-foreground h-9">
           {name}
           <span className="hiw-caret ml-px inline-block h-4 w-0.5 translate-y-0.5 bg-primary" />
         </div>
@@ -92,13 +92,13 @@ function CreateProjectVisual() {
       <div className="grid grid-cols-2 gap-3">
         <div className="hiw-rise" style={delay(1500)}>
           <p className="text-xs text-muted-foreground mb-1.5">Deadline</p>
-          <div className="rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-foreground">
+          <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
             Dec 15
           </div>
         </div>
         <div className="hiw-rise" style={delay(1650)}>
           <p className="text-xs text-muted-foreground mb-1.5">Status</p>
-          <div className="rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-foreground">
+          <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
             Active
           </div>
         </div>
@@ -108,10 +108,10 @@ function CreateProjectVisual() {
           className="hiw-pop inline-flex items-center gap-1.5 text-xs text-muted-foreground"
           style={delay(2600)}
         >
-          <Check className="size-3.5 text-primary" /> You are the admin
+          <Check className="size-3.5" /> You are the admin
         </span>
         <span
-          className="hiw-pop rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+          className="hiw-pop rounded-lg bg-ink px-4 py-2 text-xs font-semibold text-ink-foreground"
           style={delay(2100)}
         >
           Create project
@@ -129,28 +129,28 @@ function InviteVisual() {
   ]
   return (
     <div className="mx-auto w-full max-w-sm">
-      <div className="hiw-rise flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-2 text-sm text-muted-foreground mb-5">
+      <div className="hiw-rise flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-muted-foreground mb-5">
         <Mail className="size-4" /> Invite teammates
       </div>
       <div className="space-y-2.5">
         {invites.map((inv, i) => (
           <div
             key={inv.email}
-            className="hiw-rise flex items-center gap-3 rounded-xl border border-border bg-background/60 p-3"
+            className="hiw-rise flex items-center gap-3 rounded-xl border border-border bg-background p-3"
             style={delay(400 + i * 450)}
           >
             <Initials>{inv.who}</Initials>
             <span className="flex-1 truncate text-sm text-foreground">
               {inv.email}
             </span>
-            <span className="rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
+            <span className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground">
               {inv.role}
             </span>
           </div>
         ))}
       </div>
       <div
-        className="hiw-pop mt-5 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs text-primary"
+        className="hiw-pop mt-5 inline-flex items-center gap-2 rounded-md bg-lime px-3 py-1.5 text-xs font-semibold text-lime-foreground"
         style={delay(2000)}
       >
         <Check className="size-3.5" /> 3 invite links ready
@@ -171,7 +171,7 @@ function PlanVisual() {
         {tasks.map((t, i) => (
           <div
             key={t.title}
-            className="hiw-rise flex items-center gap-3 rounded-xl border border-border bg-background/60 p-3"
+            className="hiw-rise flex items-center gap-3 rounded-xl border border-border bg-background p-3"
             style={delay(200 + i * 300)}
           >
             <span className="relative flex size-4 shrink-0 items-center justify-center rounded-full border border-border">
@@ -210,16 +210,16 @@ function PlanVisual() {
 
 function SyncVisual() {
   const messages = [
-    { who: 'JM', name: 'Jordan', text: 'Login fix is ready for review.' },
-    { who: 'AK', name: 'Alex', text: 'Checking it now.' },
+    { who: 'JM', name: 'Jordan', text: 'Login fix is ready for review' },
+    { who: 'AK', name: 'Alex', text: 'Checking it now' },
   ]
   return (
     <div className="relative mx-auto w-full max-w-sm">
       <div
-        className="hiw-pop mb-5 flex items-start gap-2.5 rounded-xl border border-border bg-background/60 p-3"
+        className="hiw-pop mb-5 flex items-start gap-2.5 rounded-xl border border-border bg-background p-3"
         style={delay(1900)}
       >
-        <Bell className="size-4 mt-0.5 text-primary" />
+        <Bell className="size-4 mt-0.5 text-muted-foreground" />
         <div>
           <p className="text-sm text-foreground">Task completed</p>
           <p className="text-xs text-muted-foreground">
@@ -235,7 +235,7 @@ function SyncVisual() {
             style={delay(200 + i * 600)}
           >
             <Initials>{m.who}</Initials>
-            <div className="rounded-xl bg-background/60 px-3 py-2">
+            <div className="rounded-xl bg-background px-3 py-2">
               <p className="text-xs font-semibold text-foreground">{m.name}</p>
               <p className="text-sm text-muted-foreground">{m.text}</p>
             </div>
@@ -243,7 +243,7 @@ function SyncVisual() {
         ))}
         <div className="hiw-rise flex items-center gap-2.5" style={delay(1300)}>
           <Initials>SR</Initials>
-          <div className="flex gap-1 rounded-xl bg-background/60 px-3 py-3">
+          <div className="flex gap-1 rounded-xl bg-background px-3 py-3">
             {[0, 150, 300].map((d) => (
               <span
                 key={d}
@@ -284,21 +284,21 @@ const steps: Array<{
     title: 'Invite your team',
     description:
       'Create an invite link for each teammate, choose their role and share the link with them.',
-    label: 'Website Relaunch · Members',
+    label: 'Website Relaunch / Members',
     visual: InviteVisual,
   },
   {
     title: 'Plan the work',
     description:
       'Add tasks with a priority, a due date and an assignee. Move them from To do to Completed.',
-    label: 'Website Relaunch · Tasks',
+    label: 'Website Relaunch / Tasks',
     visual: PlanVisual,
   },
   {
     title: 'Stay in sync',
     description:
       'Talk in the project chat, comment on tasks and follow progress on your dashboard.',
-    label: 'Website Relaunch · Chat',
+    label: 'Website Relaunch / Chat',
     visual: SyncVisual,
   },
 ]
@@ -322,7 +322,7 @@ export function HowItWorks() {
         <SectionHeading
           eyebrow="How it works"
           title="From sign-in to shipped in five steps"
-          description="No setup and no configuration. Most teams are working inside a project within a few minutes."
+          description="Sign in, set up a project and bring your team in. Each step below shows the screen you will see."
         />
 
         <div
@@ -343,7 +343,7 @@ export function HowItWorks() {
                     onClick={() => setActive(i)}
                     aria-current={isActive ? 'step' : undefined}
                     className={cn(
-                      'group relative w-full overflow-hidden rounded-xl border p-4 text-left transition-colors duration-300',
+                      'group relative w-full overflow-hidden rounded-xl border p-4 text-left transition-colors duration-200',
                       isActive
                         ? 'border-border bg-card'
                         : 'border-transparent hover:bg-card/50',
@@ -352,9 +352,9 @@ export function HowItWorks() {
                     <div className="flex gap-4">
                       <span
                         className={cn(
-                          'flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-all duration-300',
+                          'flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold tabular-nums transition-colors duration-200',
                           isActive &&
-                            'scale-110 border-primary bg-primary text-primary-foreground',
+                            'border-primary bg-primary text-primary-foreground',
                           isDone && 'border-primary text-primary',
                           !isActive &&
                             !isDone &&
@@ -366,7 +366,7 @@ export function HowItWorks() {
                       <div className="min-w-0">
                         <h3
                           className={cn(
-                            'font-bold transition-colors duration-300',
+                            'font-semibold transition-colors duration-200',
                             isActive
                               ? 'text-foreground'
                               : 'text-muted-foreground group-hover:text-foreground',
@@ -374,18 +374,11 @@ export function HowItWorks() {
                         >
                           {step.title}
                         </h3>
-                        <div
-                          className={cn(
-                            'grid transition-all duration-500 ease-out',
-                            isActive
-                              ? 'grid-rows-[1fr] opacity-100 mt-1'
-                              : 'grid-rows-[0fr] opacity-0',
-                          )}
-                        >
-                          <p className="overflow-hidden text-sm leading-relaxed text-muted-foreground">
+                        {isActive && (
+                          <p className="hiw-rise mt-1 text-sm leading-relaxed text-description">
                             {step.description}
                           </p>
-                        </div>
+                        )}
                       </div>
                     </div>
 
@@ -415,13 +408,13 @@ export function HowItWorks() {
             aria-hidden="true"
             className="relative overflow-hidden rounded-xl border border-border bg-card select-none lg:sticky lg:top-24"
           >
-            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+            <div className="flex h-10 items-center gap-2 border-b border-border px-4">
               <span className="size-2.5 rounded-full bg-muted" />
               <span className="size-2.5 rounded-full bg-muted" />
               <span className="size-2.5 rounded-full bg-muted" />
               <span
                 key={active}
-                className="hiw-rise ml-3 truncate text-xs text-muted-foreground"
+                className="hiw-rise ml-3 truncate font-mono text-xs text-muted-foreground"
               >
                 {current.label}
               </span>
