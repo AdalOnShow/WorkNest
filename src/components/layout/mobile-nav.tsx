@@ -31,14 +31,14 @@ export function MobileNav() {
               key={item.to}
               to={item.to}
               className={cn(
-                'flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors min-w-[60px]',
+                'flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors min-w-16',
                 isActive
-                  ? 'text-primary'
+                  ? 'bg-accent text-foreground'
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              <item.icon className="w-5 h-5" />
-              <span className="text-[10px] font-semibold">{item.label}</span>
+              <item.icon className="size-5" />
+              <span className="text-[11px] font-semibold">{item.label}</span>
             </Link>
           )
         })}

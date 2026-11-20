@@ -103,7 +103,7 @@ export function EditProjectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border text-foreground sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Edit Project</DialogTitle>
+          <DialogTitle className="text-xl">Edit project</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Update your project details.
           </DialogDescription>
@@ -138,7 +138,7 @@ export function EditProjectDialog({
               id="edit-project-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of the project..."
+              placeholder="What is this project about"
               className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg min-h-[80px] focus-visible:ring-primary/40"
             />
           </div>
@@ -174,7 +174,7 @@ export function EditProjectDialog({
                     value="ON_HOLD"
                     className="text-foreground focus:bg-accent focus:text-accent-foreground"
                   >
-                    On Hold
+                    On hold
                   </SelectItem>
                   <SelectItem
                     value="COMPLETED"
@@ -220,7 +220,7 @@ export function EditProjectDialog({
               {updateMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : null}
-              Save Changes
+              Save changes
             </Button>
           </DialogFooter>
         </form>

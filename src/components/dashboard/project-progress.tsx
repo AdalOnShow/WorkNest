@@ -38,7 +38,7 @@ export function ProjectProgress({
             >
               {p.name}
             </Link>
-            <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+            <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
               {p.total === 0
                 ? 'No tasks'
                 : `${p.completed}/${p.total} · ${p.percent}%`}
@@ -51,7 +51,7 @@ export function ProjectProgress({
             aria-valuemax={100}
             aria-valuenow={p.percent}
             aria-valuetext={`${p.percent}% — ${p.completed} of ${p.total} tasks completed`}
-            className="h-2 overflow-hidden rounded-full bg-muted"
+            className="h-1.5 overflow-hidden rounded-full bg-muted"
           >
             <div
               className="h-full rounded-full bg-chart-series transition-[width]"

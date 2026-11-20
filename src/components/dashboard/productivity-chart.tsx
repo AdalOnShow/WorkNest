@@ -26,11 +26,11 @@ export function ProductivityChart({
 
   return (
     <div>
-      <p className="mb-3 text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground tabular-nums">
+      <p className="mb-6 flex items-baseline gap-2 text-sm text-muted-foreground">
+        <span className="font-headline text-4xl font-semibold text-foreground tabular-nums">
           {total}
-        </span>{' '}
-        completed in the last {data.length} days
+        </span>
+        in the last {data.length} days
       </p>
       {total === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
@@ -39,16 +39,17 @@ export function ProductivityChart({
       ) : (
         <ChartContainer
           config={config}
-          className="aspect-auto h-48 w-full"
+          className="aspect-auto h-64 w-full"
           aria-hidden
         >
           <BarChart data={data} margin={{ left: -20, right: 4, top: 4 }}>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <CartesianGrid vertical={false} />
             <XAxis
               dataKey="label"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              className="font-mono"
               interval="preserveStartEnd"
               minTickGap={24}
             />

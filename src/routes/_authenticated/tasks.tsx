@@ -1,4 +1,5 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
@@ -125,26 +126,23 @@ function TasksPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="headline-sm text-foreground">Tasks</h1>
-            <p className="body-md text-muted-foreground mt-1">
-              Manage all tasks across projects
-            </p>
-          </div>
-          <Button
-            className="font-semibold"
-            disabled={projects.length === 0}
-            onClick={() => setPickProjectOpen(true)}
-          >
-            <Plus className="w-4 h-4" />
-            New Task
-          </Button>
-        </div>
+        <PageHeader
+          title="Tasks"
+          description="Tasks from every project you belong to"
+          actions={
+            <Button
+              disabled={projects.length === 0}
+              onClick={() => setPickProjectOpen(true)}
+            >
+              <Plus className="size-4" />
+              New task
+            </Button>
+          }
+        />
 
         <div className="flex items-center gap-3 flex-wrap">
           <SearchInput
-            placeholder="Search tasks..."
+            placeholder="Search tasks"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
@@ -162,9 +160,9 @@ function TasksPage() {
                   setPage(1)
                 },
                 options: [
-                  { label: 'All Status', value: 'all' },
-                  { label: 'To Do', value: 'TODO' },
-                  { label: 'In Progress', value: 'IN_PROGRESS' },
+                  { label: 'All statuses', value: 'all' },
+                  { label: 'To do', value: 'TODO' },
+                  { label: 'In progress', value: 'IN_PROGRESS' },
                   { label: 'Completed', value: 'COMPLETED' },
                 ],
               },
@@ -176,7 +174,7 @@ function TasksPage() {
                   setPage(1)
                 },
                 options: [
-                  { label: 'All Priority', value: 'all' },
+                  { label: 'All priorities', value: 'all' },
                   { label: 'High', value: 'HIGH' },
                   { label: 'Medium', value: 'MEDIUM' },
                   { label: 'Low', value: 'LOW' },
@@ -190,7 +188,7 @@ function TasksPage() {
                   setPage(1)
                 },
                 options: [
-                  { label: 'All Projects', value: 'all' },
+                  { label: 'All projects', value: 'all' },
                   ...projects.map((p) => ({ label: p.name, value: p.id })),
                 ],
               },
@@ -202,7 +200,7 @@ function TasksPage() {
                   setPage(1)
                 },
                 options: [
-                  { label: 'All Assignees', value: 'all' },
+                  { label: 'All assignees', value: 'all' },
                   { label: 'Assigned to me', value: 'me' },
                 ],
               },
@@ -214,7 +212,7 @@ function TasksPage() {
                   setPage(1)
                 },
                 options: [
-                  { label: 'Any Deadline', value: 'all' },
+                  { label: 'Any deadline', value: 'all' },
                   { label: 'Overdue', value: 'overdue' },
                   { label: 'Due this week', value: 'week' },
                   { label: 'No deadline', value: 'none' },
@@ -282,11 +280,11 @@ function TasksPage() {
       </div>
 
       <Dialog open={pickProjectOpen} onOpenChange={setPickProjectOpen}>
-        <DialogContent className="bg-card border-border text-foreground sm:max-w-[420px]">
+        <DialogContent className="bg-card border-border text-foreground sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl">Choose a project</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Pick the project this task belongs to.
+              Pick the project this task belongs to
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-72 overflow-y-auto divide-y divide-border rounded-lg border border-border">
@@ -298,7 +296,7 @@ function TasksPage() {
                   setPickProjectOpen(false)
                   setCreateProjectId(p.id)
                 }}
-                className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent"
+                className="flex h-10 w-full items-center px-3 text-left text-sm text-foreground transition-colors hover:bg-accent"
               >
                 {p.name}
               </button>

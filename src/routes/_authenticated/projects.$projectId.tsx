@@ -1,4 +1,5 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader, pathLinkClass } from '#/components/layout/page-header'
 import { StatusBadge } from '#/components/ui/status-badge'
 import { LoadingState } from '#/components/ui/loading-state'
 import { ErrorState } from '#/components/ui/error-state'
@@ -11,14 +12,7 @@ import { ProjectMembersPanel } from '#/components/projects/project-members-panel
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getProject, listProjectMembers } from '#/server-functions/projects'
-import {
-  ArrowLeft,
-  Calendar,
-  CheckSquare,
-  Pencil,
-  Plus,
-  Users,
-} from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/_authenticated/projects/$projectId')({
@@ -77,117 +71,85 @@ function RouteComponent() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-3">
-            <Link
-              to="/projects"
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Projects
-            </Link>
-            <div>
-              <h1 className="headline-sm text-foreground">{project.name}</h1>
-              {project.description && (
-                <p className="body-md text-muted-foreground mt-1">
-                  {project.description}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <StatusBadge status={project.status} />
-            {canCreateTask && (
-              <Button size="sm" onClick={() => setShowTaskDialog(true)}>
-                <Plus className="w-4 h-4 mr-1.5" />
-                Add task
+        <PageHeader
+          path={[
+            <Link key="projects" to="/projects" className={pathLinkClass}>
+              Projects
+            </Link>,
+            project.name,
+          ]}
+          title={project.name}
+          description={project.description || undefined}
+          actions={
+            <>
+              <StatusBadge status={project.status} />
+              <Button variant="outline" onClick={() => setShowEditDialog(true)}>
+                <Pencil className="size-4" />
+                Edit
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowEditDialog(true)}
-              className="border-border text-card-foreground hover:bg-accent"
-            >
-              <Pencil className="w-4 h-4 mr-1.5" />
-              Edit
-            </Button>
-          </div>
-        </div>
+              {canCreateTask && (
+                <Button onClick={() => setShowTaskDialog(true)}>
+                  <Plus className="size-4" />
+                  Add task
+                </Button>
+              )}
+            </>
+          }
+        />
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <CheckSquare className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Tasks</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {project.taskCount}
-                </p>
-              </div>
-            </div>
+        <dl className="grid grid-cols-1 divide-y divide-border rounded-xl border border-border bg-card sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="p-5">
+            <dt className="text-sm font-semibold text-muted-foreground">
+              Tasks
+            </dt>
+            <dd className="mt-2 font-headline text-3xl font-semibold text-foreground tabular-nums">
+              {project.taskCount}
+            </dd>
           </div>
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Members</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {members?.items.length ?? '—'}
-                </p>
-              </div>
-            </div>
+          <div className="p-5">
+            <dt className="text-sm font-semibold text-muted-foreground">
+              Members
+            </dt>
+            <dd className="mt-2 font-headline text-3xl font-semibold text-foreground tabular-nums">
+              {members?.items.length ?? '—'}
+            </dd>
           </div>
-          <div className="rounded-xl border border-border bg-card p-5 sm:col-span-2 lg:col-span-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Deadline</p>
-                <p className="text-lg font-bold text-foreground">
-                  {project.deadline != null
-                    ? new Date(project.deadline).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })
-                    : 'No deadline set'}
-                </p>
-              </div>
-            </div>
+          <div className="p-5">
+            <dt className="text-sm font-semibold text-muted-foreground">
+              Deadline
+            </dt>
+            <dd className="mt-2 font-headline text-3xl font-semibold text-foreground tabular-nums">
+              {project.deadline != null
+                ? new Date(project.deadline).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : 'None set'}
+            </dd>
           </div>
-        </div>
+        </dl>
 
         <section className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="label-lg text-foreground">
-              Tasks{taskData ? ` (${taskData.total})` : ''}
-            </h2>
-            {canCreateTask && (
-              <Button size="sm" onClick={() => setShowTaskDialog(true)}>
-                <Plus className="w-4 h-4 mr-1.5" />
-                Add task
-              </Button>
+          <h2 className="label-lg flex items-baseline gap-2 text-foreground">
+            Tasks
+            {taskData && (
+              <span className="font-mono text-sm font-medium text-muted-foreground tabular-nums">
+                {taskData.total}
+              </span>
             )}
-          </div>
+          </h2>
           {taskData && taskData.items.length > 0 ? (
             <TaskTable items={taskData.items} showProject={false} />
           ) : (
-            <div className="rounded-xl border border-border bg-card p-6 text-center space-y-3">
-              <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            <div className="space-y-4 rounded-xl border border-border bg-card p-8 text-center">
+              <p className="text-sm text-muted-foreground">No tasks yet</p>
               {canCreateTask && (
                 <Button
-                  size="sm"
                   variant="outline"
                   onClick={() => setShowTaskDialog(true)}
-                  className="border-border"
                 >
-                  <Plus className="w-4 h-4 mr-1.5" />
+                  <Plus className="size-4" />
                   Create the first task
                 </Button>
               )}

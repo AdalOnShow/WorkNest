@@ -8,12 +8,10 @@ import { getDashboardData } from '#/server-functions/dashboard'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { getOnboardingStatus } from '#/server-functions/onboarding'
-import {
-  AlertTriangle,
-  CheckCircle2,
-  CheckSquare,
-  FolderKanban,
-} from 'lucide-react'
+import type { ReactNode } from 'react'
+import { PageHeader } from '#/components/layout/page-header'
+import { Badge } from '#/components/ui/badge'
+import { cn } from '#/lib/utils'
 
 // Recharts is the bulk of this route's JS; load it after the KPIs and lists.
 const ProductivityChart = lazy(() =>
@@ -93,286 +91,353 @@ function DashboardPage() {
   const productivity = data?.productivity || []
   const memberWorkload = data?.memberWorkload || []
 
-  const kpiCards = [
-    {
-      label: 'Total Projects',
-      value: kpi.totalProjects,
-      icon: FolderKanban,
-      chip: 'bg-primary text-primary-foreground',
-    },
-    {
-      label: 'Total Tasks',
-      value: kpi.totalTasks,
-      icon: CheckSquare,
-      chip: 'bg-sky text-sky-foreground',
-    },
-    {
-      label: 'Completed Tasks',
-      value: kpi.completedTasks,
-      icon: CheckCircle2,
-      chip: 'bg-lime text-lime-foreground',
-    },
-    {
-      label: 'Overdue Tasks',
-      value: kpi.overdueTasks,
-      icon: AlertTriangle,
-      chip: 'bg-highlight text-highlight-foreground',
-    },
-  ]
-
   const statusTotal =
     tasksByStatus.COMPLETED + tasksByStatus.IN_PROGRESS + tasksByStatus.TODO
+  const completedShare =
+    kpi.totalTasks > 0
+      ? Math.round((kpi.completedTasks / kpi.totalTasks) * 100)
+      : 0
+
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
 
   return (
     <PageContainer>
-      <div className="space-y-8">
-        <div>
-          <h1 className="headline-sm text-foreground">Dashboard</h1>
-          <p className="body-md text-muted-foreground mt-1">
-            Welcome back — here's your overview
-          </p>
+      <div className="space-y-6">
+        <PageHeader
+          title="Dashboard"
+          description={<span suppressHydrationWarning>{today}</span>}
+        />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="Projects"
+            value={kpi.totalProjects}
+            context="Projects you belong to"
+          />
+          <StatCard
+            label="Tasks"
+            value={kpi.totalTasks}
+            context={`${tasksByStatus.IN_PROGRESS} in progress`}
+          />
+          <StatCard
+            label="Completed"
+            value={kpi.completedTasks}
+            context={`${completedShare}% of all tasks`}
+          />
+          <StatCard
+            label="Overdue"
+            value={kpi.overdueTasks}
+            context={
+              kpi.overdueTasks > 0 ? (
+                <Badge variant="yellow">Needs attention</Badge>
+              ) : (
+                'Nothing overdue'
+              )
+            }
+          />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {kpiCards.map((card) => (
-            <div
-              key={card.label}
-              className="bg-card border border-border rounded-xl p-5"
-            >
-              <span className="label-lg text-foreground">{card.label}</span>
-              <div className="mt-6 flex items-end justify-between">
-                <p className="stat-number text-foreground">{card.value}</p>
-                <span
-                  className={`inline-flex items-center rounded-md px-2 py-1 ${card.chip}`}
-                >
-                  <card.icon className="w-4 h-4" />
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <section className="bg-card border border-border rounded-xl p-6">
-            <h3 className="label-lg text-foreground mb-1">Team Productivity</h3>
-            <Suspense fallback={<Skeleton className="mt-3 h-52 w-full" />}>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Panel title="Completed tasks" className="lg:col-span-2">
+            <Suspense fallback={<Skeleton className="h-72 w-full" />}>
               <ProductivityChart data={productivity} />
             </Suspense>
-          </section>
-          <section className="bg-card border border-border rounded-xl p-6">
-            <h3 className="label-lg text-foreground mb-4">Project Progress</h3>
+          </Panel>
+
+          <div className="grid gap-4">
+            <Panel title="Tasks by status">
+              <ShareList
+                total={statusTotal}
+                empty="No tasks yet"
+                rows={[
+                  {
+                    label: 'To do',
+                    value: tasksByStatus.TODO,
+                    color: 'bg-status-todo',
+                  },
+                  {
+                    label: 'In progress',
+                    value: tasksByStatus.IN_PROGRESS,
+                    color: 'bg-status-in-progress',
+                  },
+                  {
+                    label: 'Completed',
+                    value: tasksByStatus.COMPLETED,
+                    color: 'bg-status-completed',
+                  },
+                ]}
+              />
+            </Panel>
+            <Panel title="Tasks by priority">
+              <ShareList
+                total={priorityTotal}
+                empty="No tasks yet"
+                rows={[
+                  {
+                    label: 'High',
+                    value: tasksByPriority.HIGH,
+                    color: 'bg-chart-priority-high',
+                  },
+                  {
+                    label: 'Medium',
+                    value: tasksByPriority.MEDIUM,
+                    color: 'bg-chart-priority-medium',
+                  },
+                  {
+                    label: 'Low',
+                    value: tasksByPriority.LOW,
+                    color: 'bg-chart-priority-low',
+                  },
+                ]}
+              />
+            </Panel>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Panel
+            title="Member workload"
+            description="Open tasks per assignee, by priority"
+            className="lg:col-span-2"
+          >
+            <Suspense fallback={<Skeleton className="h-32 w-full" />}>
+              <MemberWorkload items={memberWorkload} />
+            </Suspense>
+          </Panel>
+          <Panel title="Project progress">
             <ProjectProgress items={projectProgress} />
-          </section>
+          </Panel>
         </div>
 
-        <section className="bg-card border border-border rounded-xl p-6">
-          <h3 className="label-lg text-foreground mb-1">Member Workload</h3>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Open tasks per assignee, by priority
-          </p>
-          <Suspense fallback={<Skeleton className="h-32 w-full" />}>
-            <MemberWorkload items={memberWorkload} />
-          </Suspense>
-        </section>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="label-lg text-foreground mb-4">Tasks by Status</h3>
-            <div className="flex items-center justify-center h-48">
-              {statusTotal === 0 ? (
-                <p className="text-sm text-muted-foreground">No tasks yet</p>
-              ) : (
-                <div className="flex gap-6 text-sm">
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-full border-4 border-(--color-status-active) flex items-center justify-center">
-                      <span className="text-foreground font-bold">
-                        {tasksByStatus.COMPLETED}
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground mt-2 block">
-                      Done
-                    </span>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-full border-4 border-(--color-status-in-progress) flex items-center justify-center">
-                      <span className="text-foreground font-bold">
-                        {tasksByStatus.IN_PROGRESS}
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground mt-2 block">
-                      In Progress
-                    </span>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-full border-4 border-(--color-status-todo) flex items-center justify-center">
-                      <span className="text-foreground font-bold">
-                        {tasksByStatus.TODO}
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground mt-2 block">
-                      To Do
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="label-lg text-foreground mb-4">Tasks by Priority</h3>
-            <div className="flex items-end justify-center h-48 gap-6 px-4">
-              {priorityTotal === 0 ? (
-                <p className="text-sm text-muted-foreground">No tasks yet</p>
-              ) : (
-                <>
-                  <div className="flex flex-col items-center gap-2">
-                    <div
-                      className="w-12 bg-chart-priority-high rounded-t-md"
-                      style={{
-                        height: `${Math.max(20, (tasksByPriority.HIGH / priorityTotal) * 160)}px`,
-                      }}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      High ({tasksByPriority.HIGH})
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <div
-                      className="w-12 bg-chart-priority-medium rounded-t-md"
-                      style={{
-                        height: `${Math.max(20, (tasksByPriority.MEDIUM / priorityTotal) * 160)}px`,
-                      }}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      Medium ({tasksByPriority.MEDIUM})
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <div
-                      className="w-12 bg-chart-priority-low rounded-t-md"
-                      style={{
-                        height: `${Math.max(20, (tasksByPriority.LOW / priorityTotal) * 160)}px`,
-                      }}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      Low ({tasksByPriority.LOW})
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {[
-            {
-              title: 'My Tasks',
-              empty: 'No open tasks assigned to you',
-              items: myOpenTasks,
-            },
-            {
-              title: 'High Priority Tasks',
-              empty: 'No open high priority tasks',
-              items: highPriorityTasks,
-            },
-          ].map((section) => (
-            <div
-              key={section.title}
-              className="bg-card border border-border rounded-xl p-6"
-            >
-              <h3 className="label-lg text-foreground mb-4">{section.title}</h3>
-              {section.items.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {section.empty}
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {section.items.map((item) => (
-                    <Link
-                      key={item.id}
-                      to="/tasks/$taskId"
-                      params={{ taskId: item.id }}
-                      className="flex items-center justify-between gap-3 p-3 rounded-lg bg-accent/50 border border-border/50 hover:bg-accent transition-colors"
-                    >
-                      <div className="min-w-0">
-                        <p className="body-sm text-foreground font-semibold truncate">
-                          {item.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {item.projectName}
-                        </p>
-                      </div>
-                      <span className="label-sm text-muted-foreground shrink-0">
-                        {item.dueFormatted}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="label-lg text-foreground mb-4">Recent Activity</h3>
-            {recentActivities.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No recent activity
-              </p>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Panel title="My tasks" className="lg:col-span-2">
+            <TaskList
+              items={myOpenTasks}
+              empty="No open tasks assigned to you"
+            />
+          </Panel>
+          <Panel title="Upcoming deadlines">
+            {upcomingDeadlines.length === 0 ? (
+              <EmptyLine>No upcoming deadlines</EmptyLine>
             ) : (
-              <div className="space-y-4">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="body-sm text-card-foreground">
-                        {activity.action} {activity.entityType}
+              <ul className="-my-2 divide-y divide-border">
+                {upcomingDeadlines.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 py-3"
+                  >
+                    <div className="min-w-0">
+                      <Link
+                        to="/projects/$projectId"
+                        params={{ projectId: item.id }}
+                        className="body-sm block truncate font-semibold text-foreground hover:underline"
+                      >
+                        {item.name}
+                      </Link>
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        {item.taskCount} open{' '}
+                        {item.taskCount === 1 ? 'task' : 'tasks'}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                    </div>
+                    <span className="shrink-0 font-mono text-xs text-foreground tabular-nums">
+                      {item.deadlineFormatted}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Panel title="High priority" className="lg:col-span-2">
+            <TaskList
+              items={highPriorityTasks}
+              empty="No open high priority tasks"
+            />
+          </Panel>
+          <Panel title="Recent activity">
+            {recentActivities.length === 0 ? (
+              <EmptyLine>No recent activity</EmptyLine>
+            ) : (
+              <ol className="space-y-4">
+                {recentActivities.map((activity) => (
+                  <li key={activity.id} className="flex items-start gap-3">
+                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="body-sm text-foreground">
+                        {activityLabel(activity.action)}
+                      </p>
+                      <p className="font-mono text-xs text-muted-foreground">
                         {activity.timeAgo}
                       </p>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ol>
             )}
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="label-lg text-foreground mb-4">
-              Upcoming Deadlines
-            </h3>
-            {upcomingDeadlines.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No upcoming deadlines
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {upcomingDeadlines.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50"
-                  >
-                    <div>
-                      <p className="body-sm text-foreground font-semibold">
-                        {item.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.taskCount} tasks remaining
-                      </p>
-                    </div>
-                    <span className="label-sm text-warning-text">
-                      {item.deadlineFormatted}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          </Panel>
         </div>
       </div>
     </PageContainer>
+  )
+}
+
+const ACTIVITY_LABELS: Record<string, string> = {
+  PROJECT_CREATED: 'Project created',
+  PROJECT_UPDATED: 'Project updated',
+  PROJECT_MEMBER_INVITED: 'Member invited',
+  PROJECT_MEMBER_ADDED: 'Member joined a project',
+  PROJECT_MEMBER_REMOVED: 'Member removed',
+  TASK_CREATED: 'Task created',
+  TASK_UPDATED: 'Task updated',
+  TASK_STATUS_UPDATED: 'Task status changed',
+  TASK_DELETED: 'Task deleted',
+  COMMENT_ADDED: 'Comment added',
+  COMMENT_UPDATED: 'Comment edited',
+  COMMENT_DELETED: 'Comment deleted',
+}
+
+function activityLabel(action: string) {
+  if (action in ACTIVITY_LABELS) return ACTIVITY_LABELS[action]
+  const words = action.toLowerCase().replace(/_/g, ' ')
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
+function Panel({
+  title,
+  description,
+  className,
+  children,
+}: {
+  title: string
+  description?: string
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <section
+      className={cn('rounded-xl border border-border bg-card p-6', className)}
+    >
+      <h2 className="label-lg text-foreground">{title}</h2>
+      {description && (
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      )}
+      <div className="mt-4">{children}</div>
+    </section>
+  )
+}
+
+function StatCard({
+  label,
+  value,
+  context,
+}: {
+  label: string
+  value: number
+  context: ReactNode
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      <p className="text-sm font-semibold text-muted-foreground">{label}</p>
+      <p className="stat-number mt-4 text-foreground">{value}</p>
+      <div className="mt-3 flex min-h-6 items-center text-sm text-muted-foreground">
+        {context}
+      </div>
+    </div>
+  )
+}
+
+function EmptyLine({ children }: { children: ReactNode }) {
+  return (
+    <p className="py-6 text-center text-sm text-muted-foreground">{children}</p>
+  )
+}
+
+/** Parts of a whole as labelled thin bars; identity never rests on colour. */
+function ShareList({
+  rows,
+  total,
+  empty,
+}: {
+  rows: Array<{ label: string; value: number; color: string }>
+  total: number
+  empty: string
+}) {
+  if (total === 0) return <EmptyLine>{empty}</EmptyLine>
+  return (
+    <ul className="space-y-3">
+      {rows.map((row) => {
+        const pct = Math.round((row.value / total) * 100)
+        return (
+          <li key={row.label}>
+            <div className="mb-1.5 flex items-baseline justify-between gap-3 text-sm">
+              <span className="text-foreground">{row.label}</span>
+              <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                {row.value} · {pct}%
+              </span>
+            </div>
+            <div
+              role="meter"
+              aria-label={row.label}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={pct}
+              aria-valuetext={`${row.value} of ${total} (${pct}%)`}
+              className="h-1.5 overflow-hidden rounded-full bg-muted"
+            >
+              <div
+                className={cn('h-full rounded-full', row.color)}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+function TaskList({
+  items,
+  empty,
+}: {
+  items: Array<{
+    id: string
+    title: string
+    projectName: string | null
+    dueFormatted: string
+  }>
+  empty: string
+}) {
+  if (items.length === 0) return <EmptyLine>{empty}</EmptyLine>
+  return (
+    <ul className="-my-2 divide-y divide-border">
+      {items.map((item) => (
+        <li key={item.id}>
+          <Link
+            to="/tasks/$taskId"
+            params={{ taskId: item.id }}
+            className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-accent"
+          >
+            <div className="min-w-0">
+              <p className="body-sm truncate font-semibold text-foreground">
+                {item.title}
+              </p>
+              <p className="truncate font-mono text-xs text-muted-foreground">
+                {item.projectName}
+              </p>
+            </div>
+            <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
+              {item.dueFormatted}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   )
 }

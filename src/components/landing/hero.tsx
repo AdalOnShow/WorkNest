@@ -27,7 +27,7 @@ export function Hero() {
             </Button>
             <Button
               size="lg"
-              variant="ghost"
+              variant="outline"
               onClick={() => scrollToSection('how-it-works')}
               className="w-full sm:w-auto"
             >

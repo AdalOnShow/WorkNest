@@ -46,7 +46,7 @@ function InvitationPage() {
       void queryClient.invalidateQueries({ queryKey: ['projects'] })
       void queryClient.invalidateQueries({ queryKey: ['invitations'] })
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-      toast.success('You have joined the project!')
+      toast.success('You joined the project')
       if (result.projectId) {
         navigate({
           to: '/projects/$projectId',
@@ -105,7 +105,7 @@ function InvitationPage() {
             <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-destructive" />
             </div>
-            <h1 className="text-xl font-bold text-foreground mb-2">
+            <h1 className="text-xl font-semibold text-foreground mb-2">
               Invitation Not Found
             </h1>
             <p className="text-muted-foreground mb-6">
@@ -128,7 +128,7 @@ function InvitationPage() {
             <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-destructive" />
             </div>
-            <h1 className="text-xl font-bold text-foreground mb-2">
+            <h1 className="text-xl font-semibold text-foreground mb-2">
               Invitation Expired
             </h1>
             <p className="text-muted-foreground mb-6">
@@ -152,7 +152,7 @@ function InvitationPage() {
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-xl font-bold text-foreground mb-2">
+            <h1 className="text-xl font-semibold text-foreground mb-2">
               Already Accepted
             </h1>
             <p className="text-muted-foreground mb-6">
@@ -178,7 +178,7 @@ function InvitationPage() {
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <XCircle className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-foreground mb-2">
+            <h1 className="text-xl font-semibold text-foreground mb-2">
               Invitation Declined
             </h1>
             <p className="text-muted-foreground mb-6">
@@ -207,7 +207,7 @@ function InvitationPage() {
             <FolderKanban className="w-8 h-8 text-primary" />
           </div>
 
-          <h1 className="text-xl font-bold text-foreground text-center mb-2">
+          <h1 className="text-xl font-semibold text-foreground text-center mb-2">
             Project Invitation
           </h1>
           <p className="text-muted-foreground text-center mb-6">

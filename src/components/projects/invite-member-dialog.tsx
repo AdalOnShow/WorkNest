@@ -112,7 +112,7 @@ export function InviteMemberDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border text-foreground sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Invite Member</DialogTitle>
+          <DialogTitle className="text-xl">Invite member</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Invite someone to join a project with a role.
           </DialogDescription>
@@ -278,7 +278,7 @@ export function InviteMemberDialog({
                 {inviteMutation.isPending ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : null}
-                Send Invitation
+                Send invitation
               </Button>
             </DialogFooter>
           </form>

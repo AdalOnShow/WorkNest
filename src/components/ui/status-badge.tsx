@@ -14,10 +14,10 @@ const STATUS_COLORS: Record<Status, string> = {
 
 const STATUS_LABELS: Record<Status, string> = {
   ACTIVE: 'Active',
-  IN_PROGRESS: 'In Progress',
+  IN_PROGRESS: 'In progress',
   COMPLETED: 'Completed',
-  ON_HOLD: 'On Hold',
-  TODO: 'To Do',
+  ON_HOLD: 'On hold',
+  TODO: 'To do',
 }
 
 export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
@@ -34,7 +34,7 @@ export function StatusBadge({ status, className, ...props }: StatusBadgeProps) {
       )}
       {...props}
     >
-      <div className={cn('w-2 h-2 rounded-full', STATUS_COLORS[status])} />
+      <span className={cn('size-2 rounded-full', STATUS_COLORS[status])} />
       {STATUS_LABELS[status]}
     </Badge>
   )

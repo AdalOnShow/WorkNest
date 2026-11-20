@@ -120,7 +120,7 @@ export function EditTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border text-foreground sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Edit Task</DialogTitle>
+          <DialogTitle className="text-xl">Edit task</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Update the details and assignees for this task.
           </DialogDescription>

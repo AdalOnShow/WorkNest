@@ -150,7 +150,7 @@ function ConnectedRoom({
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-base font-bold text-foreground">
+          <h2 className="truncate text-base font-semibold text-foreground">
             {room.projectName}
           </h2>
           <ConnectionStatus status={chat.status} onReconnect={chat.reconnect} />
@@ -444,7 +444,7 @@ function MessageRow({
         ) : (
           <time
             dateTime={new Date(message.createdAt).toISOString()}
-            className="block pt-0.5 text-right text-[10px] leading-5 text-muted-foreground opacity-0 group-hover:opacity-100"
+            className="block pt-0.5 text-right font-mono text-[11px] leading-5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
           >
             {time}
           </time>
@@ -455,17 +455,15 @@ function MessageRow({
           <div className="flex items-baseline gap-2">
             <span
               className={cn(
-                'text-sm font-bold',
-                message.sender
-                  ? 'text-foreground'
-                  : 'italic text-muted-foreground',
+                'text-sm font-semibold',
+                message.sender ? 'text-foreground' : 'text-muted-foreground',
               )}
             >
               {name}
             </span>
             <time
               dateTime={new Date(message.createdAt).toISOString()}
-              className="text-xs text-muted-foreground"
+              className="font-mono text-xs text-muted-foreground"
             >
               {time}
             </time>
@@ -633,14 +631,14 @@ function OnlinePanel({
       aria-label="Online now"
       className="hidden w-60 shrink-0 flex-col border-l border-border xl:flex"
     >
-      <h3 className="px-5 pt-5 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Online — {users.length}
+      <h3 className="px-5 pt-5 pb-2 text-sm font-semibold text-muted-foreground">
+        Online <span className="font-mono tabular-nums">{users.length}</span>
       </h3>
       <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-4">
         {users.map((user) => (
           <li
             key={user.id}
-            className="flex items-center gap-3 rounded-full px-2 py-1.5"
+            className="flex h-9 items-center gap-3 rounded-lg px-2"
           >
             <UserAvatar
               name={user.name}

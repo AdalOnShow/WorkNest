@@ -79,7 +79,7 @@ export function AssigneePicker({
                   <span className="relative">
                     <Avatar
                       className={cn(
-                        'size-11 border border-border transition-all',
+                        'size-11 border border-border transition-shadow',
                         selected &&
                           'ring-2 ring-primary ring-offset-2 ring-offset-background',
                       )}
@@ -100,7 +100,7 @@ export function AssigneePicker({
                   </span>
                   <span
                     className={cn(
-                      'text-[11px] leading-tight text-center w-full',
+                      'text-xs leading-tight text-center w-full',
                       selected
                         ? 'font-semibold text-foreground'
                         : 'text-muted-foreground',

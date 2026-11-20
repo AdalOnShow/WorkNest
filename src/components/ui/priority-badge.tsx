@@ -34,7 +34,7 @@ export function PriorityBadge({
       )}
       {...props}
     >
-      <div className={cn('w-2 h-2 rounded-full', PRIORITY_COLORS[priority])} />
+      <span className={cn('size-2 rounded-full', PRIORITY_COLORS[priority])} />
       {PRIORITY_LABELS[priority]}
     </Badge>
   )

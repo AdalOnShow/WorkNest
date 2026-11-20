@@ -73,7 +73,7 @@ export function CreateProjectDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border text-foreground sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Create Project</DialogTitle>
+          <DialogTitle className="text-xl">Create project</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Add a new project to your workspace.
           </DialogDescription>
@@ -108,7 +108,7 @@ export function CreateProjectDialog({
               id="project-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of the project..."
+              placeholder="What is this project about"
               className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg min-h-[80px] focus-visible:ring-primary/40"
             />
           </div>
@@ -147,7 +147,7 @@ export function CreateProjectDialog({
               {createMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : null}
-              Create Project
+              Create project
             </Button>
           </DialogFooter>
         </form>

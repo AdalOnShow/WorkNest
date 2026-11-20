@@ -1,4 +1,5 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { ProductMockup } from '#/components/landing/product-mockup'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
@@ -78,26 +79,26 @@ function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-card border-r border-border relative overflow-hidden flex-col justify-between p-12">
-        <div className="relative z-10">
-          <Link to="/" className="flex items-center gap-2.5 mb-24">
+      <div className="hidden lg:flex lg:w-1/2 bg-card border-r border-border relative overflow-hidden flex-col gap-12 p-12">
+        <div>
+          <Link to="/" className="flex items-center gap-2.5 mb-16">
             <div className="flex items-center justify-center w-9 h-9 rounded-full bg-ink">
               <Sprout className="w-5 h-5 text-ink-foreground" />
             </div>
-            <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
+            <span className="text-lg font-semibold text-foreground tracking-tight">
               WorkNest
             </span>
           </Link>
 
-          <h1 className="font-headline text-foreground text-5xl font-bold leading-tight mb-6">
-            Welcome back to
-            <br />
-            your workspace
+          <h1 className="font-headline text-foreground text-4xl xl:text-5xl font-semibold leading-[1.05] tracking-tight mb-4 max-w-md">
+            Your projects, tasks and team chat
           </h1>
-          <p className="text-xl text-muted-foreground max-w-md">
-            Sign in to continue managing your projects and collaborating with
-            your team.
+          <p className="text-lg text-description max-w-md">
+            Sign in to pick up where your team left off
           </p>
+        </div>
+        <div className="-mr-24 mt-auto hidden 2xl:block">
+          <ProductMockup />
         </div>
       </div>
 
@@ -112,7 +113,7 @@ function LoginPage() {
             Back to home
           </Link>
 
-          <h2 className="font-heading text-3xl font-bold text-foreground mb-2">
+          <h2 className="font-headline text-3xl font-semibold tracking-tight text-foreground mb-2">
             Sign in
           </h2>
           <p className="text-muted-foreground mb-8">

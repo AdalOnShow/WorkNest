@@ -16,7 +16,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -55,17 +54,14 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <div className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-ink">
             <Sprout className="w-5 h-5 text-ink-foreground" />
           </div>
-          <span className="text-xl font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
+          <span className="text-lg font-semibold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
             WorkNest
           </span>
         </Link>
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground text-xs">
-            Navigation
-          </SidebarGroupLabel>
+        <SidebarGroup className="pt-4">
           <SidebarGroupContent>
             <SidebarMenu>
               {NAV_ITEMS.map((item) => (
@@ -78,12 +74,12 @@ export function AppSidebar({ user }: AppSidebarProps) {
                       location.pathname.startsWith(item.to + '/')
                     }
                     className={cn(
-                      'text-muted-foreground hover:text-foreground hover:bg-accent',
-                      'data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-bold',
+                      'h-9 font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-accent',
+                      'data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-semibold',
                     )}
                   >
                     <Link to={item.to}>
-                      <item.icon className="w-5 h-5" />
+                      <item.icon className="size-[18px]" />
                       <span>{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -94,8 +90,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <div className="border-t border-sidebar-border" />
-
       <SidebarFooter className="p-2">
         <SidebarMenu>
           {BOTTOM_NAV_ITEMS.map((item) => (
@@ -104,17 +98,17 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 asChild
                 tooltip={item.label}
                 isActive={location.pathname === item.to}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-bold"
+                className="h-9 font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-accent data-[active=true]:bg-accent data-[active=true]:text-foreground data-[active=true]:font-semibold"
               >
                 <Link to={item.to}>
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className="size-[18px]" />
                   <span>{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-        <div className="flex items-center gap-3 px-3 py-2 group-data-[collapsible=icon]:hidden">
+        <div className="mt-2 flex items-center gap-3 border-t border-sidebar-border px-2 pt-4 pb-2 group-data-[collapsible=icon]:hidden">
           <UserAvatar
             name={user?.name ?? 'U'}
             image={user?.image ?? undefined}

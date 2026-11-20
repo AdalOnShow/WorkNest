@@ -1,4 +1,5 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
 import { EmptyState } from '#/components/ui/empty-state'
 import { LoadingState } from '#/components/ui/loading-state'
@@ -27,6 +28,12 @@ export const Route = createFileRoute('/_authenticated/members')({
   }),
 })
 
+const ROLE_LABELS = {
+  ADMIN: 'Admin',
+  PROJECT_MANAGER: 'Project Manager',
+  TEAM_MEMBER: 'Team Member',
+} as const
+
 function MembersPage() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -54,24 +61,19 @@ function MembersPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="headline-sm text-foreground">Members</h1>
-            <p className="body-md text-muted-foreground mt-1">
-              People in your projects. Open a project to manage its members.
-            </p>
-          </div>
-          <Button
-            onClick={() => setInviteOpen(true)}
-            className=" font-semibold"
-          >
-            <Plus data-icon="inline-start" className="w-4 h-4" />
-            Invite Member
-          </Button>
-        </div>
+        <PageHeader
+          title="Members"
+          description="People in your projects. Open a project to manage its members."
+          actions={
+            <Button onClick={() => setInviteOpen(true)}>
+              <Plus data-icon="inline-start" className="size-4" />
+              Invite member
+            </Button>
+          }
+        />
 
         <SearchInput
-          placeholder="Search members..."
+          placeholder="Search members"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value)
@@ -125,27 +127,14 @@ function MembersPage() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-card-foreground">
+                      <TableCell className="text-muted-foreground">
                         {member.email}
                       </TableCell>
                       <TableCell>
-                        <span
-                          style={
-                            member.role === 'PROJECT_MANAGER'
-                              ? { color: 'var(--color-status-in-progress)' }
-                              : undefined
-                          }
-                          className={`label-sm ${
-                            member.role === 'ADMIN'
-                              ? 'text-primary'
-                              : 'text-card-foreground'
-                          }`}
-                        >
+                        <span className="inline-flex rounded-md border border-border px-2 py-0.5 text-xs font-semibold text-card-foreground">
                           {member.role === null
                             ? 'No role'
-                            : member.role === 'PROJECT_MANAGER'
-                              ? 'PM'
-                              : member.role}
+                            : ROLE_LABELS[member.role]}
                         </span>
                       </TableCell>
                     </TableRow>

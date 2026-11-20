@@ -100,7 +100,7 @@ export function CreateTaskDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border text-foreground sm:max-w-[460px] p-4 gap-3 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg">Create Task</DialogTitle>
+          <DialogTitle className="text-lg">Create task</DialogTitle>
           <DialogDescription className="sr-only">
             Add a new task to this project.
           </DialogDescription>
@@ -136,7 +136,7 @@ export function CreateTaskDialog({
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the task..."
+              placeholder="Describe the task"
               className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg min-h-[52px] py-1.5 text-sm focus-visible:ring-primary/40"
             />
           </div>
@@ -228,7 +228,7 @@ export function CreateTaskDialog({
               {createMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : null}
-              Create Task
+              Create task
             </Button>
           </DialogFooter>
         </form>

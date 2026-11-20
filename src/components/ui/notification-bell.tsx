@@ -86,7 +86,7 @@ export function NotificationBell({ className }: { className?: string }) {
         >
           <Bell className="w-5 h-5" />
           {badgeCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold tabular-nums text-primary-foreground">
               {badgeCount > 9 ? '9+' : badgeCount}
             </span>
           )}
@@ -177,7 +177,7 @@ export function NotificationBell({ className }: { className?: string }) {
                     <p className="text-xs text-muted-foreground line-clamp-2">
                       {n.message}
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-1.5">
+                    <p className="font-mono text-xs text-muted-foreground mt-1.5">
                       {n.timeAgo}
                     </p>
                   </button>

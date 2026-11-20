@@ -1,4 +1,5 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader, pathLinkClass } from '#/components/layout/page-header'
 import { AssigneeStack } from '#/components/tasks/assignee-stack'
 import { EditTaskDialog } from '#/components/tasks/edit-task-dialog'
 import { TaskComment } from '#/components/tasks/task-comment'
@@ -26,7 +27,7 @@ import {
 } from '#/server-functions/tasks'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, Pencil, Send, Trash2 } from 'lucide-react'
+import { Pencil, Send, Trash2 } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -150,7 +151,7 @@ function TaskDetailPage() {
           }
           message={
             error && !/not found/i.test(error.message)
-              ? 'We could not load this task. Please try again.'
+              ? 'We could not load this task. Try again in a moment.'
               : 'We could not find this task.'
           }
           onRetry={() =>
@@ -164,41 +165,45 @@ function TaskDetailPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <Link
-          to="/tasks"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Tasks
-        </Link>
-
-        <div className="flex items-start justify-between">
-          <h1 className="headline-sm text-foreground">{task.title}</h1>
-          {task.canManage && (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowEdit(true)}
-                className="border-border text-card-foreground hover:bg-accent"
+        <PageHeader
+          path={[
+            <Link key="tasks" to="/tasks" className={pathLinkClass}>
+              Tasks
+            </Link>,
+            task.projectId ? (
+              <Link
+                key="project"
+                to="/projects/$projectId"
+                params={{ projectId: task.projectId }}
+                className={pathLinkClass}
               >
-                <Pencil className="w-4 h-4 mr-1.5" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                aria-label={`Delete ${task.title}`}
-                onClick={() => setShowDelete(true)}
-                className="border-border text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 data-icon="inline-start" className="w-4 h-4" />
-                Delete
-              </Button>
-            </div>
-          )}
-        </div>
-
+                {task.projectName}
+              </Link>
+            ) : (
+              task.projectName
+            ),
+          ]}
+          title={task.title}
+          actions={
+            task.canManage && (
+              <>
+                <Button variant="outline" onClick={() => setShowEdit(true)}>
+                  <Pencil className="size-4" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  aria-label={`Delete ${task.title}`}
+                  onClick={() => setShowDelete(true)}
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 data-icon="inline-start" className="size-4" />
+                  Delete
+                </Button>
+              </>
+            )
+          }
+        />
         <div>
           <div className="space-y-6">
             <div className="bg-card border border-border rounded-xl p-6">
@@ -228,8 +233,8 @@ function TaskDetailPage() {
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border">
                       <SelectGroup>
-                        <SelectItem value="TODO">To Do</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                        <SelectItem value="TODO">To do</SelectItem>
+                        <SelectItem value="IN_PROGRESS">In progress</SelectItem>
                         <SelectItem value="COMPLETED">Completed</SelectItem>
                       </SelectGroup>
                     </SelectContent>
@@ -287,9 +292,11 @@ function TaskDetailPage() {
                 </div>
                 <div>
                   <label className="label-sm text-muted-foreground block mb-2">
-                    Due Date
+                    Due date
                   </label>
-                  <p className="body-sm text-foreground">{task.dueFormatted}</p>
+                  <p className="body-sm font-mono text-foreground tabular-nums">
+                    {task.dueFormatted}
+                  </p>
                 </div>
                 <div>
                   <label className="label-sm text-muted-foreground block mb-2">
@@ -331,8 +338,11 @@ function TaskDetailPage() {
             )}
 
             <div className="bg-card border border-border rounded-xl p-6">
-              <h3 className="label-lg text-foreground mb-4">
-                Comments ({comments.length})
+              <h3 className="label-lg mb-4 flex items-baseline gap-2 text-foreground">
+                Comments
+                <span className="font-mono text-sm font-medium text-muted-foreground tabular-nums">
+                  {comments.length}
+                </span>
               </h3>
               <div className="space-y-4">
                 {comments.map((c) => (
@@ -350,7 +360,7 @@ function TaskDetailPage() {
                   <input
                     type="text"
                     aria-label={`Comment on ${task.title}`}
-                    placeholder="Write a comment..."
+                    placeholder="Write a comment"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     className="flex-1 h-10 px-4 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring/40"

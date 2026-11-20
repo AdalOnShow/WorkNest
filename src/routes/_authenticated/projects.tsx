@@ -1,4 +1,5 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
 import { EmptyState } from '#/components/ui/empty-state'
 import { ErrorState } from '#/components/ui/error-state'
@@ -23,7 +24,7 @@ import {
   Outlet,
   useChildMatches,
 } from '@tanstack/react-router'
-import { Calendar, CheckSquare, FolderKanban, Plus } from 'lucide-react'
+import { FolderKanban, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/_authenticated/projects')({
@@ -64,11 +65,11 @@ function ProjectCard({
     <Link
       to="/projects/$projectId"
       params={{ projectId: project.id }}
-      className="group relative bg-card border border-border rounded-xl p-5 min-h-[140px] block transition-all duration-200 hover:border-primary/30 hover:bg-accent/20 hover:shadow-lg hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background"
+      className="group flex min-h-36 flex-col justify-between rounded-xl border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-accent/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-bold text-foreground truncate group-hover:text-primary transition-colors">
+          <h3 className="text-base font-semibold text-foreground truncate">
             {project.name}
           </h3>
         </div>
@@ -77,19 +78,11 @@ function ProjectCard({
         />
       </div>
 
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <CheckSquare className="w-4 h-4" />
-          <span>
-            {project.taskCount} {project.taskCount === 1 ? 'task' : 'tasks'}
-          </span>
-        </div>
-        {formattedDeadline && (
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4" />
-            <span>{formattedDeadline}</span>
-          </div>
-        )}
+      <div className="flex items-center justify-between gap-4 font-mono text-xs text-muted-foreground tabular-nums">
+        <span>
+          {project.taskCount} {project.taskCount === 1 ? 'task' : 'tasks'}
+        </span>
+        <span>{formattedDeadline ?? 'No deadline'}</span>
       </div>
     </Link>
   )
@@ -140,25 +133,20 @@ function ProjectsPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="headline-sm text-foreground">Projects</h1>
-            <p className="body-md text-muted-foreground mt-1">
-              Manage your team projects
-            </p>
-          </div>
-          <Button
-            onClick={() => setShowCreateDialog(true)}
-            className=" font-semibold"
-          >
-            <Plus data-icon="inline-start" className="w-4 h-4" />
-            New Project
-          </Button>
-        </div>
+        <PageHeader
+          title="Projects"
+          description="Every project has its own tasks, members and chat"
+          actions={
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus data-icon="inline-start" className="size-4" />
+              New project
+            </Button>
+          }
+        />
 
         <div className="flex flex-wrap items-center gap-3">
           <SearchInput
-            placeholder="Search projects..."
+            placeholder="Search projects"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
@@ -175,17 +163,17 @@ function ProjectsPage() {
           >
             <SelectTrigger
               aria-label="Filter projects by status"
-              style={{ width: '140px' }}
+              style={{ width: '144px' }}
               className="bg-card border-border text-foreground rounded-lg"
             >
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border">
               <SelectGroup>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="ACTIVE">Active</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="ON_HOLD">On Hold</SelectItem>
+                <SelectItem value="ON_HOLD">On hold</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

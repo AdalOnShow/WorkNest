@@ -127,7 +127,7 @@ function OnboardingPage() {
             <span className="flex size-8 items-center justify-center rounded-full bg-ink">
               <Sprout className="size-5 text-ink-foreground" />
             </span>
-            <span className="font-bold text-foreground">WorkNest</span>
+            <span className="font-semibold text-foreground">WorkNest</span>
           </div>
 
           <Stepper current={stepIndex} />
@@ -152,8 +152,10 @@ function OnboardingPage() {
           </p>
           <div className="h-1 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full bg-primary transition-all duration-500"
-              style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
+              className="h-full w-full origin-left bg-primary transition-transform duration-500 ease-out"
+              style={{
+                transform: `scaleX(${(stepIndex + 1) / STEPS.length})`,
+              }}
             />
           </div>
         </div>
@@ -182,7 +184,7 @@ function Stepper({ current }: { current: number }) {
           <li key={s.id} className="flex items-center gap-2">
             <span
               className={cn(
-                'flex size-6 items-center justify-center rounded-full border text-xs font-semibold transition-all duration-300',
+                'flex size-6 items-center justify-center rounded-full border text-xs font-semibold transition-colors duration-200',
                 active && 'border-primary bg-primary text-primary-foreground',
                 done && 'border-primary text-primary',
                 !active && !done && 'border-border text-muted-foreground',
@@ -278,11 +280,10 @@ function WelcomeStep() {
           />
         </div>
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-2">
-          Welcome to WorkNest, {firstName}!
+          Welcome to WorkNest, {firstName}
         </h1>
         <p className="text-muted-foreground max-w-md">
-          Let’s set up your workspace. It takes about a minute, and you can skip
-          at any time.
+          Let’s set up your workspace. You can skip any step.
         </p>
       </div>
 
@@ -730,7 +731,7 @@ function DoneStep() {
             className="hiw-rise flex items-center gap-3 text-sm text-foreground"
             style={{ animationDelay: `${350 + i * 120}ms` }}
           >
-            <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border text-[11px] text-muted-foreground">
+            <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border text-xs text-muted-foreground">
               {i + 1}
             </span>
             {item}

@@ -1,4 +1,5 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
@@ -122,12 +123,10 @@ function SettingsPage() {
   return (
     <PageContainer>
       <div className="max-w-2xl space-y-8">
-        <div>
-          <h1 className="headline-sm text-foreground">Settings</h1>
-          <p className="body-md text-muted-foreground mt-1">
-            Manage your account and preferences
-          </p>
-        </div>
+        <PageHeader
+          title="Settings"
+          description="Your profile, appearance and account"
+        />
 
         {/* Profile Section */}
         <div className="bg-card border border-border rounded-xl p-6 space-y-6">
@@ -179,7 +178,7 @@ function SettingsPage() {
               {isUploading && (
                 <p className="text-xs text-primary mt-1 flex items-center gap-1">
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  Uploading photo...
+                  Uploading photo
                 </p>
               )}
             </div>
@@ -258,7 +257,7 @@ function SettingsPage() {
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
                     )}
-                    Save Changes
+                    Save changes
                   </Button>
                   <Button
                     variant="outline"

@@ -135,10 +135,10 @@ export function ProjectMembersPanel({ projectId }: { projectId: string }) {
               </div>
               <span
                 className={cn(
-                  'shrink-0 rounded-full border px-2.5 py-0.5 text-xs',
+                  'shrink-0 rounded-md border border-border px-2 py-0.5 text-xs font-semibold',
                   m.role === 'ADMIN'
-                    ? 'border-primary/40 text-primary'
-                    : 'border-border text-muted-foreground',
+                    ? 'text-foreground'
+                    : 'text-muted-foreground',
                 )}
               >
                 {ROLE_LABELS[m.role]}

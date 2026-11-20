@@ -69,19 +69,19 @@ export function TaskTable({
             return (
               <TableRow
                 key={task.id}
-                className="border-border/50 hover:bg-accent/30"
+                className="border-border hover:bg-accent/40"
               >
                 <TableCell>
                   <Link
                     to="/tasks/$taskId"
                     params={{ taskId: task.id }}
-                    className="text-foreground font-semibold hover:text-primary transition-colors"
+                    className="font-semibold text-foreground underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:underline"
                   >
                     {task.title}
                   </Link>
                 </TableCell>
                 {showProject && (
-                  <TableCell className="text-card-foreground">
+                  <TableCell className="font-mono text-xs text-muted-foreground">
                     {task.projectName}
                   </TableCell>
                 )}
@@ -97,12 +97,12 @@ export function TaskTable({
                 <TableCell
                   className={
                     overdue
-                      ? 'text-destructive font-semibold'
-                      : 'text-card-foreground'
+                      ? 'font-mono text-xs font-semibold text-destructive tabular-nums'
+                      : 'font-mono text-xs text-card-foreground tabular-nums'
                   }
                 >
                   {task.dueFormatted}
-                  {overdue && ' (overdue)'}
+                  {overdue && ' · overdue'}
                 </TableCell>
                 {onDelete && (
                   <TableCell className="text-right">
@@ -112,7 +112,7 @@ export function TaskTable({
                         size="icon"
                         aria-label={`Delete ${task.title}`}
                         onClick={() => onDelete(task.id)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
+                        className="size-8 text-muted-foreground hover:text-destructive hover:bg-accent"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

@@ -48,7 +48,7 @@ Every value is a CSS variable in `src/styles.css` (`:root` = light, `.dark` = da
 
 **Charts:** blue, lime, sky, yellow, ink.
 
-**Dark mode** keeps the same roles on a neutral near-black. Ink inverts to off-white, so primary buttons become light with dark text. Lime and yellow stay bright. Sky becomes a deep blue tint.
+**Dark mode** keeps the same roles on a slate-blue near-black (background `#0F1420`, cards `#161C2A`, borders `#283043`). Ink inverts to off-white, so primary buttons become light with dark text. Lime and yellow stay bright. Sky becomes a deep blue tint.
 
 ## Typography
 

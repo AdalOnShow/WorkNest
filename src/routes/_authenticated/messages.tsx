@@ -54,15 +54,15 @@ function MessagesPage() {
           />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent">
-              <MessageSquare className="h-7 w-7 text-accent-foreground" />
+            <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-border bg-card">
+              <MessageSquare className="size-5 text-muted-foreground" />
             </div>
-            <h2 className="mb-1 text-lg font-bold text-foreground">
+            <h2 className="mb-1 text-lg font-semibold text-foreground">
               Pick a project
             </h2>
             <p className="max-w-sm text-sm text-muted-foreground">
               Every project has its own chat room. Choose one on the left to
-              start talking with its members.
+              start talking with its members
             </p>
           </div>
         )}
