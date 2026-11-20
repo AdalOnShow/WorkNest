@@ -16,9 +16,8 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { faker } from '@faker-js/faker'
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '#/lib/demo-accounts'
 import { hashPassword } from '#/lib/password'
-
-export const DEMO_PASSWORD = 'worknest-demo'
 
 const remote = process.argv.includes('--remote')
 faker.seed(20261120)
@@ -60,24 +59,12 @@ interface Person {
 }
 
 const people: Array<Person> = [
-  {
-    id: 'demo-user-admin',
-    name: 'Demo Admin',
-    email: 'demo@worknest.dev',
+  ...DEMO_ACCOUNTS.map(({ id, name, email }) => ({
+    id,
+    name,
+    email,
     login: true,
-  },
-  {
-    id: 'demo-user-pm',
-    name: 'Priya Manager',
-    email: 'pm@worknest.dev',
-    login: true,
-  },
-  {
-    id: 'demo-user-member',
-    name: 'Sam Member',
-    email: 'member@worknest.dev',
-    login: true,
-  },
+  })),
   ...Array.from({ length: 5 }, (_, i) => {
     const first = faker.person.firstName()
     const last = faker.person.lastName()

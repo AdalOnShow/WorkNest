@@ -1,11 +1,19 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { ProductMockup } from '#/components/landing/product-mockup'
 import { Button } from '#/components/ui/button'
-import { Input } from '#/components/ui/input'
-import { Label } from '#/components/ui/label'
-import { Sprout, Github, ArrowLeft, Loader2 } from 'lucide-react'
+import {
+  Sprout,
+  Github,
+  ArrowLeft,
+  Loader2,
+  ChevronDown,
+  ArrowRight,
+} from 'lucide-react'
 import { useId, useState } from 'react'
 import { authClient } from '#/lib/auth-client'
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '#/lib/demo-accounts'
+import type { DemoAccount } from '#/lib/demo-accounts'
+import { cn } from '#/lib/utils'
 import { getAuthConfig, getSession } from '#/server-functions/auth'
 
 function isSafeRedirect(path: string): boolean {
@@ -40,14 +48,13 @@ function LoginPage() {
   const authConfig = Route.useLoaderData()
   const callbackURL = redirectTo ?? '/dashboard'
   const [loadingProvider, setLoadingProvider] = useState<
-    'google' | 'github' | 'email' | null
+    'google' | 'github' | DemoAccount['id'] | null
   >(null)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [emailError, setEmailError] = useState<string | null>(null)
-  const emailId = useId()
-  const passwordId = useId()
-  const errorId = useId()
+  const [demoOpen, setDemoOpen] = useState(
+    !(authConfig.google || authConfig.github),
+  )
+  const [demoError, setDemoError] = useState<string | null>(null)
+  const demoPanelId = useId()
   const hasSocial = authConfig.google || authConfig.github
 
   const handleSocialLogin = (provider: 'google' | 'github', target: string) => {
@@ -55,18 +62,17 @@ function LoginPage() {
     authClient.signIn.social({ provider, callbackURL: target })
   }
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setEmailError(null)
-    setLoadingProvider('email')
+  const handleDemoLogin = async (account: DemoAccount) => {
+    setDemoError(null)
+    setLoadingProvider(account.id)
     const { error } = await authClient.signIn.email({
-      email: email.trim(),
-      password,
+      email: account.email,
+      password: DEMO_PASSWORD,
     })
     if (error) {
-      setEmailError(
+      setDemoError(
         error.status === 401
-          ? 'Invalid email or password'
+          ? 'Demo account not found. Run the seed script first.'
           : error.message || 'Sign-in failed. Please try again.',
       )
       setLoadingProvider(null)
@@ -117,7 +123,7 @@ function LoginPage() {
           <p className="text-muted-foreground mb-8">
             {hasSocial
               ? 'Choose a provider to continue'
-              : 'Sign in with your email to continue'}
+              : 'Pick a demo account to continue'}
           </p>
 
           <div className="space-y-4">
@@ -173,70 +179,64 @@ function LoginPage() {
           </div>
 
           {authConfig.emailPassword && (
-            <>
+            <div className={cn(hasSocial && 'mt-6')}>
               {hasSocial && (
-                <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+                <button
+                  type="button"
+                  aria-expanded={demoOpen}
+                  aria-controls={demoPanelId}
+                  onClick={() => setDemoOpen((open) => !open)}
+                  className="flex w-full items-center gap-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <span className="h-px flex-1 bg-border" />
-                  or sign in with email
+                  <span className="inline-flex items-center gap-1">
+                    Try a demo account
+                    <ChevronDown
+                      className={cn(
+                        'w-3.5 h-3.5 transition-transform',
+                        demoOpen && 'rotate-180',
+                      )}
+                    />
+                  </span>
                   <span className="h-px flex-1 bg-border" />
+                </button>
+              )}
+              {demoOpen && (
+                <div
+                  id={demoPanelId}
+                  className={cn('space-y-2', hasSocial && 'mt-4')}
+                >
+                  {DEMO_ACCOUNTS.map((account) => (
+                    <button
+                      key={account.id}
+                      type="button"
+                      disabled={loadingProvider !== null}
+                      onClick={() => handleDemoLogin(account)}
+                      className="group flex w-full items-center justify-between rounded-lg border border-border/60 bg-card px-4 py-3 text-left transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      <span>
+                        <span className="block text-sm font-medium text-foreground">
+                          {account.roleLabel}
+                        </span>
+                        <span className="block text-[11px] text-muted-foreground">
+                          {account.name}
+                        </span>
+                      </span>
+                      {loadingProvider === account.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      ) : (
+                        <ArrowRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                      )}
+                    </button>
+                  ))}
+                  {demoError && (
+                    <p role="alert" className="text-sm text-destructive">
+                      {demoError}
+                    </p>
+                  )}
                 </div>
               )}
-              <form
-                className="space-y-4"
-                onSubmit={handleEmailLogin}
-                noValidate
-              >
-                <div className="space-y-2">
-                  <Label htmlFor={emailId}>Email</Label>
-                  <Input
-                    id={emailId}
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    aria-invalid={emailError ? true : undefined}
-                    aria-describedby={emailError ? errorId : undefined}
-                    className="h-11 bg-card"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={passwordId}>Password</Label>
-                  <Input
-                    id={passwordId}
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    aria-invalid={emailError ? true : undefined}
-                    aria-describedby={emailError ? errorId : undefined}
-                    className="h-11 bg-card"
-                  />
-                </div>
-                {emailError && (
-                  <p
-                    id={errorId}
-                    role="alert"
-                    className="text-sm text-destructive"
-                  >
-                    {emailError}
-                  </p>
-                )}
-                <Button
-                  type="submit"
-                  className="h-11 w-full font-semibold"
-                  disabled={
-                    loadingProvider !== null || !email.trim() || !password
-                  }
-                >
-                  {loadingProvider === 'email' && (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  )}
-                  Sign in
-                </Button>
-              </form>
-            </>
+            </div>
           )}
         </div>
       </div>
