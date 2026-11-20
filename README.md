@@ -1,242 +1,125 @@
-Welcome to your new TanStack Start app!
+# WorkNest
 
-# Getting Started
+A team collaboration app for projects, tasks and real-time project chat. It runs as a single Cloudflare Worker.
 
-To run this application:
+- **Projects:** members, invitations, status, deadlines, search, filter, sort and pagination.
+- **Tasks:**
+  - multiple assignees, priority, status and deadlines
+  - comments that can be edited and deleted
+  - filters for status, priority, project, assignee and deadline (overdue or this week)
+- **Dashboard:**
+  - KPI cards
+  - team productivity, project progress and member workload charts
+  - status and priority breakdowns
+  - recent activity and upcoming deadlines
+- **Project chat:** one real-time room per project, backed by a Durable Object with WebSocket hibernation. History is stored in D1.
+- **Notifications and activity log:** stored in D1 and refreshed with TanStack Query.
+- **Per-project roles:** `ADMIN`, `PROJECT_MANAGER` and `TEAM_MEMBER`, enforced on the server.
+- **Auth:** Google or GitHub OAuth, plus optional email/password sign-in for demo accounts.
+- **Themes and layout:** light and dark themes (Sage design system), with responsive desktop, tablet and phone layouts.
+
+## Stack
+
+| Layer         | Tech                                                                                          |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| Framework     | [TanStack Start](https://tanstack.com/start) (React 19, file-based routing, server functions) |
+| Runtime       | Cloudflare Workers (`@cloudflare/vite-plugin`)                                                |
+| Database      | Cloudflare D1 + Drizzle ORM                                                                   |
+| Real-time     | Durable Objects (`ChatRoom`), WebSocket hibernation                                           |
+| Auth          | Better Auth                                                                                   |
+| UI            | Tailwind CSS v4, shadcn/ui, Recharts                                                          |
+| Data fetching | TanStack Query                                                                                |
+| Media         | Cloudinary (profile photos only)                                                              |
+
+## Quick start
+
+Requirements: Node 20+ and pnpm.
 
 ```bash
 pnpm install
-pnpm dev
+cp .dev.vars.example .dev.vars          # then fill in the values (see below)
+pnpm wrangler d1 migrations apply worknest-db --local
+pnpm db:seed                             # demo users, projects, tasks, chat
+pnpm dev                                 # http://localhost:3000
 ```
 
-# Building For Production
+### Demo accounts
 
-To build this application for production:
+`pnpm db:seed` creates three accounts. They all use the password **`worknest-demo`**.
+
+| Email                 | What you can try                                                                 |
+| --------------------- | -------------------------------------------------------------------------------- |
+| `demo@worknest.dev`   | Admin of _Website Redesign_ and _API v2_, project manager on _Mobile App Launch_ |
+| `pm@worknest.dev`     | Admin of _Mobile App Launch_, project manager on _Website Redesign_              |
+| `member@worknest.dev` | Team member on most projects (sees the restricted UI)                            |
+
+Signing in with email needs `ENABLE_EMAIL_PASSWORD=true`; the example `.dev.vars` sets it. Email sign-up is disabled, so new users register through Google or GitHub. The seed is idempotent: it only creates rows whose id starts with `demo-`, and re-running it resets them.
+
+### Environment
+
+Local values go in `.dev.vars`. Production secrets are set with `wrangler secret put <NAME>`.
+
+| Variable                                             | Required    | Notes                                                                  |
+| ---------------------------------------------------- | ----------- | ---------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`                                 | yes         | Any long random string (`openssl rand -base64 32`)                     |
+| `BETTER_AUTH_URL`                                    | yes in prod | `http://localhost:3000` locally; set in `wrangler.jsonc` vars for prod |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`          | one method  | OAuth callback: `<BETTER_AUTH_URL>/api/auth/callback/google`           |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`          | one method  | OAuth callback: `<BETTER_AUTH_URL>/api/auth/callback/github`           |
+| `ENABLE_EMAIL_PASSWORD`                              | one method  | `"true"` shows the email form (sign-in only). Defaults to `"false"`    |
+| `CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET` | no          | Only needed for profile photo uploads                                  |
+
+At least one sign-in method must be configured: Google, GitHub, or email.
+
+## Scripts
+
+| Command                    | What it does                                                |
+| -------------------------- | ----------------------------------------------------------- |
+| `pnpm dev`                 | Dev server on :3000, running inside workerd                 |
+| `pnpm build`               | Production build to `dist/`                                 |
+| `pnpm lint` / `pnpm check` | ESLint / Prettier check (`pnpm format` fixes both)          |
+| `npx tsc --noEmit`         | Type check (there is no test runner)                        |
+| `pnpm db:generate`         | Generate a migration from schema changes (`migrations/`)    |
+| `pnpm db:seed`             | Seed demo data into local D1 (`-- --remote` for production) |
+| `pnpm cf-typegen`          | Regenerate binding types after editing `wrangler.jsonc`     |
+| `pnpm deploy`              | Build, apply remote D1 migrations, deploy the Worker        |
+
+## Project structure
+
+```
+src/
+  routes/              File-based routes (_authenticated.tsx guards the app)
+  server-functions/    All data access: createServerFn + authMiddleware
+  lib/                 auth, authz (project roles), middleware, activity, password
+  db/schema/           Drizzle tables, one file per domain
+  chat/                ChatRoom Durable Object, WebSocket upgrade, wire protocol
+  components/          UI (shadcn in components/ui, feature folders alongside)
+migrations/            D1 SQL migrations (applied by pnpm deploy)
+scripts/seed.ts        Demo data
+context/               Product spec, design system, process tracker
+```
+
+Authorization is **per project**. Every server function goes through `authMiddleware`, which requires a session, and then checks the caller's `project_member.role` with `requireProjectRole`. See `CLAUDE.md` for the architecture notes.
+
+## Deploying to Cloudflare
+
+These are one-time steps. Run them yourself, because they change production.
 
 ```bash
-pnpm build
+pnpm wrangler login
+pnpm wrangler d1 create worknest-db          # put the database_id in wrangler.jsonc
+for s in BETTER_AUTH_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET \
+         GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET \
+         CLOUDINARY_CLOUD_NAME CLOUDINARY_API_KEY CLOUDINARY_API_SECRET; do
+  pnpm wrangler secret put $s
+done
 ```
 
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
-
-## Linting & Formatting
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+Then, for every release:
 
 ```bash
-pnpm lint
-pnpm format
-pnpm check
+pnpm deploy          # build + apply remote migrations + wrangler deploy
 ```
 
-## Deploy to Cloudflare Workers
+Optional: to enable the demo accounts in production, set `"ENABLE_EMAIL_PASSWORD": "true"` in `wrangler.jsonc` vars and run `pnpm db:seed -- --remote`. Anyone who knows the demo password can then sign in.
 
-This project uses the Cloudflare Vite plugin (configured in `vite.config.ts`) and `wrangler.jsonc`:
-
-1. Install Wrangler: `npm install -g wrangler`
-2. Authenticate: `wrangler login`
-3. Deploy: `npx wrangler deploy`
-
-For production env vars, run `wrangler secret put MY_VAR` for each secret listed in `.env.example`. Public (non-secret) vars go in `wrangler.jsonc` under `vars`.
-
-KV, D1, R2, and Durable Object bindings are configured in `wrangler.jsonc` — see https://developers.cloudflare.com/workers/wrangler/configuration/.
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-## Setting up Better Auth
-
-1. Generate and set the `BETTER_AUTH_SECRET` environment variable in your `.env.local`:
-
-   ```bash
-   pnpm dlx @better-auth/cli secret
-   ```
-
-2. Visit the [Better Auth documentation](https://www.better-auth.com) to unlock the full potential of authentication in your app.
-
-### Adding a Database (Optional)
-
-Better Auth can work in stateless mode, but to persist user data, add a database:
-
-```typescript
-// src/lib/auth.ts
-import { betterAuth } from 'better-auth'
-import { Pool } from 'pg'
-
-export const auth = betterAuth({
-  database: new Pool({
-    connectionString: process.env.DATABASE_URL,
-  }),
-  // ... rest of config
-})
-```
-
-Then run migrations:
-
-```bash
-pnpm dlx @better-auth/cli migrate
-```
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from '@tanstack/react-router'
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+Update `BETTER_AUTH_URL` and the custom domain in `wrangler.jsonc` to match your domain, and register the OAuth callback URLs with Google and GitHub.

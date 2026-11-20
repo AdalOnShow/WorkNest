@@ -213,8 +213,8 @@ Track high-level development phases and milestones.
 | 112 | OAuth callback URLs updated | [~]    | BETTER_AUTH_URL=worknest.sadal.dev in vars   |
 | 113 | Custom domain configured    | [x]    | worknest.sadal.dev in wrangler routes        |
 | 114 | Build + deploy successful   | [ ]    |                                              |
-| 115 | README written              | [ ]    |                                              |
-| 116 | Demo credentials provided   | [ ]    |                                              |
+| 115 | README written              | [x]    | Setup, demo login, env, scripts, deploy steps |
+| 116 | Demo credentials provided   | [x]    | pnpm db:seed — 3 accounts, pw worknest-demo  |
 | 117 | Final QA pass               | [ ]    |                                              |
 
 ---
@@ -320,8 +320,8 @@ Track high-level development phases and milestones.
 | 8. Profile Photos  | 3       | 3        | 0           | 0           |
 | 9. Project Chat    | 7       | 7        | 0           | 0           |
 | 10. Polish         | 13      | 13       | 0           | 0           |
-| 11. Deployment     | 10      | 1        | 2           | 7           |
-| **Total**          | **109** | **100**  | **2**       | **7**       |
+| 11. Deployment     | 10      | 3        | 2           | 5           |
+| **Total**          | **109** | **102**  | **2**       | **5**       |
 
 Phase 2 excludes the n/a attachment row.
 
@@ -329,16 +329,8 @@ Phase 2 excludes the n/a attachment row.
 
 ## Current Phase
 
-**Master plan (F0–F8):** finish every in-scope unimplemented item. Deployment (tasks 108–114, 117) is out of scope for now.
+**Master plan F0–F8 complete.** Every in-scope task is done.
 
-### Feature order
+**Remaining (out of scope until deployment):** tasks 108–112, 114 and 117. These are the production D1, Cloudinary, Durable Objects, secrets, OAuth callbacks, the first deploy, and a final QA pass on production. `README.md` → *Deploying to Cloudflare* lists the exact commands.
 
-1. F0: Tracker housekeeping
-2. F1: Shared auth + RBAC middleware (task 33)
-3. F2: Project sort (task 47)
-4. F3: Comment edit/delete (tasks 73, 74)
-5. F4: Email/password behind `ENABLE_EMAIL_PASSWORD` (task 26)
-6. F5: Dashboard charts: progress, productivity, workload (tasks 64, 67, 68)
-7. F6: Chat verification (task 103)
-8. F7: Polish: tablet, a11y, perf (tasks 89, 95, 96)
-9. F8: Seed data, demo login, README (tasks 115, 116)
+Migrations `0008_account_password` and `0009_task_project_status_index` are applied locally only. `pnpm deploy` applies them remotely.
