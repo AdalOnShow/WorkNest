@@ -31,6 +31,8 @@
   --spotlight: rgb(47 128 255 / 0.1);
   --spotlight-core: rgb(47 128 255 / 0.08);
   --spotlight-grid: rgb(10 10 10 / 0.06);
+  --card-glow: rgb(47 128 255 / 0.55);
+  --card-spot: rgb(47 128 255 / 0.06);
   --input: #e5e5e5;
   --ring: #0a0a0a;
   --description: #525252;
@@ -121,6 +123,8 @@
   --spotlight: rgb(255 255 255 / 0.09);
   --spotlight-core: rgb(255 255 255 / 0.08);
   --spotlight-grid: rgb(255 255 255 / 0.05);
+  --card-glow: rgb(47 128 255 / 0.7);
+  --card-spot: rgb(255 255 255 / 0.05);
   --input: #262626;
   --ring: #fafafa;
   --description: #c4c4c4;
@@ -594,5 +598,86 @@
   .hero-spotlight-beam {
     animation: none;
     transform: rotate(var(--beam-angle));
+  }
+}
+
+/* Feature cards: lift + tilt toward the cursor, cursor light, floating preview */
+
+.feature-card {
+  --mx: 50%;
+  --my: 50%;
+  --rx: 0deg;
+  --ry: 0deg;
+  --lift: 0px;
+  position: relative;
+  height: 100%;
+  transform: perspective(1200px) rotateX(var(--ry)) rotateY(var(--rx))
+    translateY(var(--lift));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.feature-card[data-hover] {
+  --lift: -6px;
+  transition-duration: 0.15s;
+}
+
+.feature-card-glow,
+.feature-card-spot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+}
+
+/* Lights the 1px border near the cursor */
+.feature-card-glow {
+  background: radial-gradient(
+    260px circle at var(--mx) var(--my),
+    var(--card-glow),
+    transparent 65%
+  );
+}
+
+/* Soft light on the card surface */
+.feature-card-spot {
+  background: radial-gradient(
+    420px circle at var(--mx) var(--my),
+    var(--card-spot),
+    transparent 70%
+  );
+}
+
+.feature-card[data-hover] .feature-card-glow,
+.feature-card[data-hover] .feature-card-spot {
+  opacity: 1;
+}
+
+.feature-card-visual {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.feature-card[data-hover] .feature-card-visual {
+  animation: feature-float 3.2s ease-in-out 0.2s infinite;
+}
+
+@keyframes feature-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card {
+    transform: none !important;
+    transition: none;
+  }
+  .feature-card[data-hover] .feature-card-visual {
+    animation: none;
   }
 }

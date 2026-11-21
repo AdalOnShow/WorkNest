@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useRef } from 'react'
+import type { PointerEvent, ReactNode } from 'react'
 import { Bell, Check, Plus } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import { Initials, PreviewFrame, PriorityDot } from './product-mockup'
@@ -205,6 +206,49 @@ const features: Array<{
   },
 ]
 
+const MAX_TILT = 4
+
+/** Lifts and tilts toward the cursor, with a light that follows it. */
+function FeatureCard({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    const el = ref.current
+    if (!el || e.pointerType !== 'mouse') return
+    const rect = el.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / rect.width
+    const y = (e.clientY - rect.top) / rect.height
+    el.dataset.hover = ''
+    el.style.setProperty('--mx', `${x * 100}%`)
+    el.style.setProperty('--my', `${y * 100}%`)
+    el.style.setProperty('--rx', `${(x - 0.5) * MAX_TILT * 2}deg`)
+    el.style.setProperty('--ry', `${(0.5 - y) * MAX_TILT * 2}deg`)
+  }
+
+  const onPointerLeave = () => {
+    const el = ref.current
+    if (!el) return
+    delete el.dataset.hover
+    el.style.setProperty('--rx', '0deg')
+    el.style.setProperty('--ry', '0deg')
+  }
+
+  return (
+    <div
+      ref={ref}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+      className="feature-card chamfer bg-border p-px [--cut:14px]"
+    >
+      <div aria-hidden="true" className="feature-card-glow" />
+      <article className="chamfer relative flex h-full flex-col overflow-hidden bg-background p-6 [--cut:14px] sm:p-7">
+        <div aria-hidden="true" className="feature-card-spot" />
+        <div className="relative flex flex-1 flex-col">{children}</div>
+      </article>
+    </div>
+  )
+}
+
 export function Features() {
   return (
     <section id="features" className="scroll-mt-24 pb-24 sm:pb-32">
@@ -217,12 +261,8 @@ export function Features() {
 
         <div className="grid gap-5 md:grid-cols-2 lg:gap-6">
           {features.map((f, i) => (
-            <Reveal
-              key={f.eyebrow}
-              delay={(i % 2) * 80}
-              className="chamfer bg-border p-px [--cut:14px]"
-            >
-              <article className="chamfer flex h-full flex-col bg-background p-6 [--cut:14px] sm:p-7">
+            <Reveal key={f.eyebrow} delay={(i % 2) * 80}>
+              <FeatureCard>
                 <p className="eyebrow">{f.eyebrow}</p>
                 <h3 className="mt-4 text-lg font-semibold tracking-tight text-foreground">
                   {f.title}
@@ -241,8 +281,10 @@ export function Features() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-7 flex-1 content-end">{f.visual}</div>
-              </article>
+                <div className="feature-card-visual mt-7 flex-1 content-end">
+                  {f.visual}
+                </div>
+              </FeatureCard>
             </Reveal>
           ))}
         </div>

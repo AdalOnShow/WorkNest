@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { ProductMockup } from './product-mockup'
 import { Container } from './reveal'
+import { ScrambleText } from './scramble-text'
 
 export function Hero() {
   const scrollToSection = (id: string) => {
@@ -18,7 +19,7 @@ export function Hero() {
         <div className="animate-fade-in-up mx-auto flex max-w-3xl flex-col items-center text-center">
           <p className="eyebrow mb-6">Project workspace for small teams</p>
           <h1 className="text-4xl leading-[1.1] text-balance text-foreground sm:text-5xl lg:text-[3.5rem]">
-            Run every project from one quiet workspace
+            <ScrambleText text="Run every project from one quiet workspace" />
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-[17px]">
             Tasks, per-project roles and a real-time chat room for each project,
