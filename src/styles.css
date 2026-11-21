@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -27,6 +28,9 @@
   --destructive: #d92d33;
   --destructive-foreground: #ffffff;
   --border: #e5e5e5;
+  --spotlight: rgb(47 128 255 / 0.1);
+  --spotlight-core: rgb(47 128 255 / 0.08);
+  --spotlight-grid: rgb(10 10 10 / 0.06);
   --input: #e5e5e5;
   --ring: #0a0a0a;
   --description: #525252;
@@ -114,6 +118,9 @@
   --destructive: #f0595e;
   --destructive-foreground: #ffffff;
   --border: #262626;
+  --spotlight: rgb(255 255 255 / 0.09);
+  --spotlight-core: rgb(255 255 255 / 0.08);
+  --spotlight-grid: rgb(255 255 255 / 0.05);
   --input: #262626;
   --ring: #fafafa;
   --description: #c4c4c4;
@@ -521,5 +528,71 @@
   .hiw-progress {
     animation: none;
     transform: scaleX(0);
+  }
+}
+
+/* Hero spotlight */
+
+.hero-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Faint grid that fades out away from the light */
+.hero-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--spotlight-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--spotlight-grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center top;
+  mask-image: radial-gradient(ellipse 55% 45% at 50% 0%, #000 30%, transparent 100%);
+}
+
+/* Two light beams from the top corners, angled 45deg toward the bottom centre */
+.hero-spotlight-beam {
+  position: absolute;
+  top: -12%;
+  width: clamp(320px, 38vw, 560px);
+  height: 150%;
+  transform-origin: 50% 0%;
+  background:
+    radial-gradient(ellipse 50% 70% at 50% 0%, var(--spotlight), transparent 75%),
+    radial-gradient(ellipse 22% 45% at 50% 0%, var(--spotlight-core), transparent 80%);
+  animation: spotlight-in 1.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-spotlight-beam--left {
+  left: 0;
+  translate: -50% 0;
+  --beam-angle: -45deg;
+}
+
+.hero-spotlight-beam--right {
+  right: 0;
+  translate: 50% 0;
+  --beam-angle: 45deg;
+  animation-delay: 0.15s;
+}
+
+@keyframes spotlight-in {
+  from {
+    opacity: 0;
+    transform: rotate(calc(var(--beam-angle) * 0.6)) scaleY(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--beam-angle)) scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-spotlight-beam {
+    animation: none;
+    transform: rotate(var(--beam-angle));
   }
 }

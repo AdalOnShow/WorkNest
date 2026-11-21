@@ -329,7 +329,7 @@ export function HowItWorks() {
           ref={ref}
           onPointerEnter={(e) => e.pointerType === 'mouse' && setPaused(true)}
           onPointerLeave={() => setPaused(false)}
-          className="grid items-start gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12"
+          className="grid gap-8 lg:grid-cols-2 lg:gap-12"
         >
           {/* Step list */}
           <ol className="relative border-t border-border/60">
@@ -405,7 +405,7 @@ export function HowItWorks() {
           {/* Live preview */}
           <div
             aria-hidden="true"
-            className="relative bg-border p-px select-none lg:sticky lg:top-24"
+            className="relative flex flex-col bg-border p-px select-none"
           >
             <div className="flex h-9 items-center gap-2 border-b border-border/60 bg-background px-4">
               <span
@@ -415,7 +415,7 @@ export function HowItWorks() {
                 {current.label}
               </span>
             </div>
-            <div className="flex min-h-[420px] items-center bg-background px-6 py-10">
+            <div className="flex min-h-[340px] flex-1 items-center bg-background px-6 py-8">
               {isVisible && <Visual key={active} />}
             </div>
           </div>

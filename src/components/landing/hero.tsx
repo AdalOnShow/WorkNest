@@ -10,7 +10,11 @@ export function Hero() {
 
   return (
     <section className="relative overflow-hidden pt-32 pb-24 sm:pt-40">
-      <Container>
+      <div aria-hidden="true" className="hero-spotlight">
+        <div className="hero-spotlight-beam hero-spotlight-beam--left" />
+        <div className="hero-spotlight-beam hero-spotlight-beam--right" />
+      </div>
+      <Container className="relative">
         <div className="animate-fade-in-up mx-auto flex max-w-3xl flex-col items-center text-center">
           <p className="eyebrow mb-6">Project workspace for small teams</p>
           <h1 className="text-4xl leading-[1.1] text-balance text-foreground sm:text-5xl lg:text-[3.5rem]">
