@@ -24,7 +24,6 @@ import { Route as InvitationsTokenRouteImport } from './routes/invitations.$toke
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
 import { Route as AuthenticatedTasksTaskIdRouteImport } from './routes/_authenticated/tasks.$taskId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiChatProjectIdWsRouteImport } from './routes/api/chat/$projectId/ws'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -103,11 +102,6 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiChatProjectIdWsRoute = ApiChatProjectIdWsRouteImport.update({
-  id: '/api/chat/$projectId/ws',
-  path: '/api/chat/$projectId/ws',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,7 +118,6 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
   '/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/chat/$projectId/ws': typeof ApiChatProjectIdWsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -141,7 +134,6 @@ export interface FileRoutesByTo {
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
   '/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/chat/$projectId/ws': typeof ApiChatProjectIdWsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -160,7 +152,6 @@ export interface FileRoutesById {
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRoute
   '/_authenticated/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/chat/$projectId/ws': typeof ApiChatProjectIdWsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -179,7 +170,6 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/tasks/$taskId'
     | '/api/auth/$'
-    | '/api/chat/$projectId/ws'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -196,7 +186,6 @@ export interface FileRouteTypes {
     | '/projects/$projectId'
     | '/tasks/$taskId'
     | '/api/auth/$'
-    | '/api/chat/$projectId/ws'
   id:
     | '__root__'
     | '/'
@@ -214,7 +203,6 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$projectId'
     | '/_authenticated/tasks/$taskId'
     | '/api/auth/$'
-    | '/api/chat/$projectId/ws'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -224,7 +212,6 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   InvitationsTokenRoute: typeof InvitationsTokenRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiChatProjectIdWsRoute: typeof ApiChatProjectIdWsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -334,13 +321,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/chat/$projectId/ws': {
-      id: '/api/chat/$projectId/ws'
-      path: '/api/chat/$projectId/ws'
-      fullPath: '/api/chat/$projectId/ws'
-      preLoaderRoute: typeof ApiChatProjectIdWsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -399,17 +379,17 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   InvitationsTokenRoute: InvitationsTokenRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiChatProjectIdWsRoute: ApiChatProjectIdWsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

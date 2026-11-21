@@ -25,6 +25,9 @@ import { CheckSquare, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+type TaskStatusFilter = 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
+type TaskPriorityFilter = 'HIGH' | 'MEDIUM' | 'LOW'
+
 export const Route = createFileRoute('/_authenticated/tasks')({
   component: TasksPage,
   head: () => ({
@@ -73,8 +76,8 @@ function TasksPage() {
       listTasks({
         data: {
           search: debouncedSearch,
-          status: statusFilter,
-          priority: priorityFilter,
+          status: statusFilter as 'all' | TaskStatusFilter,
+          priority: priorityFilter as 'all' | TaskPriorityFilter,
           projectId: projectFilter === 'all' ? undefined : projectFilter,
           assigneeId: assigneeFilter === 'all' ? undefined : assigneeFilter,
           deadline: deadlineFilter as 'all' | 'overdue' | 'week' | 'none',

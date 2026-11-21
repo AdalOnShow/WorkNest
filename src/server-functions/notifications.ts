@@ -1,14 +1,13 @@
 import { notification } from '#/db/schema'
-import { authMiddleware } from '#/lib/middleware'
+import { authMiddleware, rateLimitMiddleware } from '#/lib/middleware'
+import { idSchema, paginationSchema, input } from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq } from 'drizzle-orm'
+import { z } from 'zod'
 
 export const listNotifications = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .validator((data: { page?: number; pageSize?: number }) => ({
-    page: Math.max(1, Math.floor(data.page || 1)),
-    pageSize: Math.min(100, Math.max(1, Math.floor(data.pageSize || 20))),
-  }))
+  .validator(input(z.object(paginationSchema(20))))
   .handler(async ({ data, context: { db, userId } }) => {
     const page = data.page
     const pageSize = data.pageSize
@@ -45,8 +44,8 @@ export const listNotifications = createServerFn({ method: 'GET' })
   })
 
 export const markNotificationRead = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { notificationId: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ notificationId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     await db
       .update(notification)
@@ -64,7 +63,7 @@ export const markNotificationRead = createServerFn({ method: 'POST' })
 export const markAllNotificationsRead = createServerFn({
   method: 'POST',
 })
-  .middleware([authMiddleware])
+  .middleware([rateLimitMiddleware])
   .handler(async ({ context: { db, userId } }) => {
     await db
       .update(notification)

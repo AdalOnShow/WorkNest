@@ -132,7 +132,7 @@ function ThemeHotkey() {
   return null
 }
 
-function AppErrorBoundary({ error: _error }: { error: Error }) {
+function AppErrorBoundary() {
   return (
     <main className="flex min-h-screen items-center bg-background px-6 py-24 text-foreground">
       <div className="mx-auto w-full max-w-xl">
@@ -195,7 +195,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider defaultTheme="system" enableSystem>
+        <ThemeProvider defaultTheme="system">
           <ThemeHotkey />
           <div
             id="app-status-region"

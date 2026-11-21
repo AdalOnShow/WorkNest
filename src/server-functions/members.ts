@@ -1,8 +1,10 @@
 import { projectMember, user } from '#/db/schema'
 import { authMiddleware } from '#/lib/middleware'
 import { escapeLikePattern } from '#/lib/sql'
+import { paginationSchema, searchSchema, input } from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
 import { and, countDistinct, eq, inArray, sql } from 'drizzle-orm'
+import { z } from 'zod'
 
 type ProjectRole = 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'
 const ROLE_BY_RANK: Array<ProjectRole> = [
@@ -18,11 +20,7 @@ const ROLE_BY_RANK: Array<ProjectRole> = [
  */
 export const listMembers = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .validator((data: { search?: string; page?: number; pageSize?: number }) => ({
-    search: data.search,
-    page: Math.max(1, Math.floor(data.page || 1)),
-    pageSize: Math.min(100, Math.max(1, Math.floor(data.pageSize || 10))),
-  }))
+  .validator(input(z.object({ search: searchSchema, ...paginationSchema(10) })))
   .handler(async ({ data, context: { db, userId } }) => {
     const search = data.search || ''
     const { page, pageSize } = data

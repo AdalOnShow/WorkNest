@@ -50,7 +50,7 @@ function ProjectCard({
     name: string
     status: string
     taskCount: number
-    deadline: number | null
+    deadline: Date | number | null
   }
 }) {
   const formattedDeadline = project.deadline
@@ -90,7 +90,9 @@ function ProjectCard({
 
 function ProjectsPage() {
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'ACTIVE' | 'COMPLETED' | 'ON_HOLD'
+  >('all')
   const [sort, setSort] = useState('created:desc')
   const [page, setPage] = useState(1)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -157,7 +159,7 @@ function ProjectsPage() {
           <Select
             value={statusFilter}
             onValueChange={(v) => {
-              setStatusFilter(v)
+              setStatusFilter(v as typeof statusFilter)
               setPage(1)
             }}
           >

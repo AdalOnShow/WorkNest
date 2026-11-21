@@ -1,5 +1,5 @@
 import { Badge } from '#/components/ui/badge'
-import type { BadgeProps } from '#/components/ui/badge'
+import type { ComponentProps } from 'react'
 import { cn } from '#/lib/utils'
 
 export type Status = 'ACTIVE' | 'IN_PROGRESS' | 'COMPLETED' | 'ON_HOLD' | 'TODO'
@@ -20,7 +20,10 @@ const STATUS_LABELS: Record<Status, string> = {
   TODO: 'To do',
 }
 
-export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
+export interface StatusBadgeProps extends Omit<
+  ComponentProps<typeof Badge>,
+  'variant'
+> {
   status: Status
 }
 

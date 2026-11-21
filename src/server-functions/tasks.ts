@@ -1,6 +1,7 @@
 import type { Database } from '#/db'
 import {
   comment,
+  notification,
   project,
   projectMember,
   task,
@@ -9,8 +10,21 @@ import {
 } from '#/db/schema'
 import { logActivity, notifyUsers } from '#/lib/activity'
 import { canManage, requireProjectRole } from '#/lib/authz'
-import { authMiddleware } from '#/lib/middleware'
+import { authMiddleware, rateLimitMiddleware } from '#/lib/middleware'
 import { escapeLikePattern } from '#/lib/sql'
+import {
+  commentSchema,
+  deadlineSchema,
+  descriptionSchema,
+  idSchema,
+  paginationSchema,
+  searchSchema,
+  sortDirSchema,
+  taskPrioritySchema,
+  taskStatusSchema,
+  titleSchema,
+  input,
+} from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
 import {
   and,
@@ -25,12 +39,24 @@ import {
   sql,
 } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/sqlite-core'
+import { z } from 'zod'
 
 const creator = alias(user, 'creator')
 
-type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
-type TaskPriority = 'HIGH' | 'MEDIUM' | 'LOW'
+type TaskStatus = z.infer<typeof taskStatusSchema>
 type Db = Database
+
+const assigneeIdsSchema = z.array(idSchema).max(50)
+
+/** completedAt for a status change: set on entering COMPLETED, kept while
+ * staying COMPLETED, cleared on leaving it. */
+function nextCompletedAt(
+  previous: TaskStatus,
+  next: TaskStatus,
+): Date | null | undefined {
+  if (next === previous) return undefined
+  return next === 'COMPLETED' ? new Date() : null
+}
 
 export interface TaskAssignee {
   id: string
@@ -39,6 +65,8 @@ export interface TaskAssignee {
 }
 
 const DAY_MS = 86_400_000
+/** Newest comments shown on a task. */
+const COMMENT_LIMIT = 200
 
 /**
  * Loads the task plus the caller's project role and the task's assignees.
@@ -158,27 +186,27 @@ function formatDue(deadline: Date | null) {
 export const listTasks = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator(
-    (data: {
-      search?: string
-      status?: string
-      priority?: string
-      projectId?: string
-      /** A user id, or "me" for the caller. */
-      assigneeId?: string
-      deadline?: 'all' | 'overdue' | 'week' | 'none'
-      sort?: 'created' | 'deadline' | 'priority' | 'updated'
-      dir?: 'asc' | 'desc'
-      page?: number
-      pageSize?: number
-    }) => data,
+    input(
+      z.object({
+        search: searchSchema,
+        status: z.union([taskStatusSchema, z.literal('all')]).optional(),
+        priority: z.union([taskPrioritySchema, z.literal('all')]).optional(),
+        projectId: idSchema.optional().or(z.literal('')),
+        /** A user id, or "me" for the caller. */
+        assigneeId: idSchema.optional().or(z.literal('')),
+        deadline: z.enum(['all', 'overdue', 'week', 'none']).optional(),
+        sort: z.enum(['created', 'deadline', 'priority', 'updated']).optional(),
+        dir: sortDirSchema.optional(),
+        ...paginationSchema(10),
+      }),
+    ),
   )
   .handler(async ({ data, context: { db, userId } }) => {
     const search = data.search || ''
     const status = data.status || 'all'
     const priority = data.priority || 'all'
     const projectId = data.projectId || ''
-    const page = data.page || 1
-    const pageSize = data.pageSize || 10
+    const { page, pageSize } = data
     const escapedSearch = escapeLikePattern(search)
 
     const conditions = [
@@ -191,10 +219,10 @@ export const listTasks = createServerFn({ method: 'GET' })
       )
     }
     if (status !== 'all') {
-      conditions.push(eq(task.status, status as TaskStatus))
+      conditions.push(eq(task.status, status))
     }
     if (priority !== 'all') {
-      conditions.push(eq(task.priority, priority as TaskPriority))
+      conditions.push(eq(task.priority, priority))
     }
     if (projectId) {
       conditions.push(eq(task.projectId, projectId))
@@ -299,7 +327,7 @@ export const listTasks = createServerFn({ method: 'GET' })
 
 export const getTask = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .validator((data: { taskId: string }) => data)
+  .validator(input(z.object({ taskId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const ctx = await requireTaskContext(db, data.taskId, userId)
 
@@ -342,27 +370,26 @@ export const getTask = createServerFn({ method: 'GET' })
   })
 
 export const createTask = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
+  .middleware([rateLimitMiddleware])
   .validator(
-    (data: {
-      projectId: string
-      title: string
-      description?: string
-      status?: TaskStatus
-      priority?: TaskPriority
-      assigneeIds?: Array<string>
-      deadline?: number
-    }) => data,
+    input(
+      z.object({
+        projectId: idSchema,
+        title: titleSchema,
+        description: descriptionSchema.optional(),
+        status: taskStatusSchema.optional(),
+        priority: taskPrioritySchema.optional(),
+        assigneeIds: assigneeIdsSchema.optional(),
+        deadline: deadlineSchema.optional(),
+      }),
+    ),
   )
   .handler(async ({ data, context: { db, userId } }) => {
     const role = await requireProjectRole(db, data.projectId, userId)
     if (!canManage(role)) {
       throw new Error('Only admins and project managers can create tasks')
     }
-    const trimmedTitle = data.title.trim()
-    if (trimmedTitle.length === 0) {
-      throw new Error('Task title cannot be empty')
-    }
+    const trimmedTitle = data.title
     if (data.deadline) assertDeadlineNotPast(data.deadline)
 
     const assigneeIds = [...new Set(data.assigneeIds ?? [])]
@@ -373,7 +400,7 @@ export const createTask = createServerFn({ method: 'POST' })
     const now = new Date()
     const status = data.status ?? 'TODO'
 
-    await db.insert(task).values({
+    const insertTask = db.insert(task).values({
       id: taskId,
       projectId: data.projectId,
       title: trimmedTitle,
@@ -387,14 +414,18 @@ export const createTask = createServerFn({ method: 'POST' })
       completedAt: status === 'COMPLETED' ? now : null,
     })
 
+    // One batch = one transaction: no task without its assignees.
     if (assigneeIds.length > 0) {
-      await db.insert(taskAssignee).values(
-        assigneeIds.map((id) => ({
-          taskId,
-          userId: id,
-          createdAt: now,
-        })),
-      )
+      await db.batch([
+        insertTask,
+        db
+          .insert(taskAssignee)
+          .values(
+            assigneeIds.map((id) => ({ taskId, userId: id, createdAt: now })),
+          ),
+      ])
+    } else {
+      await insertTask
     }
 
     await logActivity({
@@ -421,17 +452,19 @@ export const createTask = createServerFn({ method: 'POST' })
   })
 
 export const updateTask = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
+  .middleware([rateLimitMiddleware])
   .validator(
-    (data: {
-      taskId: string
-      title?: string
-      description?: string
-      status?: TaskStatus
-      priority?: TaskPriority
-      assigneeIds?: Array<string>
-      deadline?: number | null
-    }) => data,
+    input(
+      z.object({
+        taskId: idSchema,
+        title: titleSchema.optional(),
+        description: descriptionSchema.optional(),
+        status: taskStatusSchema.optional(),
+        priority: taskPrioritySchema.optional(),
+        assigneeIds: assigneeIdsSchema.optional(),
+        deadline: deadlineSchema.nullable().optional(),
+      }),
+    ),
   )
   .handler(async ({ data, context: { db, userId } }) => {
     const ctx = await requireTaskContext(db, data.taskId, userId)
@@ -443,8 +476,7 @@ export const updateTask = createServerFn({ method: 'POST' })
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     let title = ctx.title
     if (data.title !== undefined) {
-      title = data.title.trim()
-      if (title.length === 0) throw new Error('Task title cannot be empty')
+      title = data.title
       if (title !== ctx.title) {
         await assertUniqueTitle(db, projectId, title, data.taskId)
       }
@@ -455,7 +487,8 @@ export const updateTask = createServerFn({ method: 'POST' })
     }
     if (data.status !== undefined) {
       updates.status = data.status
-      updates.completedAt = data.status === 'COMPLETED' ? new Date() : null
+      const completedAt = nextCompletedAt(ctx.status, data.status)
+      if (completedAt !== undefined) updates.completedAt = completedAt
     }
     if (data.priority !== undefined) updates.priority = data.priority
     if (data.deadline !== undefined) {
@@ -477,28 +510,35 @@ export const updateTask = createServerFn({ method: 'POST' })
       }
     }
 
-    await db.update(task).set(updates).where(eq(task.id, data.taskId))
-
-    if (removed.length > 0) {
-      await db
-        .delete(taskAssignee)
-        .where(
-          and(
-            eq(taskAssignee.taskId, data.taskId),
-            inArray(taskAssignee.userId, removed),
-          ),
-        )
-    }
-    if (added.length > 0) {
-      const now = new Date()
-      await db.insert(taskAssignee).values(
-        added.map((id) => ({
-          taskId: data.taskId,
-          userId: id,
-          createdAt: now,
-        })),
-      )
-    }
+    // One batch = one transaction, so a failed assignee write can't leave
+    // the task half-updated.
+    const now = new Date()
+    await db.batch([
+      db.update(task).set(updates).where(eq(task.id, data.taskId)),
+      ...(removed.length > 0
+        ? [
+            db
+              .delete(taskAssignee)
+              .where(
+                and(
+                  eq(taskAssignee.taskId, data.taskId),
+                  inArray(taskAssignee.userId, removed),
+                ),
+              ),
+          ]
+        : []),
+      ...(added.length > 0
+        ? [
+            db.insert(taskAssignee).values(
+              added.map((id) => ({
+                taskId: data.taskId,
+                userId: id,
+                createdAt: now,
+              })),
+            ),
+          ]
+        : []),
+    ])
 
     const statusChanged = data.status && data.status !== ctx.status
     await logActivity({
@@ -542,15 +582,20 @@ export const updateTask = createServerFn({ method: 'POST' })
   })
 
 export const deleteTask = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { taskId: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ taskId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const ctx = await requireTaskContext(db, data.taskId, userId)
     if (!canManage(ctx.role)) {
       throw new Error('Only admins and project managers can delete tasks')
     }
 
-    await db.delete(task).where(eq(task.id, data.taskId))
+    await db.batch([
+      db.delete(task).where(eq(task.id, data.taskId)),
+      // Notifications point at the task by reference_id (no FK); drop them
+      // so nobody is left with a link to a missing task.
+      db.delete(notification).where(eq(notification.referenceId, data.taskId)),
+    ])
 
     await logActivity({
       db,
@@ -566,8 +611,8 @@ export const deleteTask = createServerFn({ method: 'POST' })
   })
 
 export const changeTaskStatus = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { taskId: string; status: TaskStatus }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ taskId: idSchema, status: taskStatusSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const ctx = await requireTaskContext(db, data.taskId, userId)
     if (!canManage(ctx.role) && !ctx.isAssignee) {
@@ -576,12 +621,13 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
       )
     }
 
+    const completedAt = nextCompletedAt(ctx.status, data.status)
     await db
       .update(task)
       .set({
         status: data.status,
         updatedAt: new Date(),
-        completedAt: data.status === 'COMPLETED' ? new Date() : null,
+        ...(completedAt !== undefined ? { completedAt } : {}),
       })
       .where(eq(task.id, data.taskId))
 
@@ -612,7 +658,7 @@ export const changeTaskStatus = createServerFn({ method: 'POST' })
 
 export const getTaskComments = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .validator((data: { taskId: string }) => data)
+  .validator(input(z.object({ taskId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const ctx = await requireTaskContext(db, data.taskId, userId)
     const comments = await db
@@ -629,6 +675,7 @@ export const getTaskComments = createServerFn({ method: 'GET' })
       .leftJoin(user, eq(comment.authorId, user.id))
       .where(eq(comment.taskId, data.taskId))
       .orderBy(desc(comment.createdAt))
+      .limit(COMMENT_LIMIT)
 
     return comments.map((c) => {
       const isAuthor = c.authorId === userId
@@ -663,17 +710,14 @@ async function requireCommentContext(
 }
 
 export const updateTaskComment = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { commentId: string; content: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ commentId: idSchema, content: commentSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const ctx = await requireCommentContext(db, data.commentId, userId)
     if (ctx.authorId !== userId) {
       throw new Error('You can only edit your own comments')
     }
-    const trimmedContent = data.content.trim()
-    if (trimmedContent.length === 0) {
-      throw new Error('Comment content cannot be empty')
-    }
+    const trimmedContent = data.content
 
     await db
       .update(comment)
@@ -694,8 +738,8 @@ export const updateTaskComment = createServerFn({ method: 'POST' })
   })
 
 export const deleteTaskComment = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { commentId: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ commentId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const ctx = await requireCommentContext(db, data.commentId, userId)
     if (ctx.authorId !== userId && !canManage(ctx.role)) {
@@ -720,14 +764,11 @@ export const deleteTaskComment = createServerFn({ method: 'POST' })
   })
 
 export const addTaskComment = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { taskId: string; content: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ taskId: idSchema, content: commentSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const ctx = await requireTaskContext(db, data.taskId, userId)
-    const trimmedContent = data.content.trim()
-    if (trimmedContent.length === 0) {
-      throw new Error('Comment content cannot be empty')
-    }
+    const trimmedContent = data.content
     const commentId = crypto.randomUUID()
     const now = new Date()
 

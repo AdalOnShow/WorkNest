@@ -1,28 +1,43 @@
+import { closeChatRoom, disconnectChatUser } from '#/chat/room-control'
 import { project, projectMember, task, user } from '#/db/schema'
 import { logActivity } from '#/lib/activity'
-import { MANAGER_ROLES, requireProjectRole } from '#/lib/authz'
-import { authMiddleware } from '#/lib/middleware'
+import { requireProjectRole } from '#/lib/authz'
+import { authMiddleware, rateLimitMiddleware } from '#/lib/middleware'
 import { escapeLikePattern } from '#/lib/sql'
+import {
+  deadlineSchema,
+  descriptionSchema,
+  idSchema,
+  paginationSchema,
+  projectStatusSchema,
+  searchSchema,
+  sortDirSchema,
+  titleSchema,
+  input,
+} from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
+import { z } from 'zod'
+
+const projectNameSchema = titleSchema
 
 export const listProjects = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .validator(
-    (data: {
-      search?: string
-      status?: string
-      sort?: 'created' | 'deadline' | 'name' | 'updated'
-      dir?: 'asc' | 'desc'
-      page?: number
-      pageSize?: number
-    }) => data,
+    input(
+      z.object({
+        search: searchSchema,
+        status: z.union([projectStatusSchema, z.literal('all')]).optional(),
+        sort: z.enum(['created', 'deadline', 'name', 'updated']).optional(),
+        dir: sortDirSchema.optional(),
+        ...paginationSchema(10),
+      }),
+    ),
   )
   .handler(async ({ data, context: { db, userId } }) => {
     const search = data.search || ''
     const status = data.status || 'all'
-    const page = Math.max(1, Math.floor(data.page || 1))
-    const pageSize = Math.min(100, Math.max(1, Math.floor(data.pageSize || 10)))
+    const { page, pageSize } = data
     const escapedSearch = escapeLikePattern(search)
 
     const conditions = [
@@ -33,10 +48,8 @@ export const listProjects = createServerFn({ method: 'GET' })
         sql`${project.name} LIKE ${`%${escapedSearch}%`} ESCAPE '\\'`,
       )
     }
-    if (status && status !== 'all') {
-      conditions.push(
-        eq(project.status, status as 'ACTIVE' | 'COMPLETED' | 'ON_HOLD'),
-      )
+    if (status !== 'all') {
+      conditions.push(eq(project.status, status))
     }
 
     const where = and(...conditions)
@@ -113,7 +126,7 @@ export const listProjects = createServerFn({ method: 'GET' })
 
 export const getProject = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .validator((data: { projectId: string }) => data)
+  .validator(input(z.object({ projectId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     await requireProjectRole(db, data.projectId, userId)
 
@@ -139,15 +152,18 @@ export const getProject = createServerFn({ method: 'GET' })
   })
 
 export const createProject = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
+  .middleware([rateLimitMiddleware])
   .validator(
-    (data: { name: string; description?: string; deadline?: number }) => data,
+    input(
+      z.object({
+        name: projectNameSchema,
+        description: descriptionSchema.optional(),
+        deadline: deadlineSchema.optional(),
+      }),
+    ),
   )
   .handler(async ({ data, context: { db, userId } }) => {
-    const trimmedName = data.name.trim()
-    if (trimmedName.length === 0) {
-      throw new Error('Project name cannot be empty')
-    }
+    const trimmedName = data.name
     const projectId = crypto.randomUUID()
     const now = new Date()
 
@@ -185,21 +201,23 @@ export const createProject = createServerFn({ method: 'POST' })
   })
 
 export const updateProject = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
+  .middleware([rateLimitMiddleware])
   .validator(
-    (data: {
-      projectId: string
-      name?: string
-      description?: string
-      status?: 'ACTIVE' | 'COMPLETED' | 'ON_HOLD'
-      deadline?: number | null
-    }) => data,
+    input(
+      z.object({
+        projectId: idSchema,
+        name: projectNameSchema.optional(),
+        description: descriptionSchema.optional(),
+        status: projectStatusSchema.optional(),
+        deadline: deadlineSchema.nullable().optional(),
+      }),
+    ),
   )
   .handler(async ({ data, context: { db, userId } }) => {
     await requireProjectRole(db, data.projectId, userId, { roles: ['ADMIN'] })
 
     const updates: Record<string, unknown> = { updatedAt: new Date() }
-    if (data.name !== undefined) updates.name = data.name.trim()
+    if (data.name !== undefined) updates.name = data.name
     if (data.description !== undefined)
       updates.description = data.description.trim() || null
     if (data.status !== undefined) updates.status = data.status
@@ -225,8 +243,8 @@ export const updateProject = createServerFn({ method: 'POST' })
   })
 
 export const deleteProject = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { projectId: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ projectId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     await requireProjectRole(db, data.projectId, userId, {
       roles: ['ADMIN'],
@@ -234,71 +252,13 @@ export const deleteProject = createServerFn({ method: 'POST' })
     })
 
     await db.delete(project).where(eq(project.id, data.projectId))
-    return { success: true }
-  })
-
-export const addProjectMember = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator(
-    (data: {
-      projectId: string
-      userId: string
-      role?: 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'
-    }) => data,
-  )
-  .handler(async ({ data, context: { db, userId: requesterId } }) => {
-    const requesterRole = await requireProjectRole(
-      db,
-      data.projectId,
-      requesterId,
-      { roles: MANAGER_ROLES },
-    )
-
-    const existingMembership = await db
-      .select()
-      .from(projectMember)
-      .where(
-        and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, data.userId),
-        ),
-      )
-      .limit(1)
-
-    if (existingMembership.length > 0) {
-      throw new Error('Member already exists')
-    }
-
-    const requestedRole = data.role || 'TEAM_MEMBER'
-    if (requesterRole === 'PROJECT_MANAGER' && requestedRole === 'ADMIN') {
-      throw new Error('Only project admins can assign ADMIN role')
-    }
-
-    const memberId = crypto.randomUUID()
-    await db.insert(projectMember).values({
-      id: memberId,
-      projectId: data.projectId,
-      userId: data.userId,
-      role: requestedRole,
-      createdAt: new Date(),
-    })
-
-    await logActivity({
-      db,
-      actorId: requesterId,
-      projectId: data.projectId,
-      action: 'PROJECT_MEMBER_ADDED',
-      entityType: 'member',
-      entityId: memberId,
-      metadata: { userId: data.userId, role: requestedRole },
-    })
-
+    await closeChatRoom(data.projectId)
     return { success: true }
   })
 
 export const removeProjectMember = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { projectId: string; userId: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ projectId: idSchema, userId: idSchema })))
   .handler(async ({ data, context: { db, userId: requesterId } }) => {
     const requesterRole = await requireProjectRole(
       db,
@@ -325,29 +285,23 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
       throw new Error('Only project admins can remove other members')
     }
 
-    if (targetMember.role === 'ADMIN') {
-      const [adminCount] = await db
-        .select({ count: count() })
-        .from(projectMember)
-        .where(
-          and(
-            eq(projectMember.projectId, data.projectId),
-            eq(projectMember.role, 'ADMIN'),
-          ),
-        )
-      if ((adminCount?.count || 0) <= 1) {
-        throw new Error('Cannot remove the last project admin')
-      }
-    }
-
-    await db
+    // One statement, so two admins removing each other concurrently can't
+    // leave the project with no admin.
+    const deleted = await db
       .delete(projectMember)
       .where(
         and(
-          eq(projectMember.projectId, data.projectId),
-          eq(projectMember.userId, data.userId),
+          eq(projectMember.id, targetMember.id),
+          sql`NOT (${projectMember.role} = 'ADMIN' AND (SELECT COUNT(*) FROM ${projectMember} WHERE ${projectMember.projectId} = ${data.projectId} AND ${projectMember.role} = 'ADMIN') <= 1)`,
         ),
       )
+      .returning({ id: projectMember.id })
+
+    if (deleted.length === 0) {
+      throw new Error('Cannot remove the last project admin')
+    }
+
+    await disconnectChatUser(data.projectId, data.userId)
 
     await logActivity({
       db,
@@ -364,7 +318,7 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
 
 export const listProjectMembers = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .validator((data: { projectId: string }) => data)
+  .validator(input(z.object({ projectId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const myRole = await requireProjectRole(db, data.projectId, userId)
 

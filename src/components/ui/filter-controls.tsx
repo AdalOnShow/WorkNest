@@ -36,7 +36,7 @@ export function FilterControls({ filters, className }: FilterControlsProps) {
         >
           <SelectTrigger
             aria-label={filter.label}
-            className="w-[160px] h-10 bg-card border-border text-foreground text-sm focus:ring-ring/40"
+            className="w-full sm:w-[160px] h-10 bg-card border-border text-foreground text-sm focus:ring-ring/40"
           >
             <SelectValue placeholder={filter.label} />
           </SelectTrigger>

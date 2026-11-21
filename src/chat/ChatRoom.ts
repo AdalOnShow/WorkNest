@@ -108,6 +108,39 @@ export class ChatRoom extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: client })
   }
 
+  // ─── RPC (called by server functions) ────────────────
+
+  /** Closes every socket a user has open in this room (member removed). */
+  async disconnectUser(userId: string): Promise<void> {
+    const sockets = this.ctx.getWebSockets(userId)
+    for (const ws of sockets) {
+      this.sendError(
+        ws,
+        'FORBIDDEN',
+        'You are no longer a member of this project',
+      )
+      try {
+        ws.close(CLOSE_NOT_MEMBER, 'Not a project member')
+      } catch {
+        // Already closed.
+      }
+    }
+    if (sockets.length > 0) {
+      this.broadcast({ type: 'USER_OFFLINE', userId })
+    }
+  }
+
+  /** Closes every socket in the room (project deleted). */
+  async closeRoom(): Promise<void> {
+    for (const ws of this.ctx.getWebSockets()) {
+      try {
+        ws.close(CLOSE_NOT_MEMBER, 'Project deleted')
+      } catch {
+        // Already closed.
+      }
+    }
+  }
+
   // ─── Hibernation handlers ────────────────────────────
 
   async webSocketMessage(ws: WebSocket, raw: string | ArrayBuffer) {

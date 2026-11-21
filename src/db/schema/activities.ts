@@ -19,6 +19,10 @@ export const activity = sqliteTable(
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
   (table) => ({
-    idxProject: index('idx_activity_project').on(table.projectId),
+    // Recent-activity feeds, newest first per project.
+    idxProjectCreated: index('idx_activity_project_created').on(
+      table.projectId,
+      table.createdAt,
+    ),
   }),
 )

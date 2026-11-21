@@ -234,7 +234,7 @@ function InvitationPage() {
                   <p className="text-sm text-muted-foreground">Invited by</p>
                 </div>
                 <p className="font-semibold text-foreground">
-                  {invitation.inviterName || invitation.inviterEmail}
+                  {invitation.inviterName || 'A teammate'}
                 </p>
               </div>
 

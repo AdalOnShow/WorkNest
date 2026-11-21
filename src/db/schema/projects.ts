@@ -35,7 +35,10 @@ export const projectMember = sqliteTable(
     projectId: text('project_id')
       .notNull()
       .references(() => project.id, { onDelete: 'cascade' }),
-    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+    // A membership without a user is meaningless: delete it with the user.
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
     role: text('role', { enum: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER'] })
       .notNull()
       .default('TEAM_MEMBER'),
@@ -78,7 +81,6 @@ export const projectInvitation = sqliteTable(
   (table) => ({
     idxProject: index('idx_project_invitation_project').on(table.projectId),
     idxEmail: index('idx_project_invitation_email').on(table.email),
-    idxToken: index('idx_project_invitation_token').on(table.token),
     idxStatus: index('idx_project_invitation_status').on(table.status),
   }),
 )

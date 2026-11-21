@@ -24,6 +24,11 @@ export const task = sqliteTable(
     priority: text('priority', { enum: ['HIGH', 'MEDIUM', 'LOW'] })
       .notNull()
       .default('MEDIUM'),
+    /**
+     * Deprecated: replaced by `task_assignee`, read and written nowhere.
+     * Kept because dropping it needs a table rebuild, and on D1 rebuilding
+     * `task` would cascade-delete its comments and assignees.
+     */
     assigneeId: text('assignee_id').references(() => user.id, {
       onDelete: 'set null',
     }),
@@ -41,7 +46,11 @@ export const task = sqliteTable(
       table.title,
     ),
     idxProject: index('idx_task_project').on(table.projectId),
-    idxAssignee: index('idx_task_assignee').on(table.assigneeId),
+    // Deadline filters (overdue / this week) and upcoming-deadline lists.
+    idxProjectDeadline: index('idx_task_project_deadline').on(
+      table.projectId,
+      table.deadline,
+    ),
     idxStatus: index('idx_task_status').on(table.status),
     // Dashboard KPIs and the completed-per-day chart filter by project + status.
     idxProjectStatusCompleted: index('idx_task_project_status_completed').on(

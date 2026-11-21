@@ -1,33 +1,51 @@
 import { project, projectInvitation, projectMember, user } from '#/db/schema'
 import { logActivity } from '#/lib/activity'
 import { MANAGER_ROLES, canManage, requireProjectRole } from '#/lib/authz'
-import { authMiddleware } from '#/lib/middleware'
+import { authMiddleware, rateLimitMiddleware } from '#/lib/middleware'
 import { getCloudflareEnv, getDb } from '#/lib/request-context'
+import {
+  LIMITS,
+  idSchema,
+  paginationSchema,
+  projectRoleSchema,
+  input,
+} from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, gt, inArray } from 'drizzle-orm'
+import { z } from 'zod'
+
+const tokenSchema = z.object({ token: z.string().min(16).max(128) })
 
 function buildInvitationLink(token: string) {
   return `${getCloudflareEnv().BETTER_AUTH_URL}/invitations/${token}`
 }
 
+/** 256 random bits, base64url. */
 function generateInvitationToken(): string {
-  return crypto.randomUUID().replace(/-/g, '') + Date.now().toString(36)
+  const bytes = crypto.getRandomValues(new Uint8Array(32))
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return btoa(binary)
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '')
 }
 
 export const createProjectInvitation = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
+  .middleware([rateLimitMiddleware])
   .validator(
-    (data: {
-      projectId: string
-      email: string
-      role?: 'ADMIN' | 'PROJECT_MANAGER' | 'TEAM_MEMBER'
-    }) => {
-      const role = data.role ?? 'TEAM_MEMBER'
-      if (!['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER'].includes(role)) {
-        throw new Error('Invalid role')
-      }
-      return { ...data, email: data.email.trim(), role }
-    },
+    input(
+      z.object({
+        projectId: idSchema,
+        email: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .max(LIMITS.email)
+          .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email address'),
+        role: projectRoleSchema.default('TEAM_MEMBER'),
+      }),
+    ),
   )
   .handler(async ({ data, context: { db, userId: requesterId } }) => {
     const requesterRole = await requireProjectRole(
@@ -40,11 +58,6 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
     const requestedRole = data.role
     if (requesterRole === 'PROJECT_MANAGER' && requestedRole === 'ADMIN') {
       throw new Error('Only project admins can assign ADMIN role')
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(data.email)) {
-      throw new Error('Invalid email address')
     }
 
     const existingUser = await db
@@ -143,7 +156,7 @@ export const createProjectInvitation = createServerFn({ method: 'POST' })
   })
 
 export const getProjectInvitation = createServerFn({ method: 'GET' })
-  .validator((data: { token: string }) => data)
+  .validator(input(tokenSchema))
   .handler(async ({ data }) => {
     const db = getDb()
 
@@ -159,7 +172,6 @@ export const getProjectInvitation = createServerFn({ method: 'GET' })
         projectName: project.name,
         projectDescription: project.description,
         inviterName: user.name,
-        inviterEmail: user.email,
       })
       .from(projectInvitation)
       .innerJoin(project, eq(projectInvitation.projectId, project.id))
@@ -191,8 +203,8 @@ export const getProjectInvitation = createServerFn({ method: 'GET' })
   })
 
 export const acceptProjectInvitation = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { token: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(tokenSchema))
   .handler(async ({ data, context: { db, userId, user: sessionUser } }) => {
     const [invitation] = await db
       .select()
@@ -218,6 +230,10 @@ export const acceptProjectInvitation = createServerFn({ method: 'POST' })
 
     if (sessionUser.email.toLowerCase() !== invitation.email.toLowerCase()) {
       throw new Error('This invitation was sent to a different email address')
+    }
+    // Email ownership is what the invitation trusts; require it be proven.
+    if (!sessionUser.emailVerified) {
+      throw new Error('Verify your email address before accepting invitations')
     }
 
     const existingMember = await db
@@ -271,8 +287,8 @@ export const acceptProjectInvitation = createServerFn({ method: 'POST' })
   })
 
 export const rejectProjectInvitation = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { token: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(tokenSchema))
   .handler(async ({ data, context: { db, user: sessionUser } }) => {
     const [invitation] = await db
       .select()
@@ -303,14 +319,10 @@ export const rejectProjectInvitation = createServerFn({ method: 'POST' })
 
 export const listProjectInvitations = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .validator(
-    (data: { projectId: string; page?: number; pageSize?: number }) => data,
-  )
+  .validator(input(z.object({ projectId: idSchema, ...paginationSchema(20) })))
   .handler(async ({ data, context: { db, userId } }) => {
     const role = await requireProjectRole(db, data.projectId, userId)
-
-    const page = Math.max(1, Math.floor(data.page || 1))
-    const pageSize = Math.min(100, Math.max(1, Math.floor(data.pageSize || 20)))
+    const { page, pageSize } = data
 
     // Accepted invitations show up as project members instead.
     const where = and(
@@ -356,8 +368,8 @@ export const listProjectInvitations = createServerFn({ method: 'GET' })
   })
 
 export const revokeProjectInvitation = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: { invitationId: string }) => data)
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ invitationId: idSchema })))
   .handler(async ({ data, context: { db, userId } }) => {
     const [invitation] = await db
       .select()
@@ -369,9 +381,16 @@ export const revokeProjectInvitation = createServerFn({ method: 'POST' })
       throw new Error('Invitation not found')
     }
 
-    await requireProjectRole(db, invitation.projectId, userId, {
+    const role = await requireProjectRole(db, invitation.projectId, userId, {
       roles: MANAGER_ROLES,
     })
+    if (invitation.status !== 'PENDING') {
+      throw new Error('Invitation has already been processed')
+    }
+    // Same rule as creating one: only admins handle ADMIN invitations.
+    if (role === 'PROJECT_MANAGER' && invitation.role === 'ADMIN') {
+      throw new Error('Only project admins can revoke an ADMIN invitation')
+    }
 
     await db
       .update(projectInvitation)

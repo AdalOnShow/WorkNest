@@ -40,3 +40,22 @@ export const authMiddleware = createMiddleware({ type: 'function' })
       context: { session, user: session.user, userId: session.user.id },
     })
   })
+
+/**
+ * `authMiddleware` plus a per-user rate limit for mutations, backed by the
+ * Workers Rate Limiting binding (`MUTATION_LIMITER` in wrangler.jsonc).
+ * Limits are per Cloudflare location and approximate; they damp abuse and
+ * runaway clients, they are not a billing quota.
+ */
+export const rateLimitMiddleware = createMiddleware({ type: 'function' })
+  .middleware([authMiddleware])
+  .server(async ({ next, context }) => {
+    const limiter = context.env.MUTATION_LIMITER as RateLimit | undefined
+    if (limiter) {
+      const { success } = await limiter.limit({ key: context.userId })
+      if (!success) {
+        throw new Error('Too many requests. Please wait a moment and retry.')
+      }
+    }
+    return next()
+  })

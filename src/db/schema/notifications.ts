@@ -23,6 +23,9 @@ export const notification = sqliteTable(
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
   (table) => ({
-    idxRecipient: index('idx_notification_recipient').on(table.recipientId),
+    // Bell (unread count) and the paginated list, newest first.
+    idxRecipientReadCreated: index(
+      'idx_notification_recipient_read_created',
+    ).on(table.recipientId, table.read, table.createdAt),
   }),
 )

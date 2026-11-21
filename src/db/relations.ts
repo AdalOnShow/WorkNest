@@ -24,7 +24,6 @@ export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
   accounts: many(account),
   memberships: many(projectMember),
-  assignedTasks: many(task, { relationName: 'assignee' }),
   createdTasks: many(task, { relationName: 'creator' }),
   taskAssignments: many(taskAssignee),
   comments: many(comment),
@@ -86,11 +85,6 @@ export const taskRelations = relations(task, ({ one, many }) => ({
   project: one(project, {
     fields: [task.projectId],
     references: [project.id],
-  }),
-  assignee: one(user, {
-    fields: [task.assigneeId],
-    references: [user.id],
-    relationName: 'assignee',
   }),
   creator: one(user, {
     fields: [task.creatorId],

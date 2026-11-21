@@ -1,8 +1,11 @@
 import { createDb } from '#/db'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter'
 import { betterAuth } from 'better-auth'
+import { APIError } from 'better-auth/api'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
+import { isOwnAvatarUrl } from '#/lib/cloudinary'
 import { hashPassword, verifyPassword } from '#/lib/password'
+import { LIMITS } from '#/lib/validation'
 import * as authSchema from '../db/schema/auth'
 import { userProfile } from '../db/schema/users'
 
@@ -16,6 +19,49 @@ export interface AuthEnv {
   GITHUB_CLIENT_SECRET?: string
   /** "true" enables email/password sign-in (no sign-up; for seeded/demo accounts). */
   ENABLE_EMAIL_PASSWORD?: string
+  CLOUDINARY_CLOUD_NAME?: string
+}
+
+/** Avatar hosts the OAuth providers hand us on sign-up. */
+const OAUTH_AVATAR_HOSTS = new Set([
+  'lh3.googleusercontent.com',
+  'avatars.githubusercontent.com',
+])
+
+/**
+ * Better Auth's public `update-user` endpoint accepts any `image` and `name`.
+ * Only allow values the app itself would set, so a stored avatar URL can
+ * never point at another user's Cloudinary asset or an arbitrary host.
+ */
+function assertAllowedUserUpdate(
+  env: AuthEnv,
+  userId: string | undefined,
+  data: { name?: unknown; image?: unknown },
+) {
+  const touchesProfile = data.name !== undefined || data.image !== undefined
+  if (!touchesProfile) return
+  if (!userId) throw new APIError('FORBIDDEN', { message: 'Not allowed' })
+  if (data.name !== undefined) {
+    const name = typeof data.name === 'string' ? data.name.trim() : ''
+    if (name.length < 1 || name.length > LIMITS.name) {
+      throw new APIError('BAD_REQUEST', {
+        message: `Name must be between 1 and ${LIMITS.name} characters`,
+      })
+    }
+  }
+  if (data.image !== undefined && data.image !== null) {
+    const image = typeof data.image === 'string' ? data.image : ''
+    let host = ''
+    try {
+      const url = new URL(image)
+      if (url.protocol === 'https:') host = url.hostname
+    } catch {
+      // Invalid URL, rejected below.
+    }
+    if (!OAUTH_AVATAR_HOSTS.has(host) && !isOwnAvatarUrl(env, image, userId)) {
+      throw new APIError('BAD_REQUEST', { message: 'Invalid profile image' })
+    }
+  }
 }
 
 export function isEmailPasswordEnabled(env: AuthEnv) {
@@ -97,6 +143,14 @@ export function createAuth(env: AuthEnv) {
     secret: env.BETTER_AUTH_SECRET,
     baseURL: resolveBaseURL(env),
     database: drizzleAdapter(db, { provider: 'sqlite', schema: authSchema }),
+    // Workers isolates don't share memory, so counters live in D1.
+    rateLimit: {
+      enabled: !import.meta.env.DEV,
+      storage: 'database',
+    },
+    advanced: {
+      ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] },
+    },
     session: {
       cookieCache: {
         enabled: true,
@@ -116,6 +170,14 @@ export function createAuth(env: AuthEnv) {
       : undefined,
     databaseHooks: {
       user: {
+        update: {
+          before: async (data, ctx) => {
+            // Internal updates (no request context, e.g. OAuth sign-in
+            // refreshes) are trusted; requests from clients are checked.
+            if (!ctx?.request) return
+            assertAllowedUserUpdate(env, ctx.context.session?.user.id, data)
+          },
+        },
         create: {
           after: async (user) => {
             await db.insert(userProfile).values({

@@ -541,3 +541,47 @@ pnpm drizzle-kit studio
 | `activity`           | Activity log                             | → actor, project                       |
 
 > **Attachments removed.** The `attachment` table is dropped by migration `0003_drop_attachment`. There are no file attachments; Cloudinary stores profile photos only.
+
+---
+
+## Current state after `0001_hardening` (authoritative)
+
+This section is the source of truth where the sections above disagree with it.
+The code in `src/db/schema/*` is authoritative over both.
+
+### Integrity rules
+
+| Table            | Column         | On parent delete | Notes                                                                                      |
+| ---------------- | -------------- | ---------------- | ------------------------------------------------------------------------------------------ |
+| `project_member` | `user_id`      | **CASCADE**      | `NOT NULL` since 0001. Was `SET NULL`, which left ghost memberships.                       |
+| `project_member` | `project_id`   | CASCADE          | Unique `(project_id, user_id)`.                                                            |
+| `task`           | `project_id`   | CASCADE          | Unique `(project_id, title)`.                                                              |
+| `task`           | `creator_id`   | SET NULL         |                                                                                            |
+| `task`           | `assignee_id`  | SET NULL         | **Deprecated, unused.** Assignees live in `task_assignee`. Not dropped, see below.         |
+| `task_assignee`  | both           | CASCADE          | PK `(task_id, user_id)`.                                                                   |
+| `comment`        | `task_id`      | CASCADE          | `author_id` SET NULL (comment kept, shown as deleted user).                                |
+| `chat_message`   | `project_id`   | CASCADE          | `sender_id` SET NULL.                                                                      |
+| `notification`   | `recipient_id` | CASCADE          | `reference_id` has no FK; `deleteTask` deletes matching notifications in the same batch.   |
+| `user_profile`   | `role`         | n/a              | **Deprecated.** Always `TEAM_MEMBER`, read nowhere. Permissions are `project_member.role`. |
+
+Enum columns (`status`, `priority`, `role`) have no SQL CHECK constraint. They
+are enforced by zod in every server function (`src/lib/validation.ts`).
+
+### Indexes that back real queries
+
+| Index                                     | Serves                                          |
+| ----------------------------------------- | ----------------------------------------------- |
+| `idx_task_project_deadline`               | overdue / this-week filters, upcoming deadlines |
+| `idx_task_project_status_completed`       | dashboard KPIs, completed-per-day chart         |
+| `idx_task_assignee_user`                  | "my tasks", workload                            |
+| `idx_notification_recipient_read_created` | bell unread count, notifications list           |
+| `idx_activity_project_created`            | activity feeds                                  |
+| `idx_comment_task_created`                | task comments, newest first                     |
+| `idx_chat_message_project_created`        | chat history keyset pagination                  |
+| `rate_limit_key_unique`                   | Better Auth rate limiter (`rate_limit` table)   |
+
+### Migration rules (D1)
+
+- Never edit an applied migration. `0000_version_1.sql` and `0001_hardening.sql` are applied.
+- D1 keeps foreign keys enforced during migrations, and `PRAGMA foreign_keys=OFF` has no effect. Dropping a table during a drizzle "table rebuild" runs an implicit `DELETE`, which **fires ON DELETE CASCADE on child tables**. Before accepting a generated migration that rebuilds a table (`__new_<table>`), check whether any table references it. If one does, don't rebuild it. That is why `task.assignee_id` is kept: rebuilding `task` would delete every comment and assignee.
+- When tightening a column to `NOT NULL`, add a hand-written cleanup `DELETE` / `UPDATE` before the copy.

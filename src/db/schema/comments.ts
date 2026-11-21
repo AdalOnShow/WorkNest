@@ -17,6 +17,9 @@ export const comment = sqliteTable(
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   },
   (table) => ({
-    idxTask: index('idx_comment_task').on(table.taskId),
+    idxTaskCreated: index('idx_comment_task_created').on(
+      table.taskId,
+      table.createdAt,
+    ),
   }),
 )

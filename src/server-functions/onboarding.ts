@@ -1,5 +1,5 @@
 import { projectMember, userProfile } from '#/db/schema'
-import { authMiddleware } from '#/lib/middleware'
+import { authMiddleware, rateLimitMiddleware } from '#/lib/middleware'
 import { createServerFn } from '@tanstack/react-start'
 import { eq } from 'drizzle-orm'
 
@@ -31,7 +31,7 @@ export const getOnboardingStatus = createServerFn({ method: 'GET' })
   })
 
 export const completeOnboarding = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
+  .middleware([rateLimitMiddleware])
   .handler(async ({ context: { db, userId } }) => {
     const now = new Date()
 

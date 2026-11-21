@@ -1,10 +1,13 @@
 import {
+  avatarPublicId,
   deleteFromCloudinary,
-  getCloudinaryPublicId,
+  isOwnAvatarUrl,
   uploadToCloudinary,
 } from '#/lib/cloudinary'
-import { authMiddleware, sessionMiddleware } from '#/lib/middleware'
+import { rateLimitMiddleware, sessionMiddleware } from '#/lib/middleware'
+import { nameSchema, input } from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -13,7 +16,6 @@ const ALLOWED_MIME_TYPES = [
   'image/gif',
 ]
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-const CLOUDINARY_FOLDER = 'worknest/avatars'
 
 export const getProfile = createServerFn({ method: 'GET' })
   .middleware([sessionMiddleware])
@@ -37,23 +39,10 @@ export const getProfile = createServerFn({ method: 'GET' })
   })
 
 export const updateProfile = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .validator((data: unknown) => {
-    if (
-      typeof data !== 'object' ||
-      data === null ||
-      typeof (data as { name?: unknown }).name !== 'string'
-    ) {
-      throw new Error('Name is required')
-    }
-
-    return data as { name: string }
-  })
+  .middleware([rateLimitMiddleware])
+  .validator(input(z.object({ name: nameSchema('Name') })))
   .handler(async ({ data, context: { auth, headers } }) => {
-    const name = data.name.trim()
-    if (name.length < 1 || name.length > 100) {
-      throw new Error('Name must be between 1 and 100 characters')
-    }
+    const { name } = data
 
     // Use Better Auth's updateUser to update DB + refresh session cookie
     await auth.api.updateUser({
@@ -65,10 +54,11 @@ export const updateProfile = createServerFn({ method: 'POST' })
   })
 
 export const uploadProfilePhoto = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
+  .middleware([rateLimitMiddleware])
   .validator((data: FormData) => {
-    const file = data.get('photo') as File | null
-    if (!file) {
+    if (!(data instanceof FormData)) throw new Error('No photo provided')
+    const file = data.get('photo')
+    if (!(file instanceof File)) {
       throw new Error('No photo provided')
     }
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
@@ -81,13 +71,12 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
     }
     return { file }
   })
-  .handler(async ({ data, context: { auth, env, headers, user } }) => {
+  .handler(async ({ data, context: { auth, env, headers, userId } }) => {
     const { file } = data
 
-    const oldPublicId = user.image ? getCloudinaryPublicId(user.image) : null
-
-    // Upload new photo to Cloudinary
-    const result = await uploadToCloudinary(env, file, CLOUDINARY_FOLDER)
+    // One fixed asset per user: the upload overwrites the previous photo, so
+    // there is nothing old to clean up and no id is read from user data.
+    const result = await uploadToCloudinary(env, file, avatarPublicId(userId))
 
     try {
       // Use Better Auth's updateUser to update DB + refresh session cookie
@@ -96,35 +85,19 @@ export const uploadProfilePhoto = createServerFn({ method: 'POST' })
         headers,
       })
     } catch {
-      // Cleanup uploaded asset if DB update fails
-      try {
-        await deleteFromCloudinary(env, result.public_id)
-      } catch {
-        // Ignore cleanup errors
-      }
       throw new Error('Failed to update profile photo')
-    }
-
-    if (oldPublicId) {
-      try {
-        await deleteFromCloudinary(env, oldPublicId)
-      } catch {
-        // Ignore delete errors
-      }
     }
 
     return { success: true }
   })
 
 export const deleteProfilePhoto = createServerFn({ method: 'POST' })
-  .middleware([authMiddleware])
-  .handler(async ({ context: { auth, env, headers, user } }) => {
-    // Delete from Cloudinary
-    if (user.image) {
-      const publicId = getCloudinaryPublicId(user.image)
-      if (publicId) {
-        await deleteFromCloudinary(env, publicId)
-      }
+  .middleware([rateLimitMiddleware])
+  .handler(async ({ context: { auth, env, headers, user, userId } }) => {
+    // Only ever delete this user's own fixed asset. OAuth avatars (Google,
+    // GitHub) are not ours to delete.
+    if (user.image && isOwnAvatarUrl(env, user.image, userId)) {
+      await deleteFromCloudinary(env, avatarPublicId(userId))
     }
 
     // Use Better Auth's updateUser to update DB + refresh session cookie

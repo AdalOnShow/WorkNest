@@ -5,6 +5,10 @@ export const userProfile = sqliteTable('user_profile', {
   id: text('id')
     .primaryKey()
     .references(() => user.id, { onDelete: 'cascade' }),
+  /**
+   * Deprecated: always TEAM_MEMBER and read nowhere. Permissions are per
+   * project (`project_member.role`). Kept to avoid a table rebuild.
+   */
   role: text('role', { enum: ['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER'] })
     .notNull()
     .default('TEAM_MEMBER'),
