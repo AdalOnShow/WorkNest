@@ -16,6 +16,14 @@ CREATE TABLE `account` (
 );
 --> statement-breakpoint
 CREATE INDEX `account_userId_idx` ON `account` (`user_id`);--> statement-breakpoint
+CREATE TABLE `rate_limit` (
+	`id` text PRIMARY KEY NOT NULL,
+	`key` text NOT NULL,
+	`count` integer NOT NULL,
+	`last_request` integer NOT NULL
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `rate_limit_key_unique` ON `rate_limit` (`key`);--> statement-breakpoint
 CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`expires_at` integer NOT NULL,
@@ -90,16 +98,15 @@ CREATE TABLE `project_invitation` (
 CREATE UNIQUE INDEX `project_invitation_token_unique` ON `project_invitation` (`token`);--> statement-breakpoint
 CREATE INDEX `idx_project_invitation_project` ON `project_invitation` (`project_id`);--> statement-breakpoint
 CREATE INDEX `idx_project_invitation_email` ON `project_invitation` (`email`);--> statement-breakpoint
-CREATE INDEX `idx_project_invitation_token` ON `project_invitation` (`token`);--> statement-breakpoint
 CREATE INDEX `idx_project_invitation_status` ON `project_invitation` (`status`);--> statement-breakpoint
 CREATE TABLE `project_member` (
 	`id` text PRIMARY KEY NOT NULL,
 	`project_id` text NOT NULL,
-	`user_id` text,
+	`user_id` text NOT NULL,
 	`role` text DEFAULT 'TEAM_MEMBER' NOT NULL,
 	`created_at` integer NOT NULL,
 	FOREIGN KEY (`project_id`) REFERENCES `project`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE set null
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE INDEX `idx_project_member_project` ON `project_member` (`project_id`);--> statement-breakpoint
@@ -124,7 +131,7 @@ CREATE TABLE `task` (
 );
 --> statement-breakpoint
 CREATE INDEX `idx_task_project` ON `task` (`project_id`);--> statement-breakpoint
-CREATE INDEX `idx_task_assignee` ON `task` (`assignee_id`);--> statement-breakpoint
+CREATE INDEX `idx_task_project_deadline` ON `task` (`project_id`,`deadline`);--> statement-breakpoint
 CREATE INDEX `idx_task_status` ON `task` (`status`);--> statement-breakpoint
 CREATE INDEX `idx_task_project_status_completed` ON `task` (`project_id`,`status`,`completed_at`);--> statement-breakpoint
 CREATE UNIQUE INDEX `unique_project_title` ON `task` (`project_id`,`title`);--> statement-breakpoint
@@ -149,7 +156,7 @@ CREATE TABLE `comment` (
 	FOREIGN KEY (`author_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
-CREATE INDEX `idx_comment_task` ON `comment` (`task_id`);--> statement-breakpoint
+CREATE INDEX `idx_comment_task_created` ON `comment` (`task_id`,`created_at`);--> statement-breakpoint
 CREATE TABLE `notification` (
 	`id` text PRIMARY KEY NOT NULL,
 	`recipient_id` text NOT NULL,
@@ -162,7 +169,7 @@ CREATE TABLE `notification` (
 	FOREIGN KEY (`recipient_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `idx_notification_recipient` ON `notification` (`recipient_id`);--> statement-breakpoint
+CREATE INDEX `idx_notification_recipient_read_created` ON `notification` (`recipient_id`,`read`,`created_at`);--> statement-breakpoint
 CREATE TABLE `activity` (
 	`id` text PRIMARY KEY NOT NULL,
 	`actor_id` text,
@@ -176,7 +183,7 @@ CREATE TABLE `activity` (
 	FOREIGN KEY (`project_id`) REFERENCES `project`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `idx_activity_project` ON `activity` (`project_id`);--> statement-breakpoint
+CREATE INDEX `idx_activity_project_created` ON `activity` (`project_id`,`created_at`);--> statement-breakpoint
 CREATE TABLE `chat_message` (
 	`id` text PRIMARY KEY NOT NULL,
 	`project_id` text NOT NULL,

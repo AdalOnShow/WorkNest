@@ -14,17 +14,17 @@ Track high-level development phases and milestones.
 
 **Goal:** Working TanStack Start project on Cloudflare with D1, Cloudinary, Durable Objects.
 
-| #   | Task                                       | Status | Notes                                          |
-| --- | ------------------------------------------ | ------ | ---------------------------------------------- |
-| 1   | TanStack Start project scaffolded          | [x]    | vite.config.ts with tanstackStart + cloudflare |
-| 2   | Cloudflare Worker configured               | [x]    | wrangler.jsonc, cloudflare vite plugin         |
-| 3   | D1 database created                        | [x]    | Binding "DB" in wrangler.jsonc, dev.db exists  |
-| 4   | Drizzle ORM + Drizzle Kit installed        | [x]    | drizzle-orm@^0.45.2, drizzle-kit@^0.31.10      |
-| 5   | drizzle.config.ts configured (D1-http)     | [x]    | D1-http driver with env credentials            |
-| 6   | D1 binding in wrangler config              | [x]    | d1_databases binding "DB" configured           |
-| 7   | Cloudinary configured (profile photos)     | [x]    | REST API wrapper, worknest/avatars folder      |
+| #   | Task                                       | Status | Notes                                               |
+| --- | ------------------------------------------ | ------ | --------------------------------------------------- |
+| 1   | TanStack Start project scaffolded          | [x]    | vite.config.ts with tanstackStart + cloudflare      |
+| 2   | Cloudflare Worker configured               | [x]    | wrangler.jsonc, cloudflare vite plugin              |
+| 3   | D1 database created                        | [x]    | Binding "DB" in wrangler.jsonc, dev.db exists       |
+| 4   | Drizzle ORM + Drizzle Kit installed        | [x]    | drizzle-orm@^0.45.2, drizzle-kit@^0.31.10           |
+| 5   | drizzle.config.ts configured (D1-http)     | [x]    | D1-http driver with env credentials                 |
+| 6   | D1 binding in wrangler config              | [x]    | d1_databases binding "DB" configured                |
+| 7   | Cloudinary configured (profile photos)     | [x]    | REST API wrapper, worknest/avatars folder           |
 | 8   | Durable Objects configured (ChatRoom only) | [x]    | CHAT_ROOM binding, migration v3; v2 removed old DOs |
-| 9   | Database client (src/db/index.ts)          | [x]    | createDb() with D1 + schema + relations        |
+| 9   | Database client (src/db/index.ts)          | [x]    | createDb() with D1 + schema + relations             |
 
 ---
 
@@ -55,20 +55,20 @@ Track high-level development phases and milestones.
 
 **Goal:** Working auth with email/password (hidden toggle), Google OAuth, GitHub OAuth, sessions, role-based route protection.
 
-| #   | Task                                      | Status | Notes                                         |
-| --- | ----------------------------------------- | ------ | --------------------------------------------- |
-| 25  | auth.ts configured (D1 adapter)           | [x]    | drizzleAdapter with authSchema, session cache |
+| #   | Task                                      | Status | Notes                                           |
+| --- | ----------------------------------------- | ------ | ----------------------------------------------- |
+| 25  | auth.ts configured (D1 adapter)           | [x]    | drizzleAdapter with authSchema, session cache   |
 | 26  | Email + password enabled (behind toggle)  | [x]    | ENABLE_EMAIL_PASSWORD, sign-in only, PBKDF2     |
-| 27  | Google OAuth configured                   | [x]    | Dynamic — enabled if GOOGLE_CLIENT_* set      |
-| 28  | GitHub OAuth configured                   | [x]    | Dynamic — enabled if GITHUB_CLIENT_* set      |
-| 29  | Auth client configured                    | [x]    | src/lib/auth-client.ts                        |
-| 30  | Session management working                | [x]    | Cookie cache (2min), getSession server fn     |
-| 31  | Protected routes (beforeLoad guards)      | [x]    | _authenticated layout redirects to /login     |
-| 32  | Server-side session validation middleware | [x]    | getSession + requireSession server functions  |
+| 27  | Google OAuth configured                   | [x]    | Dynamic — enabled if GOOGLE_CLIENT_* set        |
+| 28  | GitHub OAuth configured                   | [x]    | Dynamic — enabled if GITHUB_CLIENT_* set        |
+| 29  | Auth client configured                    | [x]    | src/lib/auth-client.ts                          |
+| 30  | Session management working                | [x]    | Cookie cache (2min), getSession server fn       |
+| 31  | Protected routes (beforeLoad guards)      | [x]    | _authenticated layout redirects to /login       |
+| 32  | Server-side session validation middleware | [x]    | getSession + requireSession server functions    |
 | 33  | Role-based authorization middleware       | [x]    | authMiddleware + requireProjectRole (lib/authz) |
-| 34  | Login page                                | [x]    | Social login (Google + GitHub) with redirect  |
-| 35  | Signup page                               | [x]    | Via OAuth first sign-in; email is sign-in only |
-| 36  | Auth callback handling                    | [x]    | /api/auth/$ catch-all route                   |
+| 34  | Login page                                | [x]    | Social login (Google + GitHub) with redirect    |
+| 35  | Signup page                               | [x]    | Via OAuth first sign-in; email is sign-in only  |
+| 36  | Auth callback handling                    | [x]    | /api/auth/$ catch-all route                     |
 
 ---
 
@@ -76,21 +76,21 @@ Track high-level development phases and milestones.
 
 **Goal:** Full project CRUD with membership, search, filter, sort, pagination.
 
-| #   | Task                             | Status | Notes                                                        |
-| --- | -------------------------------- | ------ | ------------------------------------------------------------ |
-| 37  | Create project (server function) | [x]    | createProject — inserts project + member                     |
-| 38  | Read project (server function)   | [x]    | getProject — with membership check                           |
-| 39  | Update project (server function) | [x]    | updateProject — name, status, deadline                       |
-| 40  | Delete project (server function) | [x]    | deleteProject — admin-only                                   |
-| 41  | Add project member               | [x]    | addProjectMember                                             |
-| 42  | Remove project member            | [x]    | removeProjectMember                                          |
-| 43  | Project list page                | [x]    | Real D1 data via TanStack Query                              |
-| 44  | Project detail page              | [x]    | Real D1 data via TanStack Query                              |
-| 45  | Search (by name)                 | [x]    | Server-side search via like()                                |
-| 46  | Filter (by status)               | [x]    | Server-side filter via eq()                                  |
-| 47  | Sort                             | [x]    | created / name / deadline (nulls last) / updated, asc or desc  |
-| 48  | Pagination                       | [x]    | Server-side pagination (count + offset)                      |
-| 49  | Permissions enforced             | [x]    | Membership check in getProject, admin check in deleteProject |
+| #   | Task                             | Status | Notes                                                         |
+| --- | -------------------------------- | ------ | ------------------------------------------------------------- |
+| 37  | Create project (server function) | [x]    | createProject — inserts project + member                      |
+| 38  | Read project (server function)   | [x]    | getProject — with membership check                            |
+| 39  | Update project (server function) | [x]    | updateProject — name, status, deadline                        |
+| 40  | Delete project (server function) | [x]    | deleteProject — admin-only                                    |
+| 41  | Add project member               | [x]    | addProjectMember                                              |
+| 42  | Remove project member            | [x]    | removeProjectMember                                           |
+| 43  | Project list page                | [x]    | Real D1 data via TanStack Query                               |
+| 44  | Project detail page              | [x]    | Real D1 data via TanStack Query                               |
+| 45  | Search (by name)                 | [x]    | Server-side search via like()                                 |
+| 46  | Filter (by status)               | [x]    | Server-side filter via eq()                                   |
+| 47  | Sort                             | [x]    | created / name / deadline (nulls last) / updated, asc or desc |
+| 48  | Pagination                       | [x]    | Server-side pagination (count + offset)                       |
+| 49  | Permissions enforced             | [x]    | Membership check in getProject, admin check in deleteProject  |
 
 ---
 
@@ -98,21 +98,21 @@ Track high-level development phases and milestones.
 
 **Goal:** Full task CRUD with assignment, status, priority, deadline, validation, search, filter, sort, pagination.
 
-| #   | Task                                                   | Status | Notes                                          |
-| --- | ------------------------------------------------------ | ------ | ---------------------------------------------- |
-| 50  | Create task                                            | [x]    | createTask                                     |
-| 51  | Read task                                              | [x]    | getTask — with project/assignee joins          |
-| 52  | Update task                                            | [x]    | updateTask — title, status, priority, assignee |
-| 53  | Delete task                                            | [x]    | deleteTask                                     |
-| 54  | Assign task                                            | [x]    | assignTask                                     |
-| 55  | Change task status                                     | [x]    | changeTaskStatus — auto-sets completedAt       |
+| #   | Task                                                   | Status | Notes                                                          |
+| --- | ------------------------------------------------------ | ------ | -------------------------------------------------------------- |
+| 50  | Create task                                            | [x]    | createTask                                                     |
+| 51  | Read task                                              | [x]    | getTask — with project/assignee joins                          |
+| 52  | Update task                                            | [x]    | updateTask — title, status, priority, assignee                 |
+| 53  | Delete task                                            | [x]    | deleteTask                                                     |
+| 54  | Assign task                                            | [x]    | assignTask                                                     |
+| 55  | Change task status                                     | [x]    | changeTaskStatus — auto-sets completedAt                       |
 | 56  | Task validation                                        | [x]    | Duplicate title, past deadline, completed-reassign block, RBAC |
-| 57  | Task list page                                         | [x]    | Real D1 data via TanStack Query                |
-| 58  | Task detail page                                       | [x]    | Real D1 data with comments                     |
-| 59  | Search (by title)                                      | [x]    | Server-side search via like()                  |
-| 60  | Filter (project, status, priority, assignee, deadline) | [x]    | Server-side; assignee via task_assignee        |
-| 61  | Sort                                                   | [x]    | created / deadline / priority / updated        |
-| 62  | Pagination                                             | [x]    | Server-side pagination                         |
+| 57  | Task list page                                         | [x]    | Real D1 data via TanStack Query                                |
+| 58  | Task detail page                                       | [x]    | Real D1 data with comments                                     |
+| 59  | Search (by title)                                      | [x]    | Server-side search via like()                                  |
+| 60  | Filter (project, status, priority, assignee, deadline) | [x]    | Server-side; assignee via task_assignee                        |
+| 61  | Sort                                                   | [x]    | created / deadline / priority / updated                        |
+| 62  | Pagination                                             | [x]    | Server-side pagination                                         |
 
 ---
 
@@ -120,17 +120,17 @@ Track high-level development phases and milestones.
 
 **Goal:** KPI cards, charts, workload, progress, deadlines.
 
-| #   | Task                           | Status | Notes                                                |
-| --- | ------------------------------ | ------ | ---------------------------------------------------- |
-| 63  | KPI cards (server query)       | [x]    | Real D1 counts (projects, tasks, completed, overdue) |
-| 64  | Project progress chart         | [x]    | Per-project % complete meters (top 6 by task count)  |
-| 65  | Tasks by priority chart        | [x]    | Dynamic CSS bar chart with real data                 |
-| 66  | Task status distribution chart | [x]    | Dynamic circle chart with real data                  |
-| 67  | Team productivity chart        | [x]    | Recharts bars: tasks completed per day, last 14 days |
+| #   | Task                           | Status | Notes                                                      |
+| --- | ------------------------------ | ------ | ---------------------------------------------------------- |
+| 63  | KPI cards (server query)       | [x]    | Real D1 counts (projects, tasks, completed, overdue)       |
+| 64  | Project progress chart         | [x]    | Per-project % complete meters (top 6 by task count)        |
+| 65  | Tasks by priority chart        | [x]    | Dynamic CSS bar chart with real data                       |
+| 66  | Task status distribution chart | [x]    | Dynamic circle chart with real data                        |
+| 67  | Team productivity chart        | [x]    | Recharts bars: tasks completed per day, last 14 days       |
 | 68  | Member workload section        | [x]    | Recharts stacked bars: open tasks per assignee by priority |
-| 69  | Recent activities section      | [x]    | Real D1 data from activity table                     |
-| 70  | Upcoming deadlines section     | [x]    | Real D1 data with task count per project             |
-| 71  | High priority tasks section    | [x]    | Dashboard widgets: My Tasks + High Priority          |
+| 69  | Recent activities section      | [x]    | Real D1 data from activity table                           |
+| 70  | Upcoming deadlines section     | [x]    | Real D1 data with task count per project                   |
+| 71  | High priority tasks section    | [x]    | Dashboard widgets: My Tasks + High Priority                |
 
 ---
 
@@ -141,8 +141,8 @@ Track high-level development phases and milestones.
 | #   | Task                               | Status | Notes                                                                       |
 | --- | ---------------------------------- | ------ | --------------------------------------------------------------------------- |
 | 72  | Add comment                        | [x]    | addTaskComment server function                                              |
-| 73  | Edit comment                       | [x]    | updateTaskComment — author only; "(edited)" from updatedAt > createdAt     |
-| 74  | Delete comment                     | [x]    | deleteTaskComment — author or project ADMIN/PM; ConfirmDialog              |
+| 73  | Edit comment                       | [x]    | updateTaskComment — author only; "(edited)" from updatedAt > createdAt      |
+| 74  | Delete comment                     | [x]    | deleteTaskComment — author or project ADMIN/PM; ConfirmDialog               |
 | 75  | Activity logging (server)          | [x]    | logActivity in src/lib/activity.ts (D1 only), project/task/invite mutations |
 | 76  | Notification creation (server)     | [x]    | notifyUsers in src/lib/activity.ts (D1 only, skips actor, dedupes)          |
 | 77  | Notification UI (bell, list, read) | [x]    | Real D1 data + mark read mutations                                          |
@@ -166,14 +166,14 @@ Track high-level development phases and milestones.
 
 **Goal:** Real-time chat per project. One `ChatRoom` DO per project; messages in D1. Notifications and activities are NOT real-time (D1 + TanStack Query refetch); the old Notification/Activity DOs were removed.
 
-| #   | Task                                    | Status | Notes                                            |
-| --- | --------------------------------------- | ------ | ------------------------------------------------ |
-| 97  | chat_message schema + migration         | [x]    | 0004_chat_message; index (project, created, id)  |
-| 98  | getMessages server function             | [x]    | src/server-functions/chat.ts, keyset 30/page     |
-| 99  | ChatRoom Durable Object                 | [x]    | src/chat/ChatRoom.ts, CHAT_ROOM binding (v3)     |
-| 100 | Chat WebSocket route                    | [x]    | src/chat/upgrade.ts; session, Origin, membership |
-| 101 | useChatRoom client hook                 | [x]    | src/hooks/use-chat-room.ts; backoff, cache merge |
-| 102 | Messages page rebuild                   | [x]    | src/components/chat/*, messages.tsx rebuilt      |
+| #   | Task                                    | Status | Notes                                                                                                            |
+| --- | --------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
+| 97  | chat_message schema + migration         | [x]    | 0004_chat_message; index (project, created, id)                                                                  |
+| 98  | getMessages server function             | [x]    | src/server-functions/chat.ts, keyset 30/page                                                                     |
+| 99  | ChatRoom Durable Object                 | [x]    | src/chat/ChatRoom.ts, CHAT_ROOM binding (v3)                                                                     |
+| 100 | Chat WebSocket route                    | [x]    | src/chat/upgrade.ts; session, Origin, membership                                                                 |
+| 101 | useChatRoom client hook                 | [x]    | src/hooks/use-chat-room.ts; backoff, cache merge                                                                 |
+| 102 | Messages page rebuild                   | [x]    | src/components/chat/*, messages.tsx rebuilt                                                                      |
 | 103 | Verify (build, 2 sessions, permissions) | [x]    | Prod build via wrangler dev: handshake 401/403/404/426, 2-client protocol, pagination, removal (4003), reconnect |
 
 ---
@@ -182,20 +182,20 @@ Track high-level development phases and milestones.
 
 **Goal:** Theme, responsive design, accessibility, loading/error/empty states, performance.
 
-| #   | Task                                   | Status | Notes                                      |
-| --- | -------------------------------------- | ------ | ------------------------------------------ |
-| 84  | styles.css updated (Tomorro Dark Neon) | [x]    | Full light + dark mode CSS variables       |
-| 85  | Dark mode                              | [x]    | next-themes provider, .dark class          |
-| 86  | Light mode                             | [x]    | :root variables defined                    |
-| 87  | System preference mode                 | [x]    | next-themes with enableSystem              |
-| 88  | Desktop layout                         | [x]    | Sidebar + header + mobile nav              |
-| 89  | Tablet layout                          | [x]    | Icon-rail sidebar md–lg, narrower chat list |
-| 90  | Mobile layout                          | [x]    | Bottom nav, stacked layouts                |
-| 91  | Loading states (all pages)             | [x]    | LoadingState component wired to all pages  |
-| 92  | Error states (all pages)               | [x]    | ErrorState component wired to detail pages |
-| 93  | Empty states (all pages)               | [x]    | EmptyState component wired to list pages   |
-| 94  | Confirmation dialogs                   | [x]    | ConfirmDialog on delete actions            |
-| 95  | Accessibility audit                    | [x]    | AA text contrast tokens, labels, focus, hydration |
+| #   | Task                                   | Status | Notes                                               |
+| --- | -------------------------------------- | ------ | --------------------------------------------------- |
+| 84  | styles.css updated (Tomorro Dark Neon) | [x]    | Full light + dark mode CSS variables                |
+| 85  | Dark mode                              | [x]    | next-themes provider, .dark class                   |
+| 86  | Light mode                             | [x]    | :root variables defined                             |
+| 87  | System preference mode                 | [x]    | next-themes with enableSystem                       |
+| 88  | Desktop layout                         | [x]    | Sidebar + header + mobile nav                       |
+| 89  | Tablet layout                          | [x]    | Icon-rail sidebar md–lg, narrower chat list         |
+| 90  | Mobile layout                          | [x]    | Bottom nav, stacked layouts                         |
+| 91  | Loading states (all pages)             | [x]    | LoadingState component wired to all pages           |
+| 92  | Error states (all pages)               | [x]    | ErrorState component wired to detail pages          |
+| 93  | Empty states (all pages)               | [x]    | EmptyState component wired to list pages            |
+| 94  | Confirmation dialogs                   | [x]    | ConfirmDialog on delete actions                     |
+| 95  | Accessibility audit                    | [x]    | AA text contrast tokens, labels, focus, hydration   |
 | 96  | Performance review                     | [x]    | Lazy Recharts chunk, staleTime 30s, composite index |
 
 ---
@@ -204,18 +204,18 @@ Track high-level development phases and milestones.
 
 **Goal:** Production-ready on Cloudflare.
 
-| #   | Task                        | Status | Notes                                        |
-| --- | --------------------------- | ------ | -------------------------------------------- |
-| 108 | Production D1 database      | [ ]    |                                              |
-| 109 | Production Cloudinary       | [ ]    | Set CLOUDINARY_* secrets via wrangler        |
-| 110 | Production Durable Objects  | [ ]    |                                              |
-| 111 | Production secrets set      | [~]    | wrangler.jsonc secrets.list defined, not set |
-| 112 | OAuth callback URLs updated | [~]    | BETTER_AUTH_URL=worknest.sadal.dev in vars   |
-| 113 | Custom domain configured    | [x]    | worknest.sadal.dev in wrangler routes        |
-| 114 | Build + deploy successful   | [ ]    |                                              |
+| #   | Task                        | Status | Notes                                         |
+| --- | --------------------------- | ------ | --------------------------------------------- |
+| 108 | Production D1 database      | [ ]    |                                               |
+| 109 | Production Cloudinary       | [ ]    | Set CLOUDINARY_* secrets via wrangler         |
+| 110 | Production Durable Objects  | [ ]    |                                               |
+| 111 | Production secrets set      | [~]    | wrangler.jsonc secrets.list defined, not set  |
+| 112 | OAuth callback URLs updated | [~]    | BETTER_AUTH_URL=worknest.sadal.dev in vars    |
+| 113 | Custom domain configured    | [x]    | worknest.sadal.dev in wrangler routes         |
+| 114 | Build + deploy successful   | [ ]    |                                               |
 | 115 | README written              | [x]    | Setup, demo login, env, scripts, deploy steps |
-| 116 | Demo credentials provided   | [x]    | pnpm db:seed — 3 accounts, pw worknest-demo  |
-| 117 | Final QA pass               | [ ]    |                                              |
+| 116 | Demo credentials provided   | [x]    | pnpm db:seed — 3 accounts, pw worknest-demo   |
+| 117 | Final QA pass               | [ ]    |                                               |
 
 ---
 
@@ -331,6 +331,6 @@ Phase 2 excludes the n/a attachment row.
 
 **Master plan F0–F8 complete.** Every in-scope task is done.
 
-**Remaining (out of scope until deployment):** tasks 108–112, 114 and 117. These are the production D1, Cloudinary, Durable Objects, secrets, OAuth callbacks, the first deploy, and a final QA pass on production. `README.md` → *Deploying to Cloudflare* lists the exact commands.
+**Remaining (out of scope until deployment):** tasks 108–112, 114 and 117. These are the production D1, Cloudinary, Durable Objects, secrets, OAuth callbacks, the first deploy, and a final QA pass on production. `README.md` → _Deploying to Cloudflare_ lists the exact commands.
 
-Migrations were squashed into `migrations/0000_version_1.sql`. Production had applied the old 0000–0005, so run `scripts/prod-upgrade-to-version1.sql` there once before the next `pnpm deploy` (see README → *Deploying to Cloudflare*).
+Migrations were squashed into `migrations/0000_version_1.sql`. Production had applied the old 0000–0005, so run `scripts/prod-upgrade-to-version1.sql` there once before the next `pnpm deploy` (see README → _Deploying to Cloudflare_).

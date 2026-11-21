@@ -544,7 +544,7 @@ pnpm drizzle-kit studio
 
 ---
 
-## Current state after `0001_hardening` (authoritative)
+## Current state (authoritative)
 
 This section is the source of truth where the sections above disagree with it.
 The code in `src/db/schema/*` is authoritative over both.
@@ -553,7 +553,7 @@ The code in `src/db/schema/*` is authoritative over both.
 
 | Table            | Column         | On parent delete | Notes                                                                                      |
 | ---------------- | -------------- | ---------------- | ------------------------------------------------------------------------------------------ |
-| `project_member` | `user_id`      | **CASCADE**      | `NOT NULL` since 0001. Was `SET NULL`, which left ghost memberships.                       |
+| `project_member` | `user_id`      | **CASCADE**      | `NOT NULL`. Was `SET NULL`, which left ghost memberships.                                  |
 | `project_member` | `project_id`   | CASCADE          | Unique `(project_id, user_id)`.                                                            |
 | `task`           | `project_id`   | CASCADE          | Unique `(project_id, title)`.                                                              |
 | `task`           | `creator_id`   | SET NULL         |                                                                                            |
@@ -582,6 +582,6 @@ are enforced by zod in every server function (`src/lib/validation.ts`).
 
 ### Migration rules (D1)
 
-- Never edit an applied migration. `0000_version_1.sql` and `0001_hardening.sql` are applied.
+- Never edit an applied migration. `0000_version_1.sql` is applied. The hardening changes were squashed into it, and production gets them from the one-time `scripts/prod-upgrade-hardening.sql`.
 - D1 keeps foreign keys enforced during migrations, and `PRAGMA foreign_keys=OFF` has no effect. Dropping a table during a drizzle "table rebuild" runs an implicit `DELETE`, which **fires ON DELETE CASCADE on child tables**. Before accepting a generated migration that rebuilds a table (`__new_<table>`), check whether any table references it. If one does, don't rebuild it. That is why `task.assignee_id` is kept: rebuilding `task` would delete every comment and assignee.
 - When tightening a column to `NOT NULL`, add a hand-written cleanup `DELETE` / `UPDATE` before the copy.
