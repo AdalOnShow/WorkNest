@@ -299,6 +299,46 @@
   );
 }
 
+/*
+ * 1px hairline that follows the chamfer, diagonals included. An inset
+ * box-shadow gets clipped away at the cut corners, so this draws the frame
+ * as an overlay ring (outer chamfer minus inner chamfer, evenodd) instead.
+ * The inner cut is `--cut - (2 - √2)px` so the diagonal stays 1px thick.
+ * Leaves the element's own background alone, so bg/hover classes still work.
+ */
+@utility chamfer-frame {
+  position: relative;
+  --frame-cut: calc(var(--cut) - 0.586px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-color: var(--frame-color, var(--color-border));
+    transition: background-color 150ms ease-out;
+    clip-path: polygon(
+      evenodd,
+      var(--cut) 0,
+      100% 0,
+      100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%,
+      0 100%,
+      0 var(--cut),
+      var(--cut) 0,
+      calc(1px + var(--frame-cut)) 1px,
+      calc(1px + var(--frame-cut)) 1px,
+      1px calc(1px + var(--frame-cut)),
+      1px calc(100% - 1px),
+      calc(100% - 1px - var(--frame-cut)) calc(100% - 1px),
+      calc(100% - 1px) calc(100% - 1px - var(--frame-cut)),
+      calc(100% - 1px) 1px,
+      calc(1px + var(--frame-cut)) 1px,
+      var(--cut) 0
+    );
+  }
+}
+
 /* Typography utilities */
 
 @utility font-headline {

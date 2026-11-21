@@ -105,7 +105,10 @@ function MembersPage() {
                       Email
                     </TableHead>
                     <TableHead className="text-muted-foreground font-semibold">
-                      Role
+                      Highest role
+                    </TableHead>
+                    <TableHead className="text-muted-foreground font-semibold">
+                      Shared projects
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -132,10 +135,11 @@ function MembersPage() {
                       </TableCell>
                       <TableCell>
                         <span className="inline-flex rounded-md border border-border px-2 py-0.5 text-xs font-semibold text-card-foreground">
-                          {member.role === null
-                            ? 'No role'
-                            : ROLE_LABELS[member.role]}
+                          {ROLE_LABELS[member.role]}
                         </span>
+                      </TableCell>
+                      <TableCell className="font-mono text-[11px] text-muted-foreground">
+                        {member.projectCount}
                       </TableCell>
                     </TableRow>
                   ))}

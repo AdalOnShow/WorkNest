@@ -17,7 +17,7 @@ const buttonVariants = cva(
         destructive:
           'chamfer rounded-none bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-inset focus-visible:ring-white/40',
         outline:
-          'chamfer rounded-none bg-background shadow-[inset_0_0_0_1px_var(--color-border)] hover:bg-muted focus-visible:ring-inset',
+          'chamfer chamfer-frame rounded-none bg-background hover:bg-muted focus-visible:ring-inset',
         secondary:
           'chamfer rounded-none bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-inset',
         ghost:
