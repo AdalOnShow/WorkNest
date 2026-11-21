@@ -6,6 +6,8 @@ import { HowItWorks } from '@/components/landing/how-it-works'
 import { Stats } from '@/components/landing/stats'
 import { FAQ } from '@/components/landing/faq'
 import { CTA } from '@/components/landing/cta'
+import { Permissions } from '@/components/landing/permissions'
+import { UnderTheHood } from '@/components/landing/under-the-hood'
 import { Footer } from '@/components/landing/footer'
 import { getSession } from '#/server-functions/auth'
 
@@ -31,8 +33,10 @@ function LandingPage() {
         <Hero />
         <HowItWorks />
         <Features />
+        <Permissions />
         <Stats />
         <FAQ />
+        <UnderTheHood />
         <CTA />
       </main>
       <Footer />

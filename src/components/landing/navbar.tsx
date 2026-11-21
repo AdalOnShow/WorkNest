@@ -58,6 +58,7 @@ function AuthAwareAction({ className }: { className?: string }) {
 const LANDING_LINKS = [
   { id: 'platform', label: 'Platform' },
   { id: 'features', label: 'Features' },
+  { id: 'access', label: 'Roles' },
   { id: 'faq', label: 'FAQ' },
 ]
 
