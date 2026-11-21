@@ -15,6 +15,7 @@ import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { Loader2, Menu, Sprout, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { cn } from '#/lib/utils'
+import { ScrambleText } from './scramble-text'
 import { toast } from 'sonner'
 
 interface NavbarProps {
@@ -61,6 +62,31 @@ const LANDING_LINKS = [
   { id: 'access', label: 'Roles' },
   { id: 'faq', label: 'FAQ' },
 ]
+
+/** Nav button whose label decodes when the button is hovered or focused. */
+function DecodeLink({
+  label,
+  onClick,
+  className,
+}: {
+  label: string
+  onClick: () => void
+  className?: string
+}) {
+  const [play, setPlay] = useState(0)
+  const replay = () => setPlay((n) => n + 1)
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onPointerEnter={(e) => e.pointerType === 'mouse' && replay()}
+      onFocus={(e) => e.currentTarget.matches(':focus-visible') && replay()}
+      className={cn('cursor-pointer', className)}
+    >
+      <ScrambleText text={label} play={play} />
+    </button>
+  )
+}
 
 export function Navbar({
   isAuthenticated = false,
@@ -145,14 +171,12 @@ export function Navbar({
           {isLandingPage && !isAuthenticated && (
             <div className="hidden items-center gap-1 md:flex">
               {LANDING_LINKS.map((l) => (
-                <button
+                <DecodeLink
                   key={l.id}
-                  type="button"
+                  label={l.label}
                   onClick={() => scrollToSection(l.id)}
                   className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {l.label}
-                </button>
+                />
               ))}
             </div>
           )}
@@ -236,14 +260,12 @@ export function Navbar({
             className="md:hidden py-4 space-y-4"
           >
             {LANDING_LINKS.map((l) => (
-              <button
+              <DecodeLink
                 key={l.id}
-                type="button"
+                label={l.label}
                 onClick={() => scrollToSection(l.id)}
                 className="block w-full rounded-md px-4 py-2 text-left text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                {l.label}
-              </button>
+              />
             ))}
 
             <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-border">

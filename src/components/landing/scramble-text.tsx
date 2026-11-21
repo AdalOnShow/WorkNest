@@ -14,7 +14,15 @@ const randomGlyph = () =>
  * left to right. Each glyph sits over an invisible copy of the real
  * character, so the layout never shifts.
  */
-function ScrambleWord({ word }: { word: string }) {
+function ScrambleWord({
+  word,
+  play,
+  selfHover,
+}: {
+  word: string
+  play?: number
+  selfHover: boolean
+}) {
   const chars = Array.from(word)
   // null = show the real character; string = show this glyph instead
   const [glyphs, setGlyphs] = useState<Array<string | null>>(() =>
@@ -41,10 +49,17 @@ function ScrambleWord({ word }: { word: string }) {
     }, FRAME_MS)
   }
 
+  // A parent bumps `play` to start the effect (e.g. hovering a whole link)
+  const runRef = useRef(run)
+  runRef.current = run
+  useEffect(() => {
+    if (play) runRef.current()
+  }, [play])
+
   return (
     <span
       aria-hidden="true"
-      onPointerEnter={run}
+      onPointerEnter={selfHover ? run : undefined}
       className="inline-block whitespace-nowrap"
     >
       {chars.map((char, i) => {
@@ -68,20 +83,31 @@ function ScrambleWord({ word }: { word: string }) {
   )
 }
 
-/** Text where each word scrambles and decodes on its own when hovered. */
+/**
+ * Text where each word scrambles and decodes on its own when hovered.
+ * Pass `play` (a counter the parent increments) to drive every word at once
+ * from an outer element instead, such as a nav link.
+ */
 export function ScrambleText({
   text,
   className,
+  play,
 }: {
   text: string
   className?: string
+  play?: number
 }) {
   const words = text.split(' ')
   return (
-    <span aria-label={text} className={cn('cursor-default', className)}>
+    <span className={cn(play === undefined && 'cursor-default', className)}>
+      <span className="sr-only">{text}</span>
       {words.map((word, i) => (
         <span key={i}>
-          <ScrambleWord word={word} />
+          <ScrambleWord
+            word={word}
+            play={play}
+            selfHover={play === undefined}
+          />
           {i < words.length - 1 && ' '}
         </span>
       ))}
