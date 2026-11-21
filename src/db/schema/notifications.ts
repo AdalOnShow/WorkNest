@@ -9,7 +9,12 @@ export const notification = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     type: text('type', {
-      enum: ['TASK_ASSIGNED', 'TASK_STATUS_UPDATED', 'TASK_DUE_SOON'],
+      enum: [
+        'TASK_ASSIGNED',
+        'TASK_STATUS_UPDATED',
+        'TASK_DUE_SOON',
+        'TASK_COMMENT_ADDED',
+      ],
     }).notNull(),
     title: text('title').notNull(),
     message: text('message').notNull(),
@@ -18,6 +23,9 @@ export const notification = sqliteTable(
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
   (table) => ({
-    idxRecipient: index('idx_notification_recipient').on(table.recipientId),
+    // Bell (unread count) and the paginated list, newest first.
+    idxRecipientReadCreated: index(
+      'idx_notification_recipient_read_created',
+    ).on(table.recipientId, table.read, table.createdAt),
   }),
 )

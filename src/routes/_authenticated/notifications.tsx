@@ -1,4 +1,5 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
 import { EmptyState } from '#/components/ui/empty-state'
 import { LoadingState } from '#/components/ui/loading-state'
@@ -60,27 +61,26 @@ function NotificationsPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="headline-sm text-foreground">Notifications</h1>
-            <p className="body-md text-muted-foreground mt-1">
-              {unreadCount > 0
-                ? `${unreadCount} unread notifications`
-                : 'All caught up'}
-            </p>
-          </div>
-          {unreadCount > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => markAllReadMutation.mutate()}
-              disabled={markAllReadMutation.isPending}
-              className="border-border text-card-foreground hover:bg-accent"
-            >
-              <Check className="w-4 h-4" />
-              Mark all read
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          title="Notifications"
+          description={
+            unreadCount > 0
+              ? `${unreadCount} unread ${unreadCount === 1 ? 'notification' : 'notifications'}`
+              : 'All caught up'
+          }
+          actions={
+            unreadCount > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => markAllReadMutation.mutate()}
+                disabled={markAllReadMutation.isPending}
+              >
+                <Check className="size-4" />
+                Mark all read
+              </Button>
+            )
+          }
+        />
 
         {isLoading ? (
           <LoadingState variant="list" />
@@ -88,20 +88,19 @@ function NotificationsPage() {
           <EmptyState
             icon={Bell}
             title="No notifications"
-            description="You're all caught up!"
+            description="You're all caught up"
           />
         ) : (
           <>
-            <div className="bg-card border border-border rounded-[14px] overflow-hidden">
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
               {items.map((notification) => (
                 <div
                   key={notification.id}
                   role="button"
                   tabIndex={0}
                   className={cn(
-                    'flex items-start gap-4 p-5 border-b border-border/50 last:border-0 hover:bg-accent/30 transition-colors cursor-pointer',
-                    !notification.read &&
-                    'border-l-2 border-l-primary bg-accent/20',
+                    'flex items-start gap-4 px-5 py-4 border-b border-border last:border-0 hover:bg-accent/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:bg-accent',
+                    !notification.read && 'bg-accent/30',
                   )}
                   onClick={() => {
                     if (!notification.read) {
@@ -121,7 +120,7 @@ function NotificationsPage() {
                   <div
                     className={cn(
                       'w-2 h-2 rounded-full mt-2 shrink-0',
-                      notification.read ? 'bg-muted-foreground' : 'bg-primary',
+                      notification.read ? 'bg-transparent' : 'bg-primary',
                     )}
                   />
                   <div className="flex-1 min-w-0">
@@ -130,7 +129,7 @@ function NotificationsPage() {
                         'body-sm',
                         notification.read
                           ? 'text-card-foreground'
-                          : 'text-foreground font-medium',
+                          : 'text-foreground font-semibold',
                       )}
                     >
                       {notification.title}
@@ -138,7 +137,7 @@ function NotificationsPage() {
                     <p className="text-sm text-muted-foreground mt-0.5">
                       {notification.message}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="font-mono text-xs text-muted-foreground mt-1">
                       {notification.timeAgo}
                     </p>
                   </div>
@@ -146,7 +145,8 @@ function NotificationsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-accent shrink-0"
+                      aria-label={`Mark "${notification.title}" as read`}
+                      className="size-8 text-muted-foreground hover:text-foreground hover:bg-accent shrink-0"
                       onClick={(e) => {
                         e.stopPropagation()
                         markReadMutation.mutate(notification.id)

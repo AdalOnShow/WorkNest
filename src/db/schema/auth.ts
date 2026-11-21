@@ -58,6 +58,8 @@ export const account = sqliteTable(
       mode: 'timestamp_ms',
     }),
     scope: text('scope'),
+    /** Credential (email/password) accounts only. See src/lib/password.ts. */
+    password: text('password'),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
@@ -85,3 +87,11 @@ export const verification = sqliteTable(
   },
   (table) => [index('verification_identifier_idx').on(table.identifier)],
 )
+
+/** Better Auth rate-limit counters (storage: "database"; shared across isolates). */
+export const rateLimit = sqliteTable('rate_limit', {
+  id: text('id').primaryKey(),
+  key: text('key').notNull().unique(),
+  count: integer('count').notNull(),
+  lastRequest: integer('last_request').notNull(),
+})

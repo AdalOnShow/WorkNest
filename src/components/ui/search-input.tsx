@@ -12,7 +12,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
         <input
           ref={ref}
           className={cn(
-            'w-full h-10 pl-10 pr-4 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-transparent transition-all',
+            'w-full h-10 pl-10 pr-4 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-transparent transition-[border-color,box-shadow]',
             className,
           )}
           {...props}

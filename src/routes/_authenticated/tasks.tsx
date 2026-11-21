@@ -1,33 +1,32 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
 import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { EmptyState } from '#/components/ui/empty-state'
 import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
 import { Pagination } from '#/components/ui/pagination-controls'
 import { SearchInput } from '#/components/ui/search-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '#/components/ui/select'
-import { StatusBadge } from '#/components/ui/status-badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
+import { CreateTaskDialog } from '#/components/tasks/create-task-dialog'
+import { TaskTable } from '#/components/tasks/task-table'
+import { FilterControls } from '#/components/ui/filter-controls'
+import { listProjects } from '#/server-functions/projects'
 import { deleteTask, listTasks } from '#/server-functions/tasks'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { CheckSquare, Plus, Trash2 } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
+import { CheckSquare, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+
+type TaskStatusFilter = 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
+type TaskPriorityFilter = 'HIGH' | 'MEDIUM' | 'LOW'
 
 export const Route = createFileRoute('/_authenticated/tasks')({
   component: TasksPage,
@@ -41,27 +40,67 @@ function TasksPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
+  const [projectFilter, setProjectFilter] = useState('all')
+  const [assigneeFilter, setAssigneeFilter] = useState('all')
+  const [deadlineFilter, setDeadlineFilter] = useState('all')
+  const [sort, setSort] = useState('created:desc')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [pickProjectOpen, setPickProjectOpen] = useState(false)
+  const [createProjectId, setCreateProjectId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(t)
+  }, [search])
+
+  const [sortKey, sortDir] = sort.split(':') as [
+    'created' | 'deadline' | 'priority' | 'updated',
+    'asc' | 'desc',
+  ]
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['tasks', search, statusFilter, priorityFilter, page],
+    queryKey: [
+      'tasks',
+      debouncedSearch,
+      statusFilter,
+      priorityFilter,
+      projectFilter,
+      assigneeFilter,
+      deadlineFilter,
+      sort,
+      page,
+    ],
     queryFn: () =>
       listTasks({
         data: {
-          search,
-          status: statusFilter,
-          priority: priorityFilter,
+          search: debouncedSearch,
+          status: statusFilter as 'all' | TaskStatusFilter,
+          priority: priorityFilter as 'all' | TaskPriorityFilter,
+          projectId: projectFilter === 'all' ? undefined : projectFilter,
+          assigneeId: assigneeFilter === 'all' ? undefined : assigneeFilter,
+          deadline: deadlineFilter as 'all' | 'overdue' | 'week' | 'none',
+          sort: sortKey,
+          dir: sortDir,
           page,
           pageSize: 10,
         },
       }),
   })
 
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects', 'all-for-tasks'],
+    queryFn: () => listProjects({ data: { pageSize: 100 } }),
+  })
+  const projects = projectsData?.items ?? []
+
   const deleteMutation = useMutation({
     mutationFn: (taskId: string) => deleteTask({ data: { taskId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Task deleted')
       setDeleteId(null)
     },
@@ -75,7 +114,11 @@ function TasksPage() {
   const isRecoveringPage = Boolean(data && page > totalPages)
 
   useEffect(() => {
-    if (data?.totalPages !== undefined && page > data.totalPages && data.totalPages > 0) {
+    if (
+      data?.totalPages !== undefined &&
+      page > data.totalPages &&
+      data.totalPages > 0
+    ) {
       setPage(data.totalPages)
     }
   }, [data?.totalPages, page])
@@ -86,22 +129,23 @@ function TasksPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="headline-sm text-foreground">Tasks</h1>
-            <p className="body-md text-muted-foreground mt-1">
-              Manage all tasks across projects
-            </p>
-          </div>
-          <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
-            <Plus className="w-4 h-4" />
-            New Task
-          </Button>
-        </div>
+        <PageHeader
+          title="Tasks"
+          description="Tasks from every project you belong to"
+          actions={
+            <Button
+              disabled={projects.length === 0}
+              onClick={() => setPickProjectOpen(true)}
+            >
+              <Plus className="size-4" />
+              New task
+            </Button>
+          }
+        />
 
         <div className="flex items-center gap-3 flex-wrap">
           <SearchInput
-            placeholder="Search tasks..."
+            placeholder="Search tasks"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
@@ -109,46 +153,93 @@ function TasksPage() {
             }}
             className="max-w-sm"
           />
-          <Select
-            value={statusFilter}
-            onValueChange={(v) => {
-              setStatusFilter(v)
-              setPage(1)
-            }}
-          >
-            <SelectTrigger
-              aria-label="Filter tasks by status"
-              className="w-35 bg-card border-border text-foreground rounded-lg"
-            >
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border">
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="TODO">To Do</SelectItem>
-              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={priorityFilter}
-            onValueChange={(v) => {
-              setPriorityFilter(v)
-              setPage(1)
-            }}
-          >
-            <SelectTrigger
-              aria-label="Filter tasks by priority"
-              className="w-35 bg-card border-border text-foreground rounded-lg"
-            >
-              <SelectValue placeholder="Priority" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border">
-              <SelectItem value="all">All Priority</SelectItem>
-              <SelectItem value="HIGH">High</SelectItem>
-              <SelectItem value="MEDIUM">Medium</SelectItem>
-              <SelectItem value="LOW">Low</SelectItem>
-            </SelectContent>
-          </Select>
+          <FilterControls
+            filters={[
+              {
+                label: 'Filter tasks by status',
+                value: statusFilter,
+                onChange: (v) => {
+                  setStatusFilter(v)
+                  setPage(1)
+                },
+                options: [
+                  { label: 'All statuses', value: 'all' },
+                  { label: 'To do', value: 'TODO' },
+                  { label: 'In progress', value: 'IN_PROGRESS' },
+                  { label: 'Completed', value: 'COMPLETED' },
+                ],
+              },
+              {
+                label: 'Filter tasks by priority',
+                value: priorityFilter,
+                onChange: (v) => {
+                  setPriorityFilter(v)
+                  setPage(1)
+                },
+                options: [
+                  { label: 'All priorities', value: 'all' },
+                  { label: 'High', value: 'HIGH' },
+                  { label: 'Medium', value: 'MEDIUM' },
+                  { label: 'Low', value: 'LOW' },
+                ],
+              },
+              {
+                label: 'Filter tasks by project',
+                value: projectFilter,
+                onChange: (v) => {
+                  setProjectFilter(v)
+                  setPage(1)
+                },
+                options: [
+                  { label: 'All projects', value: 'all' },
+                  ...projects.map((p) => ({ label: p.name, value: p.id })),
+                ],
+              },
+              {
+                label: 'Filter tasks by assignee',
+                value: assigneeFilter,
+                onChange: (v) => {
+                  setAssigneeFilter(v)
+                  setPage(1)
+                },
+                options: [
+                  { label: 'All assignees', value: 'all' },
+                  { label: 'Assigned to me', value: 'me' },
+                ],
+              },
+              {
+                label: 'Filter tasks by deadline',
+                value: deadlineFilter,
+                onChange: (v) => {
+                  setDeadlineFilter(v)
+                  setPage(1)
+                },
+                options: [
+                  { label: 'Any deadline', value: 'all' },
+                  { label: 'Overdue', value: 'overdue' },
+                  { label: 'Due this week', value: 'week' },
+                  { label: 'No deadline', value: 'none' },
+                ],
+              },
+              {
+                label: 'Sort tasks',
+                value: sort,
+                onChange: (v) => {
+                  setSort(v)
+                  setPage(1)
+                },
+                options: [
+                  { label: 'Newest first', value: 'created:desc' },
+                  { label: 'Oldest first', value: 'created:asc' },
+                  { label: 'Deadline (soonest)', value: 'deadline:asc' },
+                  { label: 'Deadline (latest)', value: 'deadline:desc' },
+                  { label: 'Priority (high first)', value: 'priority:desc' },
+                  { label: 'Priority (low first)', value: 'priority:asc' },
+                  { label: 'Recently updated', value: 'updated:desc' },
+                ],
+              },
+            ]}
+          />
         </div>
 
         {isLoading || isRecoveringPage ? (
@@ -164,97 +255,19 @@ function TasksPage() {
             icon={CheckSquare}
             title="No tasks found"
             description={
-              search || statusFilter !== 'all' || priorityFilter !== 'all'
+              search ||
+              statusFilter !== 'all' ||
+              priorityFilter !== 'all' ||
+              projectFilter !== 'all' ||
+              assigneeFilter !== 'all' ||
+              deadlineFilter !== 'all'
                 ? 'Try adjusting your filters'
                 : 'Create your first task to get started'
             }
           />
         ) : (
           <>
-            <div className="bg-card border border-border rounded-[14px] overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground font-medium">
-                      Title
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Project
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Assignee
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Priority
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Due
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((task) => (
-                    <TableRow
-                      key={task.id}
-                      className="border-border/50 hover:bg-accent/30"
-                    >
-                      <TableCell>
-                        <Link
-                          to="/tasks/$taskId"
-                          params={{ taskId: task.id }}
-                          className="text-foreground font-medium hover:text-primary transition-colors"
-                        >
-                          {task.title}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-card-foreground">
-                        {task.projectName}
-                      </TableCell>
-                      <TableCell className="text-card-foreground">
-                        {task.assigneeShort}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={task.status} />
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={`label-sm ${task.priority === 'HIGH'
-                              ? 'text-destructive'
-                              : task.priority === 'MEDIUM'
-                                ? 'text-(--color-status-on-hold)'
-                                : 'text-muted-foreground'
-                            }`}
-                        >
-                          {task.priority}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-card-foreground">
-                        {task.dueFormatted}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Delete ${task.title}`}
-                            onClick={() => setDeleteId(task.id)}
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <TaskTable items={items} onDelete={setDeleteId} />
 
             {totalPages > 1 && (
               <div className="flex justify-center">
@@ -268,6 +281,40 @@ function TasksPage() {
           </>
         )}
       </div>
+
+      <Dialog open={pickProjectOpen} onOpenChange={setPickProjectOpen}>
+        <DialogContent className="bg-card border-border text-foreground sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Choose a project</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Pick the project this task belongs to
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-72 overflow-y-auto divide-y divide-border rounded-lg border border-border">
+            {projects.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => {
+                  setPickProjectOpen(false)
+                  setCreateProjectId(p.id)
+                }}
+                className="flex h-10 w-full items-center px-3 text-left text-sm text-foreground transition-colors hover:bg-accent"
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {createProjectId && (
+        <CreateTaskDialog
+          open
+          onOpenChange={(o) => !o && setCreateProjectId(null)}
+          projectId={createProjectId}
+        />
+      )}
 
       <ConfirmDialog
         open={!!deleteId}

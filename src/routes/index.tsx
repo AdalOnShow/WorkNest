@@ -3,8 +3,11 @@ import { Navbar } from '@/components/landing/navbar'
 import { Hero } from '@/components/landing/hero'
 import { Features } from '@/components/landing/features'
 import { HowItWorks } from '@/components/landing/how-it-works'
-import { Testimonials } from '@/components/landing/testimonials'
+import { Stats } from '@/components/landing/stats'
+import { FAQ } from '@/components/landing/faq'
 import { CTA } from '@/components/landing/cta'
+import { Permissions } from '@/components/landing/permissions'
+import { UnderTheHood } from '@/components/landing/under-the-hood'
 import { Footer } from '@/components/landing/footer'
 import { getSession } from '#/server-functions/auth'
 
@@ -28,9 +31,12 @@ function LandingPage() {
       <Navbar />
       <main>
         <Hero />
-        <Features />
         <HowItWorks />
-        <Testimonials />
+        <Features />
+        <Permissions />
+        <Stats />
+        <FAQ />
+        <UnderTheHood />
         <CTA />
       </main>
       <Footer />

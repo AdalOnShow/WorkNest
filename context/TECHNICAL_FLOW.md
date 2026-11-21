@@ -143,8 +143,8 @@ Delete Task            |   Y   |        Y        |     N
 Add Comment            |   Y   |        Y        |     Y
 Edit Own Comment       |   Y   |        Y        |     Y
 Delete Comment         |   Y   |     Owner Only  |  Owner Only
-Upload Attachment      |   Y   |        Y        |     Y
-Delete Attachment      |   Y   |     Owner Only  |  Owner Only
+Send Chat Message      |   Y   |        Y        |     Y   (project members)
+Delete Chat Message    |   Y   |     Own Only    |  Own Only
 View Dashboard         |   Y   |        Y        |     Y
 View Analytics         |   Y   |        Y        |     N
 Manage Users           |   Y   |        N        |     N
@@ -254,7 +254,6 @@ Server Function
     v
 Drizzle Delete (ProjectMember) <-- cascade or manual
     Drizzle Delete (Task)       <-- cascade or manual
-    Drizzle Delete (ChatMessage) <-- cascade or manual
     Drizzle Delete (Project)
     |
     v
@@ -318,8 +317,7 @@ Server Function
 Drizzle Insert (Task)
     |
     +--> If assignee provided:
-    |      Create Notification (TASK_ASSIGNED)
-    |      Broadcast via WebSocket (TASK_ASSIGNED)
+    |      notifyUsers (TASK_ASSIGNED, D1 only)
     |
     v
 Return Task
@@ -355,11 +353,9 @@ Server Function
 Drizzle Update (Task)
     |
     +--> If status changed:
-    |      Create Notification (TASK_STATUS_UPDATED)
-    |      Broadcast via WebSocket (TASK_UPDATED)
+    |      notifyUsers (TASK_STATUS_UPDATED, D1 only)
     +--> If assignee changed:
-    |      Create Notification (TASK_ASSIGNED)
-    |      Broadcast via WebSocket (TASK_ASSIGNED)
+    |      notifyUsers (TASK_ASSIGNED, D1 only)
     |
     v
 Return Task
@@ -387,7 +383,6 @@ Server Function
     |
     v
 Drizzle Delete (Comment)    <-- cascade
-    Drizzle Delete (Attachment) <-- cascade
     Drizzle Delete (Task)
     |
     v
@@ -575,78 +570,60 @@ Remove from UI
 
 ---
 
-## 7. File Attachments Flow
+## 7. Project Chat Flow
 
-### Upload Attachment
+Attachments were removed. Chat is per project; there are no DMs.
 
-```text
-Client Select File
-    |
-    v
-Client Validation:
-    - Is image? (MIME check)
-    - Size <= 2MB?
-    |
-    +-- Invalid --> Show error, stop
-    |
-    v
-TanStack Mutation (FormData)
-    |
-    v
-Server Function
-    |
-    +--> Validate Session
-    +--> Check Project Membership
-    +--> Re-validate MIME type
-    +--> Re-validate file size
-    |
-    v
-Upload to Cloudflare R2
-    |
-    +-- Upload failed --> Return error
-    |
-    v
-Generate object key (unique)
-    |
-    v
-Drizzle Insert (Attachment)
-    |
-    v
-Return Attachment metadata
-    |
-    v
-Invalidate useAttachmentsQuery(taskId)
-    |
-    v
-Show in UI
-```
-
-### Delete Attachment
+### Load History
 
 ```text
-Client Confirm Delete
+Messages page (project selected)
     |
     v
-TanStack Mutation
+useInfiniteQuery(['chat', projectId])
     |
     v
-Server Function
+Server Function getMessages(projectId, cursor, limit = 30)
     |
     +--> Validate Session
-    +--> Check (Uploader OR ADMIN/PROJECT_MANAGER)
+    +--> Verify Project Membership
     |
     v
-Drizzle Delete (Attachment metadata)
+Drizzle Select (chat_message) keyset on (createdAt, id) DESC
     |
     v
-Delete from R2 (object key)
-    |
-    v
-Invalidate useAttachmentsQuery
-    |
-    v
-Remove from UI
+Return { items, nextCursor }      <-- never wakes the Durable Object
 ```
+
+### Connect
+
+```text
+Client WebSocket -> /api/chat/$projectId/ws
+    |
+    +--> Require Upgrade: websocket
+    +--> Validate Better Auth session
+    +--> Verify project membership
+    |
+    v
+Forward to ChatRoom DO (idFromName(projectId)) with verified user headers
+    |
+    v
+acceptWebSocket (hibernation) + serializeAttachment {userId, name, image}
+    |
+    v
+Send PRESENCE_SNAPSHOT; broadcast USER_ONLINE if first socket for that user
+```
+
+### Send / Delete / Typing
+
+```text
+SEND    -> Zod (1-2000 chars) -> rate limit -> insert into D1 -> broadcast MESSAGE_CREATED
+DELETE  -> author or project ADMIN -> delete in D1 -> broadcast MESSAGE_DELETED
+TYPING  -> broadcast only (client throttles to ~3s), never stored
+close   -> broadcast USER_OFFLINE if it was the user's last socket
+```
+
+Client merges MESSAGE_CREATED / MESSAGE_DELETED into the infinite query cache.
 
 ---
 
@@ -665,15 +642,16 @@ Server Function
     +--> Build title + message
     |
     v
-Drizzle Insert (Notification)
+notifyUsers() in src/lib/activity.ts
+    |
+    +--> Drop actor + duplicate recipients
     |
     v
-WebSocket Broadcast (NOTIFICATION_CREATED)
+Drizzle Insert (Notification rows)       <-- errors logged, never thrown
     |
-    +--> If recipient online:
-    |      Real-time update to notification bell
-    +--> If recipient offline:
-    |      Persisted for next login
+    v
+Client picks it up on next TanStack Query refetch
+(window focus / mutation invalidation). No WebSocket push.
 ```
 
 ### Notification UI
@@ -970,7 +948,7 @@ Toast notification for transient errors
 │   useCreateTask / useUpdateTask / useDeleteTask      │
 │   useAddMember / useRemoveMember                     │
 │   useCreateComment / useUpdateComment / useDeleteComment
-│   useUploadAttachment / useDeleteAttachment          │
+│   useSendChatMessage (via WebSocket)                 │
 │   useMarkNotificationRead                            │
 │                                                      │
 │ Strategy:                                            │
@@ -1027,12 +1005,12 @@ Toast notification for transient errors
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│          WebSocket / Real-Time State                 │
+│          Chat Real-Time State                        │
 ├─────────────────────────────────────────────────────┤
 │ Manages:                                             │
-│   - WebSocket connection status                     │
-│   - Online/offline presence                         │
-│   - Notification count (unread)                     │
+│   - Chat WebSocket connection status                │
+│   - Online members in the open chat room            │
+│   - Typing indicators                               │
 │                                                      │
 │ Implementation:                                      │
 │   - React state or small dedicated store            │
@@ -1093,37 +1071,21 @@ Toast notification for transient errors
                                                └──────────────┘
 ```
 
-### Real-Time Data Flow
+### Real-Time Data Flow (Project Chat only)
 
 ```text
-┌──────────┐    WebSocket    ┌─────────────────┐
-│  Client  │<───────────────>│ Durable Object   │
-│  (React) │                 │ (WebSocket Room) │
-└──────────┘                 └─────────────────┘
-     │                              │
-     │                              ├── Persist to D1
-     │                              │
-     │                              ├── Broadcast to room
-     │                              │
-     │                              ├── Update presence
-     │                              │
-     │                              └── Typing indicators
-     │
-     v
-┌──────────────────┐
-│ TanStack Query   │
-│ Cache Invalidation│
-│ (real-time events)│
-└──────────────────┘
-     │
-     v
-┌──────────────────┐
-│ UI Updates       │
-│ (messages,       │
-│  notifications,  │
-│  presence)       │
-└──────────────────┘
+┌──────────┐   WebSocket    ┌──────────────────┐   insert/delete   ┌────┐
+│  Client  │<──────────────>│ ChatRoom DO       │──────────────────>│ D1 │
+│  (React) │                │ (1 per project)   │                   └────┘
+└────┬─────┘                └──────────────────┘                      ^
+     │  MESSAGE_CREATED / MESSAGE_DELETED / presence / typing         │
+     v                                                                │
+┌───────────────────────┐     history (keyset, 30/page)               │
+│ Infinite Query cache  │<──── getMessages server function ───────────┘
+└───────────────────────┘
 ```
+
+Notifications and activities are not real-time: they are D1 rows read through TanStack Query.
 
 ---
 
@@ -1141,20 +1103,20 @@ Toast notification for transient errors
               v                v                v
        ┌─────────────┐  ┌───────────┐  ┌──────────────┐
        │  Projects   │  │ Dashboard │  │ Notifications │
-       │  (CRUD)     │  │  (KPIs)   │  │  (Real-time)  │
+       │  (CRUD)     │  │  (KPIs)   │  │  (D1 + Query) │
        └──────┬──────┘  └───────────┘  └──────────────┘
               │
     ┌─────────┼─────────┐
     │         │         │
     v         v         v
-┌───────┐ ┌───────┐ ┌────────┐
-│ Tasks │ │Members│ │  Chat  │
-│ (CRUD)│ │ (RBAC)│ │(DO+WS) │
-└───┬───┘ └───────┘ └────────┘
+┌───────┐ ┌───────┐ ┌────────────┐
+│ Tasks │ │Members│ │ Activities │
+│ (CRUD)│ │ (RBAC)│ │    (D1)    │
+└───┬───┘ └───────┘ └────────────┘
     │
-    ├──> Comments
-    │
-    └──> Attachments (R2)
+    └──> Comments
+
+Projects ──> Chat (ChatRoom DO + D1)
 ```
 
 ---
@@ -1178,7 +1140,7 @@ Every Server Function:
     │
     └── 7. Execute Operation
 
-WebSocket Connection:
+Chat WebSocket Connection:
     │
     ├── 1. Validate Session
     │
@@ -1188,19 +1150,13 @@ WebSocket Connection:
     │
     ├── 4. Verify Membership
     │
-    └── 5. Accept or Reject
+    └── 5. Forward to ChatRoom DO with verified user headers
 
-File Upload:
+Profile Photo Upload (only upload in the app):
     │
     ├── 1. Validate Session
     │
-    ├── 2. Check Membership
+    ├── 2. Validate MIME type + size
     │
-    ├── 3. Validate MIME type
-    │
-    ├── 4. Validate file size
-    │
-    ├── 5. Upload to R2
-    │
-    └── 6. Store metadata in D1
+    └── 3. Upload to Cloudinary, store URL on user.image
 ```

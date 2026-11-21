@@ -4,6 +4,7 @@ import {
   integer,
   index,
   unique,
+  primaryKey,
 } from 'drizzle-orm/sqlite-core'
 import { project } from './projects'
 import { user } from './auth'
@@ -23,6 +24,11 @@ export const task = sqliteTable(
     priority: text('priority', { enum: ['HIGH', 'MEDIUM', 'LOW'] })
       .notNull()
       .default('MEDIUM'),
+    /**
+     * Deprecated: replaced by `task_assignee`, read and written nowhere.
+     * Kept because dropping it needs a table rebuild, and on D1 rebuilding
+     * `task` would cascade-delete its comments and assignees.
+     */
     assigneeId: text('assignee_id').references(() => user.id, {
       onDelete: 'set null',
     }),
@@ -40,7 +46,34 @@ export const task = sqliteTable(
       table.title,
     ),
     idxProject: index('idx_task_project').on(table.projectId),
-    idxAssignee: index('idx_task_assignee').on(table.assigneeId),
+    // Deadline filters (overdue / this week) and upcoming-deadline lists.
+    idxProjectDeadline: index('idx_task_project_deadline').on(
+      table.projectId,
+      table.deadline,
+    ),
     idxStatus: index('idx_task_status').on(table.status),
+    // Dashboard KPIs and the completed-per-day chart filter by project + status.
+    idxProjectStatusCompleted: index('idx_task_project_status_completed').on(
+      table.projectId,
+      table.status,
+      table.completedAt,
+    ),
+  }),
+)
+
+export const taskAssignee = sqliteTable(
+  'task_assignee',
+  {
+    taskId: text('task_id')
+      .notNull()
+      .references(() => task.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.taskId, table.userId] }),
+    idxUser: index('idx_task_assignee_user').on(table.userId),
   }),
 )

@@ -1,143 +1,75 @@
 import { Link } from '@tanstack/react-router'
+import { Sprout } from 'lucide-react'
+import { Container } from './reveal'
+
+const scrollTo = (id: string) =>
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+
+const PRODUCT = [
+  { id: 'platform', label: 'Platform' },
+  { id: 'features', label: 'Features' },
+  { id: 'faq', label: 'FAQ' },
+]
+
+const linkClass =
+  'text-sm text-muted-foreground transition-colors hover:text-foreground'
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Brand Column */}
-          <div className="col-span-1 md:col-span-1">
-            <Link
-              to="/"
-              className="text-2xl font-headline font-bold text-foreground mb-4 block"
-            >
+    <footer className="border-t border-border/60 bg-background">
+      <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <div>
+          <Link to="/" className="flex items-center gap-2">
+            <span className="chamfer flex size-6 items-center justify-center bg-foreground [--cut:5px]">
+              <Sprout className="size-3.5 text-background" />
+            </span>
+            <span className="text-[15px] font-semibold tracking-tight text-foreground">
               WorkNest
-            </Link>
-            <p className="text-muted-foreground text-sm">
-              Modern project management for modern teams.
-            </p>
-          </div>
-
-          {/* Product Column */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">Product</h3>
-            <ul className="space-y-3">
-              <li>
-                <button
-                  onClick={() => {
-                    const element = document.getElementById('features')
-                    element?.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Features
-                </button>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Changelog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Docs
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company Column */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">Company</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Careers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal Column */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">Legal</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Terms
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                >
-                  Security
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-border">
-          <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} WorkNest. All rights reserved.
+            </span>
+          </Link>
+          <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+            Tasks, roles and real-time chat for every project.
           </p>
         </div>
-      </div>
+
+        <nav aria-label="Product">
+          <p className="eyebrow mb-4">Product</p>
+          <ul className="space-y-2.5">
+            {PRODUCT.map((s) => (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onClick={() => scrollTo(s.id)}
+                  className={linkClass}
+                >
+                  {s.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <nav aria-label="Account">
+          <p className="eyebrow mb-4">Account</p>
+          <ul className="space-y-2.5">
+            <li>
+              <Link to="/login" className={linkClass}>
+                Sign in
+              </Link>
+            </li>
+            <li>
+              <Link to="/login" className={linkClass}>
+                Get started
+              </Link>
+            </li>
+          </ul>
+        </nav>
+      </Container>
+      <Container>
+        <p className="border-t border-border/60 py-8 text-[13px] text-muted-foreground">
+          © {new Date().getFullYear()} WorkNest. All rights reserved.
+        </p>
+      </Container>
     </footer>
   )
 }

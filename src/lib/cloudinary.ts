@@ -54,16 +54,23 @@ export interface CloudinaryUploadResult {
   bytes: number
 }
 
+/**
+ * Uploads to a fixed `publicId`, overwriting any previous asset there.
+ * Callers pick the id (for avatars: one per user), so it is never derived
+ * from user-controlled data such as a stored image URL.
+ */
 export async function uploadToCloudinary(
   env: CloudinaryEnv,
   file: File,
-  folder: string,
+  publicId: string,
 ): Promise<CloudinaryUploadResult> {
   const { cloudName, apiKey, apiSecret } = getCloudinaryConfig(env)
 
   const timestamp = Math.floor(Date.now() / 1000)
   const paramsToSign: Record<string, string | number> = {
-    folder,
+    invalidate: 'true',
+    overwrite: 'true',
+    public_id: publicId,
     timestamp,
   }
   const signature = await sha1(generateSignature(paramsToSign, apiSecret))
@@ -73,7 +80,9 @@ export async function uploadToCloudinary(
   formData.append('api_key', apiKey)
   formData.append('timestamp', String(timestamp))
   formData.append('signature', signature)
-  formData.append('folder', folder)
+  formData.append('public_id', publicId)
+  formData.append('overwrite', 'true')
+  formData.append('invalidate', 'true')
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -133,24 +142,37 @@ export async function deleteFromCloudinary(
   }
 }
 
-export function getCloudinaryPublicId(imageUrl: string): string | null {
+const AVATAR_FOLDER = 'worknest/avatars'
+
+/** The only Cloudinary public id a user's avatar may live at. */
+export function avatarPublicId(userId: string) {
+  return `${AVATAR_FOLDER}/${userId}`
+}
+
+/**
+ * True when `imageUrl` is this app's Cloudinary avatar for `userId`.
+ * Used to reject forged avatar URLs written through Better Auth's update-user.
+ */
+export function isOwnAvatarUrl(
+  env: CloudinaryEnv,
+  imageUrl: string,
+  userId: string,
+): boolean {
   try {
     const url = new URL(imageUrl)
-    const isCloudinaryHost =
-      url.hostname === 'res.cloudinary.com' ||
-      url.hostname.endsWith('.cloudinary.com')
-
-    if (!isCloudinaryHost) {
-      return null
+    if (url.protocol !== 'https:' || url.hostname !== 'res.cloudinary.com') {
+      return false
     }
-
-    // Extract public_id from Cloudinary URL
-    // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{format}
-    const match = url.pathname.match(
-      /\/image\/upload\/(?:v\d+\/)?(.+?)\.[^.]+$/,
-    )
-    return match ? match[1] : null
+    const prefix = `/${env.CLOUDINARY_CLOUD_NAME}/image/upload/`
+    if (!env.CLOUDINARY_CLOUD_NAME || !url.pathname.startsWith(prefix)) {
+      return false
+    }
+    const rest = url.pathname
+      .slice(prefix.length)
+      .replace(/^v\d+\//, '')
+      .replace(/\.[a-z0-9]+$/i, '')
+    return rest === avatarPublicId(userId)
   } catch {
-    return null
+    return false
   }
 }

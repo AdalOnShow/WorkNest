@@ -13,15 +13,15 @@ Track implementation status for every feature. Update as work progresses.
 
 ## Infrastructure
 
-| #   | Feature                               | Status | Notes                              |
-| --- | ------------------------------------- | ------ | ---------------------------------- |
-| 1   | TanStack Start project created        | [x]    |                                    |
-| 2   | Cloudflare Worker configured          | [x]    |                                    |
-| 3   | D1 database created                   | [x]    |                                    |
-| 4   | Drizzle ORM configured                | [ ]    | drizzle.config.ts + D1-http driver |
-| 5   | R2 bucket configured                  | [ ]    |                                    |
-| 6   | Durable Objects configured            | [ ]    | For notifications + presence       |
-| 7   | Wrangler config (d1, r2, do bindings) | [ ]    |                                    |
+| #   | Feature                           | Status | Notes                              |
+| --- | --------------------------------- | ------ | ---------------------------------- |
+| 1   | TanStack Start project created    | [x]    |                                    |
+| 2   | Cloudflare Worker configured      | [x]    |                                    |
+| 3   | D1 database created               | [x]    |                                    |
+| 4   | Drizzle ORM configured            | [ ]    | drizzle.config.ts + D1-http driver |
+| 5   | ~~R2 bucket configured~~          | n/a    | Dropped: no attachments            |
+| 6   | Durable Objects configured        | [ ]    | ChatRoom (project chat) only       |
+| 7   | Wrangler config (d1, do bindings) | [ ]    |                                    |
 
 ---
 
@@ -35,7 +35,7 @@ Track implementation status for every feature. Update as work progresses.
 | 11  | Project member schema          | [ ]    | Unique constraint (projectId, userId)  |
 | 12  | Task schema                    | [ ]    | Unique constraint (projectId, title)   |
 | 13  | Comment schema                 | [ ]    |                                        |
-| 14  | Attachment schema              | [ ]    | R2 metadata                            |
+| 14  | ~~Attachment schema~~          | n/a    | Removed (migration 0003)               |
 | 15  | Notification schema            | [ ]    |                                        |
 | 16  | Activity schema                | [ ]    |                                        |
 | 17  | All relations defined          | [ ]    |                                        |
@@ -137,15 +137,17 @@ Track implementation status for every feature. Update as work progresses.
 
 ---
 
-## Attachments
+## Project Chat
 
-| #   | Feature                   | Status | Notes                                |
-| --- | ------------------------- | ------ | ------------------------------------ |
-| 72  | Upload image to R2        | [ ]    | Max 2 MB                             |
-| 73  | Image validation          | [ ]    | MIME type, size                      |
-| 74  | Attachment metadata in D1 | [ ]    |                                      |
-| 75  | File preview              | [ ]    |                                      |
-| 76  | Delete attachment         | [ ]    | Uploader-controlled, server-enforced |
+Attachments (old #72-76) were removed from scope.
+
+| #   | Feature                            | Status | Notes                                     |
+| --- | ---------------------------------- | ------ | ----------------------------------------- |
+| 72  | chat_message schema + migration    | [ ]    | Index (projectId, createdAt)              |
+| 73  | Paginated history server function  | [ ]    | Keyset, 30/page, membership check         |
+| 74  | ChatRoom Durable Object            | [ ]    | Hibernation, send/delete/typing/presence  |
+| 75  | Authenticated chat WebSocket route | [ ]    | Session + membership before forwarding    |
+| 76  | Messages page (real-time)          | [ ]    | Infinite scroll, composer, typing, online |
 
 ---
 
@@ -159,7 +161,7 @@ Track implementation status for every feature. Update as work progresses.
 | 80  | Mark as read                     | [ ]    |                                         |
 | 81  | Mark all as read                 | [ ]    |                                         |
 | 82  | Dedicated notifications page     | [ ]    |                                         |
-| 83  | Real-time delivery via WebSocket | [ ]    |                                         |
+| 83  | Refresh via TanStack Query       | [ ]    | No WebSocket push; refetch on focus     |
 
 ---
 
@@ -176,7 +178,7 @@ Track implementation status for every feature. Update as work progresses.
 | 90  | Log member added            | [ ]    |       |
 | 91  | Log member removed          | [ ]    |       |
 | 92  | Log comment created         | [ ]    |       |
-| 93  | Log attachment uploaded     | [ ]    |       |
+| 93  | Log member invited          | [ ]    |       |
 | 94  | Show latest 5-10 activities | [ ]    |       |
 
 ---
@@ -264,7 +266,7 @@ Track implementation status for every feature. Update as work progresses.
 | #   | Feature                    | Status | Notes                          |
 | --- | -------------------------- | ------ | ------------------------------ |
 | 130 | Production D1              | [ ]    |                                |
-| 131 | Production R2              | [ ]    |                                |
+| 131 | ~~Production R2~~          | n/a    | Not used                       |
 | 132 | Production Durable Objects | [ ]    |                                |
 | 133 | Production secrets         | [ ]    | BETTER_AUTH_SECRET, OAuth keys |
 | 134 | OAuth callback URLs        | [ ]    | Google + GitHub                |
@@ -286,7 +288,7 @@ Track implementation status for every feature. Update as work progresses.
 | Tasks                   | 13      | 0        | 0           | 13          |
 | Dashboard               | 9       | 0        | 0           | 9           |
 | Comments                | 4       | 0        | 0           | 4           |
-| Attachments             | 5       | 0        | 0           | 5           |
+| Project Chat            | 5       | 0        | 0           | 5           |
 | Notifications           | 7       | 0        | 0           | 7           |
 | Activity Log            | 11      | 0        | 0           | 11          |
 | Theme                   | 5       | 0        | 0           | 5           |

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-WorkNest is a fully serverless, Cloudflare-native team collaboration platform built with TanStack Start, Cloudflare D1/R2/Durable Objects, Better Auth, Drizzle ORM, and shadcn/ui.
+WorkNest is a fully serverless, Cloudflare-native team collaboration platform built with TanStack Start, Cloudflare D1 + Durable Objects (project chat only), Cloudinary (profile photos only), Better Auth, Drizzle ORM, and shadcn/ui.
 
 ---
 
@@ -29,26 +29,25 @@ Load skills proactively when a task matches their description. Use the skill too
 
 ### File Reference
 
-| File                        | Contents                                                                                                                                                                                                                                                                                                                           |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PROJECT_OVERVIEW.md`       | Master project specification (1650 lines). Tech stack, features, constraints, role-based access, state management rules, all 50 sections of the spec                                                                                                                                                                               |
-| `TECHNICAL_FLOW.md`         | Complete technical/user flows for all 18 features: Auth, Authorization, Projects, Tasks, Dashboard, Comments, Attachments, Notifications, Real-Time Messaging, Theme, Responsive Design, Search/Filter/Sort, Pagination, Error Handling, State Management, Data Flow Summary, Feature Interaction Map, Security Enforcement Points |
-| `DESIGN.md`                 | **Tomorro Dark Neon** design system. Colors (primary #68EF3F, secondary #121212, tertiary #1F331D, surface #172318), typography (Ozik for headlines, Aeonik for body), spacing scale, rounded corners, component tokens (button, card, input, chip), layout rules, do's and don'ts                                                 |
-| `ARCHITECTURE_DECISIONS.md` | (To be populated) Architecture decision records                                                                                                                                                                                                                                                                                    |
-| `DATABASE_SCHEMA.md`        | (To be populated) Drizzle ORM schema definitions for D1                                                                                                                                                                                                                                                                            |
-| `FEATURES.md`               | (To be populated) Feature implementation status tracker                                                                                                                                                                                                                                                                            |
-| `PROCESS_TRACKER.md`        | (To be populated) Development progress tracker                                                                                                                                                                                                                                                                                     |
+| File                        | Contents                                                                                                                                                                                                                                                                                                       |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PROJECT_OVERVIEW.md`       | Master project specification (1650 lines). Tech stack, features, constraints, role-based access, state management rules, all 50 sections of the spec                                                                                                                                                           |
+| `TECHNICAL_FLOW.md`         | Complete technical/user flows for all 18 features: Auth, Authorization, Projects, Tasks, Dashboard, Comments, Project Chat, Notifications, Theme, Responsive Design, Search/Filter/Sort, Pagination, Error Handling, State Management, Data Flow Summary, Feature Interaction Map, Security Enforcement Points |
+| `DESIGN.md`                 | **Mono** design system. Monochrome neutral surfaces (white / #0A0A0A), single blue accent #2F80FF with a blue ramp for charts, Geist UI + Source Serif 4 headlines (weight 400), chamfered (cut-corner) buttons and cards, hairline borders, status/priority tokens, do's and don'ts                           |
+| `ARCHITECTURE_DECISIONS.md` | (To be populated) Architecture decision records                                                                                                                                                                                                                                                                |
+| `DATABASE_SCHEMA.md`        | (To be populated) Drizzle ORM schema definitions for D1                                                                                                                                                                                                                                                        |
+| `FEATURES.md`               | (To be populated) Feature implementation status tracker                                                                                                                                                                                                                                                        |
+| `PROCESS_TRACKER.md`        | (To be populated) Development progress tracker                                                                                                                                                                                                                                                                 |
 
 ### Design System
 
-This project follows the **Tomorro Dark Neon** design system defined in `context/DESIGN.md`. Key rules:
+This project follows the **Mono** design system defined in `context/DESIGN.md`. All values live as tokens in `src/styles.css`. Use the tokens and utilities, never raw hex. Key rules:
 
-- **Primary accent:** #68EF3F (neon green) — reserved for CTAs and critical highlights only
-- **Background:** #121212 (near-black forest) — dominant page background
-- **Surface:** #172318 (dark green) — cards, chips, UI containers
-- **Typography:** Ozik for hero headlines, Aeonik for everything else
-- **Shapes:** Pill-heavy buttons (full radius), medium-large rounded cards, no sharp corners
-- **Elevation:** Flat and tonal — no heavy shadows, use color contrast for hierarchy
+- **Themes:** light-first (`:root`) with a matching dark mode (`.dark`). The default follows the OS (`defaultTheme="system"`).
+- **Palette:** monochrome neutral (`background` #FFF / #0A0A0A, `muted` #F5F5F5, `border` #E5E5E5) with one blue accent #2F80FF (`primary`). Charts use the blue ramp (`blue-1`…`blue-4`, `chart-*`). Legacy chip roles `lime`, `sky`, `highlight` map to pale blue, neutral and pale amber.
+- **Typography:** Geist for UI (body 400). `h1`/`h2` are Source Serif 4 at weight 400 with -0.01em tracking. Geist Mono for `eyebrow` labels, dates and counts. App UI is dense: 13px panel titles, 11px meta text. Use `stat-number` for KPI figures.
+- **Buttons:** Button `default` is `bg-foreground` with the `chamfer` cut-corner shape; `outline` is a chamfered hairline. Badges are `rounded-[3px]`, 11px.
+- **Surfaces:** `rounded-lg border border-border/60 bg-background` panels. Chamfered cards use an outer `bg-border p-px` wrapper. **No gradients, glows or gradient text.**
 
 ---
 
@@ -56,7 +55,7 @@ This project follows the **Tomorro Dark Neon** design system defined in `context
 
 ### styles.css
 
-Update `src/styles.css` to match the Tomorro Dark Neon design system. The current file contains the old WorkNest theme. Replace CSS variables with the DESIGN.md tokens.
+`src/styles.css` holds the Mono tokens (`:root` = light, `.dark` = dark), the `@theme inline` mapping, and the custom utilities (`headline-*`, `eyebrow`, `label-*`, `body-*`, `stat-number`, `chamfer`). Add new colors there as tokens, not as hex in components.
 
 ### shadcn/ui Components
 

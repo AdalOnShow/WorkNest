@@ -13,26 +13,10 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { Loader2, Menu, Sprout, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { cn } from '#/lib/utils'
+import { ScrambleText } from './scramble-text'
 import { toast } from 'sonner'
-
-// Mock data - replace with real data from context/auth
-const MOCK_NOTIFICATIONS = [
-  {
-    id: '1',
-    title: 'Task assigned to you',
-    description: 'Fix login bug has been assigned to you',
-    read: false,
-    createdAt: '2 hours ago',
-  },
-  {
-    id: '2',
-    title: 'Task status updated',
-    description: 'Add tests — Completed',
-    read: true,
-    createdAt: '5 hours ago',
-  },
-]
 
 interface NavbarProps {
   isAuthenticated?: boolean
@@ -46,18 +30,61 @@ function AuthAwareAction({ className }: { className?: string }) {
 
   if (isPending) {
     return (
-      <Button variant="outline" disabled className={className}>
+      <Button variant="outline" size="sm" disabled className={className}>
         <Loader2 className="w-4 h-4 animate-spin" />
       </Button>
     )
   }
 
+  if (isLoggedIn) {
+    return (
+      <Button asChild size="sm" className={className}>
+        <Link to="/dashboard">Dashboard</Link>
+      </Button>
+    )
+  }
+
   return (
-    <Button asChild className={className}>
-      <Link to={isLoggedIn ? '/dashboard' : '/login'}>
-        {isLoggedIn ? 'Dashboard' : 'Login'}
-      </Link>
-    </Button>
+    <div className={cn('flex items-center gap-2', className)}>
+      <Button asChild size="sm" variant="outline" className="flex-1">
+        <Link to="/login">Sign in</Link>
+      </Button>
+      <Button asChild size="sm" className="flex-1">
+        <Link to="/login">Get started</Link>
+      </Button>
+    </div>
+  )
+}
+
+const LANDING_LINKS = [
+  { id: 'platform', label: 'Platform' },
+  { id: 'features', label: 'Features' },
+  { id: 'access', label: 'Roles' },
+  { id: 'faq', label: 'FAQ' },
+]
+
+/** Nav button whose label decodes when the button is hovered or focused. */
+function DecodeLink({
+  label,
+  onClick,
+  className,
+}: {
+  label: string
+  onClick: () => void
+  className?: string
+}) {
+  const [play, setPlay] = useState(0)
+  const replay = () => setPlay((n) => n + 1)
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onPointerEnter={(e) => e.pointerType === 'mouse' && replay()}
+      onFocus={(e) => e.currentTarget.matches(':focus-visible') && replay()}
+      className={cn('cursor-pointer', className)}
+    >
+      <ScrambleText text={label} play={play} />
+    </button>
   )
 }
 
@@ -70,6 +97,18 @@ export function Navbar({
   const router = useRouterState()
   const navigate = useNavigate()
   const isLandingPage = router.location.pathname === '/'
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated) return
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [isAuthenticated])
+
+  // Landing: transparent at the top, solid once the page scrolls or the menu opens.
+  const solid = isAuthenticated || scrolled || isMobileMenuOpen
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
@@ -99,24 +138,29 @@ export function Navbar({
   return (
     <nav
       aria-label="Primary"
-      className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border"
+      className={cn(
+        'fixed top-0 left-0 right-0 z-40 border-b transition-colors duration-300',
+        solid
+          ? 'border-border/60 bg-background/85 backdrop-blur-md'
+          : 'border-transparent bg-transparent',
+      )}
     >
       <div
         className={
           isAuthenticated
             ? 'px-4 sm:px-6 lg:px-8'
-            : 'container mx-auto px-4 sm:px-6 lg:px-8'
+            : 'mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10'
         }
       >
-        <div className="flex items-center justify-between h-16">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo - Only show on landing page */}
           {!isAuthenticated && (
             <div className="shrink-0">
-              <Link to="/" className="flex items-center gap-2.5">
-                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary">
-                  <Sprout className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
+              <Link to="/" className="flex items-center gap-2">
+                <span className="chamfer flex size-6 items-center justify-center bg-foreground [--cut:5px]">
+                  <Sprout className="size-3.5 text-background" />
+                </span>
+                <span className="text-[15px] font-semibold tracking-tight text-foreground">
                   WorkNest
                 </span>
               </Link>
@@ -125,25 +169,15 @@ export function Navbar({
 
           {/* Desktop Navigation - Landing Page Only */}
           {isLandingPage && !isAuthenticated && (
-            <div className="hidden md:flex items-center space-x-8">
-              <button
-                onClick={() => scrollToSection('features')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Features
-              </button>
-              <button
-                onClick={() => scrollToSection('how-it-works')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                How it Works
-              </button>
-              <button
-                onClick={() => scrollToSection('testimonials')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Testimonials
-              </button>
+            <div className="hidden items-center gap-1 md:flex">
+              {LANDING_LINKS.map((l) => (
+                <DecodeLink
+                  key={l.id}
+                  label={l.label}
+                  onClick={() => scrollToSection(l.id)}
+                  className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                />
+              ))}
             </div>
           )}
 
@@ -156,11 +190,7 @@ export function Navbar({
 
             {isAuthenticated ? (
               <>
-                <NotificationBell
-                  notifications={MOCK_NOTIFICATIONS}
-                  onMarkRead={() => { }}
-                  onMarkAllRead={() => { }}
-                />
+                <NotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -172,7 +202,7 @@ export function Navbar({
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuLabel>Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link to="/settings">Settings</Link>
@@ -185,7 +215,7 @@ export function Navbar({
                       onClick={handleLogout}
                       className="text-destructive"
                     >
-                      Logout
+                      Sign out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -229,24 +259,14 @@ export function Navbar({
             hidden={!isMobileMenuOpen}
             className="md:hidden py-4 space-y-4"
           >
-            <button
-              onClick={() => scrollToSection('features')}
-              className="block w-full text-left px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-            >
-              Features
-            </button>
-            <button
-              onClick={() => scrollToSection('how-it-works')}
-              className="block w-full text-left px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-            >
-              How it Works
-            </button>
-            <button
-              onClick={() => scrollToSection('testimonials')}
-              className="block w-full text-left px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-            >
-              Testimonials
-            </button>
+            {LANDING_LINKS.map((l) => (
+              <DecodeLink
+                key={l.id}
+                label={l.label}
+                onClick={() => scrollToSection(l.id)}
+                className="block w-full rounded-md px-4 py-2 text-left text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              />
+            ))}
 
             <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-border">
               <div className="flex items-center justify-between mb-2">

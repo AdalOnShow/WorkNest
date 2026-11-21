@@ -36,17 +36,17 @@ export function FilterControls({ filters, className }: FilterControlsProps) {
         >
           <SelectTrigger
             aria-label={filter.label}
-            className="w-[160px] h-10 bg-[#172318] border-[#2D3B2A] text-white text-sm focus:ring-[#68EF3F]/40"
+            className="w-full sm:w-[160px] h-10 bg-card border-border text-foreground text-sm focus:ring-ring/40"
           >
             <SelectValue placeholder={filter.label} />
           </SelectTrigger>
-          <SelectContent className="bg-[#172318] border-[#2D3B2A] text-white">
+          <SelectContent className="bg-card border-border text-foreground">
             <SelectGroup>
               {filter.options.map((opt) => (
                 <SelectItem
                   key={opt.value}
                   value={opt.value}
-                  className="focus:bg-[#1F331D] focus:text-white"
+                  className="focus:bg-accent focus:text-accent-foreground"
                 >
                   {opt.label}
                 </SelectItem>

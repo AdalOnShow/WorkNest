@@ -7,7 +7,7 @@
   "name": "worknest",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/server-entry.ts",
   "observability": {
     "enabled": true,
   },
@@ -23,6 +23,8 @@
   ],
   "vars": {
     "BETTER_AUTH_URL": "https://worknest.sadal.dev",
+    // "true" shows the email/password form (sign-in only, for demo accounts).
+    "ENABLE_EMAIL_PASSWORD": "true",
   },
   "secrets": {
     "required": [
@@ -34,12 +36,45 @@
       "CLOUDINARY_API_SECRET",
     ],
   },
+  // Per-user limit for mutating server functions (rateLimitMiddleware).
+  "ratelimits": [
+    {
+      "name": "MUTATION_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 60, "period": 60 },
+    },
+  ],
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "worknest-db",
       "database_id": "e1fe6dd5-45b6-429f-a7e4-6eefac320f47",
       "migrations_dir": "migrations",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        // One ChatRoom instance per project: env.CHAT_ROOM.idFromName(projectId)
+        "name": "CHAT_ROOM",
+        "class_name": "ChatRoom",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["NotificationDO", "ActivityDO"],
+    },
+    {
+      // Real-time notifications/activities were dropped in favour of D1 + TanStack Query refetches.
+      "tag": "v2",
+      "deleted_classes": ["NotificationDO", "ActivityDO"],
+    },
+    {
+      // SQLite-backed class (required on the Workers free plan).
+      "tag": "v3",
+      "new_sqlite_classes": ["ChatRoom"],
     },
   ],
   /**

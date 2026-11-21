@@ -1,5 +1,5 @@
 import { Badge } from '#/components/ui/badge'
-import type { BadgeProps } from '#/components/ui/badge'
+import type { ComponentProps } from 'react'
 import { cn } from '#/lib/utils'
 
 export type Priority = 'HIGH' | 'MEDIUM' | 'LOW'
@@ -16,7 +16,10 @@ const PRIORITY_LABELS: Record<Priority, string> = {
   LOW: 'Low',
 }
 
-export interface PriorityBadgeProps extends Omit<BadgeProps, 'variant'> {
+export interface PriorityBadgeProps extends Omit<
+  ComponentProps<typeof Badge>,
+  'variant'
+> {
   priority: Priority
 }
 
@@ -29,12 +32,12 @@ export function PriorityBadge({
     <Badge
       variant="outline"
       className={cn(
-        'inline-flex items-center gap-1.5 font-medium border-border bg-card text-foreground',
+        'inline-flex items-center gap-1.5 font-semibold border-border bg-card text-foreground',
         className,
       )}
       {...props}
     >
-      <div className={cn('w-2 h-2 rounded-full', PRIORITY_COLORS[priority])} />
+      <span className={cn('size-2 rounded-full', PRIORITY_COLORS[priority])} />
       {PRIORITY_LABELS[priority]}
     </Badge>
   )

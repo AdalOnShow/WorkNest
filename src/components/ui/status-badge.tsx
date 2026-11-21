@@ -1,5 +1,5 @@
 import { Badge } from '#/components/ui/badge'
-import type { BadgeProps } from '#/components/ui/badge'
+import type { ComponentProps } from 'react'
 import { cn } from '#/lib/utils'
 
 export type Status = 'ACTIVE' | 'IN_PROGRESS' | 'COMPLETED' | 'ON_HOLD' | 'TODO'
@@ -14,13 +14,16 @@ const STATUS_COLORS: Record<Status, string> = {
 
 const STATUS_LABELS: Record<Status, string> = {
   ACTIVE: 'Active',
-  IN_PROGRESS: 'In Progress',
+  IN_PROGRESS: 'In progress',
   COMPLETED: 'Completed',
-  ON_HOLD: 'On Hold',
-  TODO: 'To Do',
+  ON_HOLD: 'On hold',
+  TODO: 'To do',
 }
 
-export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
+export interface StatusBadgeProps extends Omit<
+  ComponentProps<typeof Badge>,
+  'variant'
+> {
   status: Status
 }
 
@@ -29,12 +32,12 @@ export function StatusBadge({ status, className, ...props }: StatusBadgeProps) {
     <Badge
       variant="outline"
       className={cn(
-        'inline-flex items-center gap-1.5 font-medium border-border bg-card text-foreground',
+        'inline-flex items-center gap-1.5 font-semibold border-border bg-card text-foreground',
         className,
       )}
       {...props}
     >
-      <div className={cn('w-2 h-2 rounded-full', STATUS_COLORS[status])} />
+      <span className={cn('size-2 rounded-full', STATUS_COLORS[status])} />
       {STATUS_LABELS[status]}
     </Badge>
   )

@@ -11,13 +11,13 @@ export function LoadingState({ variant, className }: LoadingStateProps) {
     return (
       <div
         className={cn(
-          'rounded-xl border border-[#2D3B2A] bg-[#172318] p-4 space-y-4',
+          'rounded-xl border border-border bg-card p-4 space-y-4',
           className,
         )}
       >
-        <Skeleton className="h-10 w-full bg-[#1F331D]" />
+        <Skeleton className="h-10 w-full bg-muted" />
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full bg-[#1F331D]/50" />
+          <Skeleton key={i} className="h-12 w-full bg-muted/60" />
         ))}
       </div>
     )
@@ -34,10 +34,10 @@ export function LoadingState({ variant, className }: LoadingStateProps) {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl border border-[#2D3B2A] bg-[#172318] p-6 space-y-3"
+            className="rounded-xl border border-border bg-card p-6 space-y-3"
           >
-            <Skeleton className="h-4 w-1/2 bg-[#1F331D]" />
-            <Skeleton className="h-8 w-1/3 bg-[#1F331D]" />
+            <Skeleton className="h-4 w-1/2 bg-muted" />
+            <Skeleton className="h-8 w-1/3 bg-muted" />
           </div>
         ))}
       </div>
@@ -47,11 +47,11 @@ export function LoadingState({ variant, className }: LoadingStateProps) {
   if (variant === 'detail') {
     return (
       <div className={cn('space-y-6', className)}>
-        <Skeleton className="h-10 w-1/3 bg-[#1F331D]" />
-        <div className="rounded-xl border border-[#2D3B2A] bg-[#172318] p-8 space-y-4">
-          <Skeleton className="h-6 w-full bg-[#1F331D]" />
-          <Skeleton className="h-6 w-5/6 bg-[#1F331D]" />
-          <Skeleton className="h-6 w-4/6 bg-[#1F331D]" />
+        <Skeleton className="h-10 w-1/3 bg-muted" />
+        <div className="rounded-xl border border-border bg-card p-8 space-y-4">
+          <Skeleton className="h-6 w-full bg-muted" />
+          <Skeleton className="h-6 w-5/6 bg-muted" />
+          <Skeleton className="h-6 w-4/6 bg-muted" />
         </div>
       </div>
     )
@@ -62,12 +62,12 @@ export function LoadingState({ variant, className }: LoadingStateProps) {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 rounded-xl border border-[#2D3B2A] bg-[#172318] p-4"
+          className="flex items-center gap-4 rounded-xl border border-border bg-card p-4"
         >
-          <Skeleton className="h-12 w-12 rounded-full bg-[#1F331D]" />
+          <Skeleton className="h-12 w-12 rounded-full bg-muted" />
           <div className="space-y-2 flex-1">
-            <Skeleton className="h-5 w-1/4 bg-[#1F331D]" />
-            <Skeleton className="h-4 w-1/2 bg-[#1F331D]" />
+            <Skeleton className="h-5 w-1/4 bg-muted" />
+            <Skeleton className="h-4 w-1/2 bg-muted" />
           </div>
         </div>
       ))}

@@ -16,3 +16,7 @@ todos.json
 !.dev.vars.example
 !.env.example
 dev.db
+
+# Local D1 exports (contain production data)
+*-backup.sql
+prod-backup*.sql

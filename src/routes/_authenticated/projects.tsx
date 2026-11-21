@@ -1,6 +1,6 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
-import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { EmptyState } from '#/components/ui/empty-state'
 import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
@@ -15,53 +15,106 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { StatusBadge } from '#/components/ui/status-badge'
+import { CreateProjectDialog } from '#/components/projects/create-project-dialog'
+import { listProjects } from '#/server-functions/projects'
+import { useQuery } from '@tanstack/react-query'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
-import { deleteProject, listProjects } from '#/server-functions/projects'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { FolderKanban, Plus, Trash2 } from 'lucide-react'
+  createFileRoute,
+  Link,
+  Outlet,
+  useChildMatches,
+} from '@tanstack/react-router'
+import { FolderKanban, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_authenticated/projects')({
-  component: ProjectsPage,
+  component: ProjectsRoute,
   head: () => ({
     meta: [{ title: 'Projects — WorkNest' }],
   }),
 })
 
-function ProjectsPage() {
-  const queryClient = useQueryClient()
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [page, setPage] = useState(1)
-  const [deleteId, setDeleteId] = useState<string | null>(null)
-
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['projects', search, statusFilter, page],
-    queryFn: () =>
-      listProjects({
-        data: { search, status: statusFilter, page, pageSize: 10 },
-      }),
+function ProjectsRoute() {
+  const hasChildMatch = useChildMatches({
+    select: (matches) => matches.length > 0,
   })
 
-  const deleteMutation = useMutation({
-    mutationFn: (projectId: string) => deleteProject({ data: { projectId } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      toast.success('Project deleted')
-      setDeleteId(null)
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete project')
-    },
+  return hasChildMatch ? <Outlet /> : <ProjectsPage />
+}
+
+function ProjectCard({
+  project,
+}: {
+  project: {
+    id: string
+    name: string
+    status: string
+    taskCount: number
+    deadline: Date | number | null
+  }
+}) {
+  const formattedDeadline = project.deadline
+    ? new Date(project.deadline).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null
+
+  return (
+    <Link
+      to="/projects/$projectId"
+      params={{ projectId: project.id }}
+      className="group flex min-h-36 flex-col justify-between rounded-xl border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-accent/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold text-foreground truncate">
+            {project.name}
+          </h3>
+        </div>
+        <StatusBadge
+          status={project.status as 'ACTIVE' | 'COMPLETED' | 'ON_HOLD'}
+        />
+      </div>
+
+      <div className="flex items-center justify-between gap-4 font-mono text-xs text-muted-foreground tabular-nums">
+        <span>
+          {project.taskCount} {project.taskCount === 1 ? 'task' : 'tasks'}
+        </span>
+        <span>{formattedDeadline ?? 'No deadline'}</span>
+      </div>
+    </Link>
+  )
+}
+
+function ProjectsPage() {
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'ACTIVE' | 'COMPLETED' | 'ON_HOLD'
+  >('all')
+  const [sort, setSort] = useState('created:desc')
+  const [page, setPage] = useState(1)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
+
+  const [sortKey, sortDir] = sort.split(':') as [
+    'created' | 'deadline' | 'name' | 'updated',
+    'asc' | 'desc',
+  ]
+
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['projects', search, statusFilter, sort, page],
+    queryFn: () =>
+      listProjects({
+        data: {
+          search,
+          status: statusFilter,
+          sort: sortKey,
+          dir: sortDir,
+          page,
+          pageSize: 12,
+        },
+      }),
   })
 
   const items = data?.items || []
@@ -82,22 +135,20 @@ function ProjectsPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="headline-sm text-foreground">Projects</h1>
-            <p className="body-md text-muted-foreground mt-1">
-              Manage your team projects
-            </p>
-          </div>
-          <Button className="rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90">
-            <Plus data-icon="inline-start" className="w-4 h-4" />
-            New Project
-          </Button>
-        </div>
+        <PageHeader
+          title="Projects"
+          description="Every project has its own tasks, members and chat"
+          actions={
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus data-icon="inline-start" className="size-4" />
+              New project
+            </Button>
+          }
+        />
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <SearchInput
-            placeholder="Search projects..."
+            placeholder="Search projects"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
@@ -108,23 +159,49 @@ function ProjectsPage() {
           <Select
             value={statusFilter}
             onValueChange={(v) => {
-              setStatusFilter(v)
+              setStatusFilter(v as typeof statusFilter)
               setPage(1)
             }}
           >
             <SelectTrigger
               aria-label="Filter projects by status"
-              style={{ width: '140px' }}
+              style={{ width: '144px' }}
               className="bg-card border-border text-foreground rounded-lg"
             >
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border">
               <SelectGroup>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="ACTIVE">Active</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="ON_HOLD">On Hold</SelectItem>
+                <SelectItem value="ON_HOLD">On hold</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <Select
+            value={sort}
+            onValueChange={(v) => {
+              setSort(v)
+              setPage(1)
+            }}
+          >
+            <SelectTrigger
+              aria-label="Sort projects"
+              style={{ width: '180px' }}
+              className="bg-card border-border text-foreground rounded-lg"
+            >
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border">
+              <SelectGroup>
+                <SelectItem value="created:desc">Newest first</SelectItem>
+                <SelectItem value="created:asc">Oldest first</SelectItem>
+                <SelectItem value="name:asc">Name (A–Z)</SelectItem>
+                <SelectItem value="name:desc">Name (Z–A)</SelectItem>
+                <SelectItem value="deadline:asc">Deadline (soonest)</SelectItem>
+                <SelectItem value="deadline:desc">Deadline (latest)</SelectItem>
+                <SelectItem value="updated:desc">Recently updated</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -150,73 +227,10 @@ function ProjectsPage() {
           />
         ) : (
           <>
-            <div className="bg-card border border-border rounded-[14px] overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground font-medium">
-                      Name
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Tasks
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium">
-                      Deadline
-                    </TableHead>
-                    <TableHead className="text-muted-foreground font-medium text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((project) => (
-                    <TableRow
-                      key={project.id}
-                      className="border-border/50 hover:bg-accent/30"
-                    >
-                      <TableCell>
-                        <Link
-                          to="/projects/$projectId"
-                          params={{ projectId: project.id }}
-                          className="text-foreground font-medium hover:text-primary transition-colors"
-                        >
-                          {project.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={project.status} />
-                      </TableCell>
-                      <TableCell className="text-card-foreground">
-                        {project.taskCount}
-                      </TableCell>
-                      <TableCell className="text-card-foreground">
-                        {project.deadline
-                          ? new Date(project.deadline).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : '—'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Delete ${project.name}`}
-                            onClick={() => setDeleteId(project.id)}
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-accent"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {items.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
             </div>
 
             {totalPages > 1 && (
@@ -232,12 +246,9 @@ function ProjectsPage() {
         )}
       </div>
 
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Delete project"
-        description="This action cannot be undone. All tasks and data in this project will be permanently deleted."
-        onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
+      <CreateProjectDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
       />
     </PageContainer>
   )

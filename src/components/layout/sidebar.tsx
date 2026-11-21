@@ -49,22 +49,25 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const location = useLocation()
 
   return (
-    <SidebarComponent collapsible="icon" className="bg-sidebar">
-      <SidebarHeader className="p-4 h-16 flex items-center border-b border-sidebar-border">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary">
-            <Sprout className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold text-sidebar-foreground tracking-tight group-data-[collapsible=icon]:hidden">
+    <SidebarComponent
+      collapsible="icon"
+      className="border-r border-sidebar-border/60 bg-sidebar"
+    >
+      <SidebarHeader className="flex h-16 justify-center border-b border-sidebar-border/60 px-4 group-data-[collapsible=icon]:px-2">
+        <Link to="/" className="flex items-center gap-2">
+          <span className="chamfer flex size-7 shrink-0 items-center justify-center bg-foreground [--cut:6px]">
+            <Sprout className="size-4 text-background" />
+          </span>
+          <span className="text-[15px] font-semibold tracking-tight text-sidebar-foreground group-data-[collapsible=icon]:hidden">
             WorkNest
           </span>
         </Link>
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground uppercase tracking-wider text-[11px]">
-            Navigation
+        <SidebarGroup className="pt-3">
+          <SidebarGroupLabel className="eyebrow h-7 px-2.5">
+            Workspace
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -72,17 +75,18 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton
                     asChild
+                    tooltip={item.label}
                     isActive={
                       location.pathname === item.to ||
                       location.pathname.startsWith(item.to + '/')
                     }
                     className={cn(
-                      'text-muted-foreground hover:text-foreground hover:bg-accent',
-                      'data-[active=true]:bg-accent data-[active=true]:text-primary',
+                      'h-8 text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground',
+                      'data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-foreground',
                     )}
                   >
                     <Link to={item.to}>
-                      <item.icon className="w-5 h-5" />
+                      <item.icon className="size-4" />
                       <span>{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -93,36 +97,35 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <div className="border-t border-sidebar-border" />
-
       <SidebarFooter className="p-2">
         <SidebarMenu>
           {BOTTOM_NAV_ITEMS.map((item) => (
             <SidebarMenuItem key={item.to}>
               <SidebarMenuButton
                 asChild
+                tooltip={item.label}
                 isActive={location.pathname === item.to}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent data-[active=true]:bg-accent data-[active=true]:text-primary"
+                className="h-8 text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-foreground"
               >
                 <Link to={item.to}>
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className="size-4" />
                   <span>{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-        <div className="flex items-center gap-3 px-3 py-2 group-data-[collapsible=icon]:hidden">
+        <div className="mt-2 flex items-center gap-3 border-t border-sidebar-border/60 px-2 pt-3 pb-1 group-data-[collapsible=icon]:hidden">
           <UserAvatar
             name={user?.name ?? 'U'}
             image={user?.image ?? undefined}
             size="sm"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">
+            <p className="truncate text-[13px] font-semibold text-sidebar-foreground">
               {user?.name ?? 'Account'}
             </p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="truncate text-[11px] text-muted-foreground">
               {user?.email ?? ''}
             </p>
           </div>

@@ -7,10 +7,11 @@ import {
   project,
   projectMember,
   task,
+  taskAssignee,
   comment,
-  attachment,
   notification,
   activity,
+  chatMessage,
 } from './schema'
 
 // ─── Auth relations ────────────────────────────────────
@@ -23,12 +24,12 @@ export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
   accounts: many(account),
   memberships: many(projectMember),
-  assignedTasks: many(task, { relationName: 'assignee' }),
   createdTasks: many(task, { relationName: 'creator' }),
+  taskAssignments: many(taskAssignee),
   comments: many(comment),
-  attachments: many(attachment),
   notifications: many(notification),
   activities: many(activity),
+  chatMessages: many(chatMessage),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -64,6 +65,7 @@ export const projectRelations = relations(project, ({ one, many }) => ({
   members: many(projectMember),
   tasks: many(task),
   activities: many(activity),
+  chatMessages: many(chatMessage),
 }))
 
 export const projectMemberRelations = relations(projectMember, ({ one }) => ({
@@ -84,18 +86,24 @@ export const taskRelations = relations(task, ({ one, many }) => ({
     fields: [task.projectId],
     references: [project.id],
   }),
-  assignee: one(user, {
-    fields: [task.assigneeId],
-    references: [user.id],
-    relationName: 'assignee',
-  }),
   creator: one(user, {
     fields: [task.creatorId],
     references: [user.id],
     relationName: 'creator',
   }),
+  assignees: many(taskAssignee),
   comments: many(comment),
-  attachments: many(attachment),
+}))
+
+export const taskAssigneeRelations = relations(taskAssignee, ({ one }) => ({
+  task: one(task, {
+    fields: [taskAssignee.taskId],
+    references: [task.id],
+  }),
+  user: one(user, {
+    fields: [taskAssignee.userId],
+    references: [user.id],
+  }),
 }))
 
 // ─── Comments ──────────────────────────────────────────
@@ -107,19 +115,6 @@ export const commentRelations = relations(comment, ({ one }) => ({
   }),
   author: one(user, {
     fields: [comment.authorId],
-    references: [user.id],
-  }),
-}))
-
-// ─── Attachments ───────────────────────────────────────
-
-export const attachmentRelations = relations(attachment, ({ one }) => ({
-  task: one(task, {
-    fields: [attachment.taskId],
-    references: [task.id],
-  }),
-  uploader: one(user, {
-    fields: [attachment.uploaderId],
     references: [user.id],
   }),
 }))
@@ -143,5 +138,18 @@ export const activityRelations = relations(activity, ({ one }) => ({
   project: one(project, {
     fields: [activity.projectId],
     references: [project.id],
+  }),
+}))
+
+// ─── Chat ──────────────────────────────────────────────
+
+export const chatMessageRelations = relations(chatMessage, ({ one }) => ({
+  project: one(project, {
+    fields: [chatMessage.projectId],
+    references: [project.id],
+  }),
+  sender: one(user, {
+    fields: [chatMessage.senderId],
+    references: [user.id],
   }),
 }))

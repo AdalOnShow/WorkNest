@@ -1,54 +1,48 @@
 import { Link } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
-import { AnimatedDots } from './animated-dots'
+import { Button } from '#/components/ui/button'
+import { ProductMockup } from './product-mockup'
+import { Container } from './reveal'
+import { ScrambleText } from './scramble-text'
 
 export function Hero() {
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated Background */}
-      <AnimatedDots />
-
-      {/* Hero Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-32">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Headline */}
-          <h1 className="font-headline text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-foreground mb-6 animate-fade-in-up">
-            Manage Projects.
-            <br />
-            Ship Faster.
+    <section className="relative overflow-hidden pt-32 pb-24 sm:pt-40">
+      <div aria-hidden="true" className="hero-spotlight">
+        <div className="hero-spotlight-beam hero-spotlight-beam--left" />
+        <div className="hero-spotlight-beam hero-spotlight-beam--right" />
+      </div>
+      <Container className="relative">
+        <div className="animate-fade-in-up mx-auto flex max-w-3xl flex-col items-center text-center">
+          <p className="eyebrow mb-6">Project workspace for small teams</p>
+          <h1 className="text-4xl leading-[1.1] text-balance text-foreground sm:text-5xl lg:text-[3.5rem]">
+            <ScrambleText text="Run every project from one quiet workspace" />
           </h1>
-
-          {/* Subtext */}
-          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in-up animation-delay-200">
-            The modern collaboration platform for teams that move fast.
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-[17px]">
+            Tasks, per-project roles and a real-time chat room for each project,
+            with a dashboard that shows what is moving and what is late.
           </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
-            <Button size="lg" asChild className="w-full sm:w-auto">
-              <Link to="/login">Get Started Free</Link>
+          <div className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Button asChild className="w-full sm:w-auto">
+              <Link to="/login">Get started</Link>
             </Button>
             <Button
-              size="lg"
-              variant="ghost"
-              onClick={() => scrollToSection('how-it-works')}
+              variant="outline"
+              onClick={() => scrollToSection('platform')}
               className="w-full sm:w-auto"
             >
-              See How It Works
+              See the platform
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        <div className="animate-fade-in-up animation-delay-200 mx-auto mt-16 max-w-[1200px] sm:mt-20">
+          <ProductMockup />
+        </div>
+      </Container>
     </section>
   )
 }

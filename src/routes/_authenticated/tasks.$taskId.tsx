@@ -1,5 +1,11 @@
 import { PageContainer } from '#/components/layout/page-container'
+import { PageHeader, pathLinkClass } from '#/components/layout/page-header'
+import { AssigneeStack } from '#/components/tasks/assignee-stack'
+import { EditTaskDialog } from '#/components/tasks/edit-task-dialog'
+import { TaskComment } from '#/components/tasks/task-comment'
 import { Button } from '#/components/ui/button'
+import { ConfirmDialog } from '#/components/ui/confirm-dialog'
+import { PriorityBadge } from '#/components/ui/priority-badge'
 import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
 import {
@@ -14,17 +20,14 @@ import { UserAvatar } from '#/components/ui/user-avatar'
 import {
   addTaskComment,
   changeTaskStatus,
+  deleteTask,
   getTask,
   getTaskComments,
   updateTask,
 } from '#/server-functions/tasks'
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowLeft, Send, Trash2, Upload } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { Pencil, Send, Trash2 } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -38,7 +41,11 @@ export const Route = createFileRoute('/_authenticated/tasks/$taskId')({
 function TaskDetailPage() {
   const { taskId } = Route.useParams()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const { user: sessionUser } = Route.useRouteContext()
   const [comment, setComment] = useState('')
+  const [showEdit, setShowEdit] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [selectedPriority, setSelectedPriority] = useState<string | null>(null)
   const statusLabelId = useId()
@@ -74,8 +81,8 @@ function TaskDetailPage() {
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
       ])
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update status')
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to update status')
       if (task) setSelectedStatus(task.status)
     },
   })
@@ -89,9 +96,26 @@ function TaskDetailPage() {
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
       ])
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update priority')
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to update priority')
       if (task) setSelectedPriority(task.priority)
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteTask({ data: { taskId } }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+        queryClient.invalidateQueries({ queryKey: ['projects'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+      ])
+      toast.success('Task deleted')
+      void navigate({ to: '/tasks' })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to delete task')
+      setShowDelete(false)
     },
   })
 
@@ -99,10 +123,12 @@ function TaskDetailPage() {
     mutationFn: () => addTaskComment({ data: { taskId, content: comment } }),
     onSuccess: async () => {
       setComment('')
-      await queryClient.invalidateQueries({ queryKey: ['taskComments', taskId] })
+      await queryClient.invalidateQueries({
+        queryKey: ['taskComments', taskId],
+      })
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to send comment')
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to send comment')
     },
   })
 
@@ -118,9 +144,19 @@ function TaskDetailPage() {
     return (
       <PageContainer>
         <ErrorState
-          title="Task not found"
-          message="We could not find this task."
-          onRetry={() => window.location.reload()}
+          title={
+            error && !/not found/i.test(error.message)
+              ? 'Something went wrong'
+              : 'Task not found'
+          }
+          message={
+            error && !/not found/i.test(error.message)
+              ? 'We could not load this task. Try again in a moment.'
+              : 'We could not find this task.'
+          }
+          onRetry={() =>
+            void queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+          }
         />
       </PageContainer>
     )
@@ -129,32 +165,48 @@ function TaskDetailPage() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        <Link
-          to="/tasks"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Tasks
-        </Link>
-
-        <div className="flex items-start justify-between">
-          <h1 className="headline-sm text-foreground">{task.title}</h1>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              aria-label={`Delete ${task.title}`}
-              className="border-border text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 data-icon="inline-start" className="w-4 h-4" />
-              Delete
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-card border border-border rounded-[14px] p-6">
+        <PageHeader
+          path={[
+            <Link key="tasks" to="/tasks" className={pathLinkClass}>
+              Tasks
+            </Link>,
+            task.projectId ? (
+              <Link
+                key="project"
+                to="/projects/$projectId"
+                params={{ projectId: task.projectId }}
+                className={pathLinkClass}
+              >
+                {task.projectName}
+              </Link>
+            ) : (
+              task.projectName
+            ),
+          ]}
+          title={task.title}
+          actions={
+            task.canManage && (
+              <>
+                <Button variant="outline" onClick={() => setShowEdit(true)}>
+                  <Pencil className="size-4" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  aria-label={`Delete ${task.title}`}
+                  onClick={() => setShowDelete(true)}
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 data-icon="inline-start" className="size-4" />
+                  Delete
+                </Button>
+              </>
+            )
+          }
+        />
+        <div>
+          <div className="space-y-6">
+            <div className="bg-card border border-border rounded-xl p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
@@ -164,6 +216,7 @@ function TaskDetailPage() {
                     Status
                   </label>
                   <Select
+                    disabled={!task.canManage && !task.isAssignee}
                     value={selectedStatus || task.status}
                     onValueChange={(value) => {
                       setSelectedStatus(value)
@@ -180,8 +233,8 @@ function TaskDetailPage() {
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border">
                       <SelectGroup>
-                        <SelectItem value="TODO">To Do</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                        <SelectItem value="TODO">To do</SelectItem>
+                        <SelectItem value="IN_PROGRESS">In progress</SelectItem>
                         <SelectItem value="COMPLETED">Completed</SelectItem>
                       </SelectGroup>
                     </SelectContent>
@@ -194,49 +247,89 @@ function TaskDetailPage() {
                   >
                     Priority
                   </label>
-                  <Select
-                    value={selectedPriority || task.priority}
-                    onValueChange={(value) => {
-                      setSelectedPriority(value)
-                      void priorityMutation.mutateAsync(
-                        value as 'HIGH' | 'MEDIUM' | 'LOW',
-                      )
-                    }}
-                  >
-                    <SelectTrigger
-                      aria-labelledby={priorityLabelId}
-                      className="bg-background border-border text-foreground rounded-lg"
+                  {task.canManage ? (
+                    <Select
+                      value={selectedPriority || task.priority}
+                      onValueChange={(value) => {
+                        setSelectedPriority(value)
+                        void priorityMutation.mutateAsync(
+                          value as 'HIGH' | 'MEDIUM' | 'LOW',
+                        )
+                      }}
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover border-border">
-                      <SelectGroup>
-                        <SelectItem value="HIGH">High</SelectItem>
-                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                        <SelectItem value="LOW">Low</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                      <SelectTrigger
+                        aria-labelledby={priorityLabelId}
+                        className="bg-background border-border text-foreground rounded-lg"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border">
+                        <SelectGroup>
+                          <SelectItem value="HIGH">High</SelectItem>
+                          <SelectItem value="MEDIUM">Medium</SelectItem>
+                          <SelectItem value="LOW">Low</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <PriorityBadge priority={task.priority} />
+                  )}
                 </div>
                 <div>
                   <label className="label-sm text-muted-foreground block mb-2">
-                    Assignee
+                    Assignees
                   </label>
-                  <p className="body-sm text-foreground">
-                    {task.assigneeName || 'Unassigned'}
+                  {task.assignees.length === 0 ? (
+                    <p className="body-sm text-foreground">Unassigned</p>
+                  ) : (
+                    <div className="space-y-2">
+                      <AssigneeStack assignees={task.assignees} max={5} />
+                      <p className="text-xs text-muted-foreground">
+                        {task.assignees.map((a) => a.name).join(', ')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="label-sm text-muted-foreground block mb-2">
+                    Due date
+                  </label>
+                  <p className="body-sm font-mono text-foreground tabular-nums">
+                    {task.dueFormatted}
                   </p>
                 </div>
                 <div>
                   <label className="label-sm text-muted-foreground block mb-2">
-                    Due Date
+                    Created
                   </label>
-                  <p className="body-sm text-foreground">{task.dueFormatted}</p>
+                  <p className="body-sm text-foreground">
+                    {new Date(task.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                    {task.creatorName ? ` by ${task.creatorName}` : ''}
+                  </p>
                 </div>
+                {task.completedAt && (
+                  <div>
+                    <label className="label-sm text-muted-foreground block mb-2">
+                      Completed
+                    </label>
+                    <p className="body-sm text-foreground">
+                      {new Date(task.completedAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
             {task.description && (
-              <div className="bg-card border border-border rounded-[14px] p-6">
+              <div className="bg-card border border-border rounded-xl p-6">
                 <h3 className="label-lg text-foreground mb-3">Description</h3>
                 <p className="body-md text-card-foreground leading-relaxed">
                   {task.description}
@@ -244,48 +337,30 @@ function TaskDetailPage() {
               </div>
             )}
 
-            <div className="bg-card border border-border rounded-[14px] p-6">
-              <h3 className="label-lg text-foreground mb-4">
-                Comments ({comments.length})
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h3 className="label-lg mb-4 flex items-baseline gap-2 text-foreground">
+                Comments
+                <span className="font-mono text-sm font-medium text-muted-foreground tabular-nums">
+                  {comments.length}
+                </span>
               </h3>
               <div className="space-y-4">
                 {comments.map((c) => (
-                  <div key={c.id} className="flex gap-3">
-                    <UserAvatar
-                      name={c.authorName || 'User'}
-                      image={c.authorImage || undefined}
-                      size="sm"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="label-sm text-foreground">
-                          {c.authorName || 'Unknown'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          ·{' '}
-                          {new Date(c.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                          })}
-                        </span>
-                      </div>
-                      <p className="body-sm text-card-foreground mt-1">
-                        {c.content}
-                      </p>
-                    </div>
-                  </div>
+                  <TaskComment key={c.id} taskId={taskId} comment={c} />
                 ))}
               </div>
 
               <div className="flex gap-3 mt-6 pt-4 border-t border-border">
-                <UserAvatar name="You" size="sm" />
+                <UserAvatar
+                  name={sessionUser.name || 'You'}
+                  image={sessionUser.image || undefined}
+                  size="sm"
+                />
                 <div className="flex-1 flex gap-2">
                   <input
                     type="text"
                     aria-label={`Comment on ${task.title}`}
-                    placeholder="Write a comment..."
+                    placeholder="Write a comment"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     className="flex-1 h-10 px-4 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
@@ -295,7 +370,6 @@ function TaskDetailPage() {
                     aria-label="Send comment"
                     onClick={() => void addCommentMutation.mutateAsync()}
                     disabled={!comment.trim() || addCommentMutation.isPending}
-                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
@@ -303,27 +377,23 @@ function TaskDetailPage() {
               </div>
             </div>
           </div>
-
-          <div className="space-y-4">
-            <div className="bg-card border border-border rounded-[14px] p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="label-lg text-foreground">Attachments</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-border text-card-foreground hover:bg-accent"
-                >
-                  <Upload data-icon="inline-start" className="w-4 h-4" />
-                  Upload
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No attachments yet
-              </p>
-            </div>
-          </div>
         </div>
       </div>
+
+      {task.canManage && (
+        <EditTaskDialog
+          open={showEdit}
+          onOpenChange={setShowEdit}
+          task={task}
+        />
+      )}
+      <ConfirmDialog
+        open={showDelete}
+        onOpenChange={setShowDelete}
+        title="Delete task"
+        description="This action cannot be undone. The task and all its comments will be permanently deleted."
+        onConfirm={() => deleteMutation.mutate()}
+      />
     </PageContainer>
   )
 }
