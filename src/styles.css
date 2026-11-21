@@ -554,7 +554,11 @@
     linear-gradient(to bottom, var(--spotlight-grid) 1px, transparent 1px);
   background-size: 56px 56px;
   background-position: center top;
-  mask-image: radial-gradient(ellipse 55% 45% at 50% 0%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(
+    ellipse 55% 45% at 50% 0%,
+    #000 30%,
+    transparent 100%
+  );
 }
 
 /* Two light beams from the top corners, angled 45deg toward the bottom centre */
@@ -565,8 +569,16 @@
   height: 150%;
   transform-origin: 50% 0%;
   background:
-    radial-gradient(ellipse 50% 70% at 50% 0%, var(--spotlight), transparent 75%),
-    radial-gradient(ellipse 22% 45% at 50% 0%, var(--spotlight-core), transparent 80%);
+    radial-gradient(
+      ellipse 50% 70% at 50% 0%,
+      var(--spotlight),
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse 22% 45% at 50% 0%,
+      var(--spotlight-core),
+      transparent 80%
+    );
   animation: spotlight-in 1.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -679,5 +691,127 @@
   }
   .feature-card[data-hover] .feature-card-visual {
     animation: none;
+  }
+}
+
+/* By design stats: lines draw in, numbers roll like an odometer */
+
+.stats-rule,
+.stats-divider,
+.stats-accent {
+  position: absolute;
+  pointer-events: none;
+}
+
+.stats-rule {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.1s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.stats-grid.is-visible .stats-rule {
+  transform: scaleX(1);
+}
+
+.stats-divider {
+  display: none;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--border);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1) var(--col-delay);
+}
+
+@media (min-width: 48rem) {
+  .stats-divider {
+    display: block;
+  }
+}
+
+.stats-col.is-visible .stats-divider {
+  transform: scaleY(1);
+}
+
+.stats-accent {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stats-col:hover .stats-accent {
+  transform: scaleX(1);
+}
+
+.stats-digit,
+.stats-suffix {
+  display: inline-block;
+  height: 1.1em;
+  line-height: 1.1em;
+}
+
+.stats-digit {
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-digit-strip {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--stop) * -1.1em));
+  transition: transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stats-digit-strip > span {
+  height: 1.1em;
+}
+
+.stats-suffix {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--col-delay) + 0.9s);
+}
+
+.stats-rise {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--col-delay) + 0.3s);
+}
+
+.stats-rise-late {
+  transition-delay: calc(var(--col-delay) + 0.42s);
+}
+
+.stats-col.is-visible .stats-suffix,
+.stats-col.is-visible .stats-rise {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stats-rule,
+  .stats-divider,
+  .stats-digit-strip,
+  .stats-suffix,
+  .stats-rise {
+    transition: none;
   }
 }
