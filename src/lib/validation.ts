@@ -38,6 +38,12 @@ export const deadlineSchema = z
   .min(946_684_800_000)
   .max(4_102_444_800_000)
 
+/** The viewer's local calendar date (YYYY-MM-DD), used for "overdue". */
+export const todaySchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .optional()
+
 export const nameSchema = (label: string) =>
   z
     .string()

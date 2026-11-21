@@ -4,9 +4,12 @@ import {
   isOwnAvatarUrl,
   uploadToCloudinary,
 } from '#/lib/cloudinary'
+import { disconnectChatUser } from '#/chat/room-control'
+import { project, projectMember, user as userTable } from '#/db/schema'
 import { rateLimitMiddleware, sessionMiddleware } from '#/lib/middleware'
 import { nameSchema, input } from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
+import { and, eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 const ALLOWED_MIME_TYPES = [
@@ -105,6 +108,66 @@ export const deleteProfilePhoto = createServerFn({ method: 'POST' })
       body: { image: null },
       headers,
     })
+
+    return { success: true }
+  })
+
+/**
+ * Permanently deletes the signed-in user's account.
+ *
+ * Refused while the user is the only admin of any project, so no project is
+ * left without someone who can manage it. FK cascades remove sessions,
+ * accounts, the profile, memberships, assignments and notifications; tasks,
+ * comments and chat messages they wrote stay with a null author.
+ */
+export const deleteAccount = createServerFn({ method: 'POST' })
+  .middleware([rateLimitMiddleware])
+  .handler(async ({ context: { auth, db, env, headers, user, userId } }) => {
+    const soleAdminProjects = await db
+      .select({ name: project.name })
+      .from(projectMember)
+      .innerJoin(project, eq(project.id, projectMember.projectId))
+      .where(
+        and(
+          eq(projectMember.userId, userId),
+          eq(projectMember.role, 'ADMIN'),
+          sql`(SELECT COUNT(*) FROM ${projectMember} pm2 WHERE pm2.project_id = ${projectMember.projectId} AND pm2.role = 'ADMIN') = 1`,
+        ),
+      )
+
+    if (soleAdminProjects.length > 0) {
+      const names = soleAdminProjects.map((p) => `"${p.name}"`).join(', ')
+      throw new Error(
+        `You are the only admin of ${names}. Make someone else an admin or delete ${soleAdminProjects.length === 1 ? 'that project' : 'those projects'} first.`,
+      )
+    }
+
+    const memberships = await db
+      .select({ projectId: projectMember.projectId })
+      .from(projectMember)
+      .where(eq(projectMember.userId, userId))
+
+    if (user.image && isOwnAvatarUrl(env, user.image, userId)) {
+      try {
+        await deleteFromCloudinary(env, avatarPublicId(userId))
+      } catch (err) {
+        console.error('[deleteAccount] Failed to delete avatar:', err)
+      }
+    }
+
+    // Clear the session cookies on this response. The cookie cache would
+    // otherwise keep the deleted user signed in until it expires.
+    try {
+      await auth.api.signOut({ headers })
+    } catch (err) {
+      console.error('[deleteAccount] signOut failed:', err)
+    }
+
+    await db.delete(userTable).where(eq(userTable.id, userId))
+
+    await Promise.all(
+      memberships.map((m) => disconnectChatUser(m.projectId, userId)),
+    )
 
     return { success: true }
   })

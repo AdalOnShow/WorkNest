@@ -1,6 +1,7 @@
 import { PageContainer } from '#/components/layout/page-container'
 import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
+import { InvitationRow } from '#/components/ui/invitation-row'
 import { EmptyState } from '#/components/ui/empty-state'
 import { LoadingState } from '#/components/ui/loading-state'
 import { Pagination } from '#/components/ui/pagination-controls'
@@ -10,6 +11,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '#/server-functions/notifications'
+import { listMyPendingInvitations } from '#/server-functions/invitations'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Bell, Check } from 'lucide-react'
@@ -30,6 +32,12 @@ function NotificationsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['notifications', page],
     queryFn: () => listNotifications({ data: { page, pageSize: 20 } }),
+  })
+
+  // Same key as the bell, so both share one cache entry.
+  const { data: invites = [], isLoading: invitesLoading } = useQuery({
+    queryKey: ['invitations', 'mine'],
+    queryFn: () => listMyPendingInvitations(),
   })
 
   const markReadMutation = useMutation({
@@ -57,6 +65,14 @@ function NotificationsPage() {
   const items = data?.items || []
   const unreadCount = data?.unreadCount || 0
   const totalPages = data?.totalPages || 1
+  const inviteCount = invites.length
+
+  const summary = [
+    inviteCount > 0 &&
+      `${inviteCount} pending ${inviteCount === 1 ? 'invitation' : 'invitations'}`,
+    unreadCount > 0 &&
+      `${unreadCount} unread ${unreadCount === 1 ? 'notification' : 'notifications'}`,
+  ].filter(Boolean)
 
   return (
     <PageContainer>
@@ -64,9 +80,7 @@ function NotificationsPage() {
         <PageHeader
           title="Notifications"
           description={
-            unreadCount > 0
-              ? `${unreadCount} unread ${unreadCount === 1 ? 'notification' : 'notifications'}`
-              : 'All caught up'
+            summary.length > 0 ? summary.join(' · ') : 'All caught up'
           }
           actions={
             unreadCount > 0 && (
@@ -82,15 +96,32 @@ function NotificationsPage() {
           }
         />
 
-        {isLoading ? (
+        {inviteCount > 0 && (
+          <section className="space-y-2">
+            <h2 className="label-sm text-muted-foreground">
+              Pending invitations
+            </h2>
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              {invites.map((inv) => (
+                <InvitationRow
+                  key={inv.id}
+                  invitation={inv}
+                  className="last:border-b-0"
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {isLoading || invitesLoading ? (
           <LoadingState variant="list" />
-        ) : items.length === 0 ? (
+        ) : items.length === 0 && inviteCount === 0 ? (
           <EmptyState
             icon={Bell}
             title="No notifications"
             description="You're all caught up"
           />
-        ) : (
+        ) : items.length === 0 ? null : (
           <>
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               {items.map((notification) => (

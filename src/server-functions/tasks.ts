@@ -11,6 +11,7 @@ import {
 import { logActivity, notifyUsers } from '#/lib/activity'
 import { canManage, requireProjectRole } from '#/lib/authz'
 import { authMiddleware, rateLimitMiddleware } from '#/lib/middleware'
+import { todayStart } from '#/lib/date-utils'
 import { escapeLikePattern } from '#/lib/sql'
 import {
   commentSchema,
@@ -23,21 +24,11 @@ import {
   taskPrioritySchema,
   taskStatusSchema,
   titleSchema,
+  todaySchema,
   input,
 } from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
-import {
-  and,
-  count,
-  desc,
-  eq,
-  gte,
-  inArray,
-  lt,
-  lte,
-  ne,
-  sql,
-} from 'drizzle-orm'
+import { and, count, desc, eq, gte, inArray, lt, ne, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
 
@@ -195,6 +186,7 @@ export const listTasks = createServerFn({ method: 'GET' })
         /** A user id, or "me" for the caller. */
         assigneeId: idSchema.optional().or(z.literal('')),
         deadline: z.enum(['all', 'overdue', 'week', 'none']).optional(),
+        today: todaySchema,
         sort: z.enum(['created', 'deadline', 'priority', 'updated']).optional(),
         dir: sortDirSchema.optional(),
         ...paginationSchema(10),
@@ -233,13 +225,18 @@ export const listTasks = createServerFn({ method: 'GET' })
         sql`EXISTS (SELECT 1 FROM ${taskAssignee} WHERE ${taskAssignee.taskId} = ${task.id} AND ${taskAssignee.userId} = ${target})`,
       )
     }
-    const now = new Date()
+    // Deadlines are calendar dates: due today is not overdue, and "this
+    // week" is today plus the next 7 days.
+    const startOfToday = todayStart(data.today)
     if (data.deadline === 'overdue') {
-      conditions.push(lt(task.deadline, now), ne(task.status, 'COMPLETED'))
+      conditions.push(
+        lt(task.deadline, startOfToday),
+        ne(task.status, 'COMPLETED'),
+      )
     } else if (data.deadline === 'week') {
       conditions.push(
-        gte(task.deadline, now),
-        lte(task.deadline, new Date(now.getTime() + 7 * DAY_MS)),
+        gte(task.deadline, startOfToday),
+        lt(task.deadline, new Date(startOfToday.getTime() + 8 * DAY_MS)),
       )
     } else if (data.deadline === 'none') {
       conditions.push(sql`${task.deadline} IS NULL`)

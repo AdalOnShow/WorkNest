@@ -17,10 +17,21 @@ import { SearchInput } from '#/components/ui/search-input'
 import { CreateTaskDialog } from '#/components/tasks/create-task-dialog'
 import { TaskTable } from '#/components/tasks/task-table'
 import { FilterControls } from '#/components/ui/filter-controls'
+import { todayDateString } from '#/lib/date-utils'
+import { listMembers } from '#/server-functions/members'
 import { listProjects } from '#/server-functions/projects'
 import { deleteTask, listTasks } from '#/server-functions/tasks'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import {
+  createFileRoute,
+  Outlet,
+  useChildMatches,
+} from '@tanstack/react-router'
 import { CheckSquare, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -29,14 +40,23 @@ type TaskStatusFilter = 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
 type TaskPriorityFilter = 'HIGH' | 'MEDIUM' | 'LOW'
 
 export const Route = createFileRoute('/_authenticated/tasks')({
-  component: TasksPage,
+  component: TasksRoute,
   head: () => ({
     meta: [{ title: 'Tasks — WorkNest' }],
   }),
 })
 
+function TasksRoute() {
+  const hasChildMatch = useChildMatches({
+    select: (matches) => matches.length > 0,
+  })
+
+  return hasChildMatch ? <Outlet /> : <TasksPage />
+}
+
 function TasksPage() {
   const queryClient = useQueryClient()
+  const { user } = Route.useRouteContext()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
@@ -60,40 +80,53 @@ function TasksPage() {
     'asc' | 'desc',
   ]
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: [
-      'tasks',
-      debouncedSearch,
-      statusFilter,
-      priorityFilter,
-      projectFilter,
-      assigneeFilter,
-      deadlineFilter,
-      sort,
-      page,
-    ],
-    queryFn: () =>
-      listTasks({
-        data: {
-          search: debouncedSearch,
-          status: statusFilter as 'all' | TaskStatusFilter,
-          priority: priorityFilter as 'all' | TaskPriorityFilter,
-          projectId: projectFilter === 'all' ? undefined : projectFilter,
-          assigneeId: assigneeFilter === 'all' ? undefined : assigneeFilter,
-          deadline: deadlineFilter as 'all' | 'overdue' | 'week' | 'none',
-          sort: sortKey,
-          dir: sortDir,
-          page,
-          pageSize: 10,
-        },
-      }),
-  })
+  const { data, isLoading, isError, isFetching, isPlaceholderData, refetch } =
+    useQuery({
+      queryKey: [
+        'tasks',
+        debouncedSearch,
+        statusFilter,
+        priorityFilter,
+        projectFilter,
+        assigneeFilter,
+        deadlineFilter,
+        sort,
+        page,
+      ],
+      queryFn: () =>
+        listTasks({
+          data: {
+            search: debouncedSearch,
+            status: statusFilter as 'all' | TaskStatusFilter,
+            priority: priorityFilter as 'all' | TaskPriorityFilter,
+            projectId: projectFilter === 'all' ? undefined : projectFilter,
+            assigneeId: assigneeFilter === 'all' ? undefined : assigneeFilter,
+            deadline: deadlineFilter as 'all' | 'overdue' | 'week' | 'none',
+            today: todayDateString(),
+            sort: sortKey,
+            dir: sortDir,
+            page,
+            pageSize: 10,
+          },
+        }),
+      // Keep the current rows on screen while a new search/filter loads.
+      placeholderData: keepPreviousData,
+    })
 
   const { data: projectsData } = useQuery({
     queryKey: ['projects', 'all-for-tasks'],
     queryFn: () => listProjects({ data: { pageSize: 100 } }),
   })
   const projects = projectsData?.items ?? []
+
+  // Everyone who shares a project with the viewer, for the assignee filter.
+  const { data: membersData } = useQuery({
+    queryKey: ['members', 'all-for-tasks'],
+    queryFn: () => listMembers({ data: { pageSize: 100 } }),
+  })
+  const otherMembers = (membersData?.items ?? []).filter(
+    (m) => m.id !== user.id,
+  )
 
   const deleteMutation = useMutation({
     mutationFn: (taskId: string) => deleteTask({ data: { taskId } }),
@@ -205,6 +238,7 @@ function TasksPage() {
                 options: [
                   { label: 'All assignees', value: 'all' },
                   { label: 'Assigned to me', value: 'me' },
+                  ...otherMembers.map((m) => ({ label: m.name, value: m.id })),
                 ],
               },
               {
@@ -267,7 +301,16 @@ function TasksPage() {
           />
         ) : (
           <>
-            <TaskTable items={items} onDelete={setDeleteId} />
+            <div
+              aria-busy={isFetching && isPlaceholderData}
+              className={
+                isFetching && isPlaceholderData
+                  ? 'opacity-60 transition-opacity'
+                  : 'transition-opacity'
+              }
+            >
+              <TaskTable items={items} onDelete={setDeleteId} />
+            </div>
 
             {totalPages > 1 && (
               <div className="flex justify-center">

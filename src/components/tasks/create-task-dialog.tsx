@@ -40,6 +40,7 @@ export function CreateTaskDialog({
 }: CreateTaskDialogProps) {
   const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
+  const [titleTouched, setTitleTouched] = useState(false)
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM')
   const [status, setStatus] = useState<'TODO' | 'IN_PROGRESS' | 'COMPLETED'>(
@@ -77,6 +78,7 @@ export function CreateTaskDialog({
   })
 
   function resetForm() {
+    setTitleTouched(false)
     setTitle('')
     setDescription('')
     setPriority('MEDIUM')
@@ -117,11 +119,24 @@ export function CreateTaskDialog({
             <Input
               id="task-title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value)
+                setTitleTouched(true)
+              }}
+              onBlur={() => setTitleTouched(true)}
+              aria-invalid={(titleTouched && !title.trim()) || undefined}
+              aria-describedby={
+                titleTouched && !title.trim() ? 'task-title-error' : undefined
+              }
               placeholder="e.g. Design homepage mockup"
               className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg h-8 text-sm focus-visible:ring-primary/40"
               autoFocus
             />
+            {titleTouched && !title.trim() && (
+              <p id="task-title-error" className="text-[11px] text-destructive">
+                Title is required
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">

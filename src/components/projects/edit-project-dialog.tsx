@@ -20,11 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import { updateProject } from '#/server-functions/projects'
+import { ConfirmDialog } from '#/components/ui/confirm-dialog'
+import { deleteProject, updateProject } from '#/server-functions/projects'
 import { parseLocalDate, timestampToLocalDateString } from '#/lib/date-utils'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Trash2 } from 'lucide-react'
 
 interface EditProjectDialogProps {
   open: boolean
@@ -44,6 +46,9 @@ export function EditProjectDialog({
   project,
 }: EditProjectDialogProps) {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [nameTouched, setNameTouched] = useState(false)
   const [name, setName] = useState(project.name)
   const [description, setDescription] = useState(project.description || '')
   const [status, setStatus] = useState(project.status)
@@ -54,6 +59,7 @@ export function EditProjectDialog({
 
   useEffect(() => {
     if (open) {
+      setNameTouched(false)
       setName(project.name)
       setDescription(project.description || '')
       setStatus(project.status)
@@ -93,6 +99,26 @@ export function EditProjectDialog({
     },
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProject({ data: { projectId: project.id } }),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['project', project.id] })
+      queryClient.removeQueries({ queryKey: ['project-members', project.id] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      toast.success('Project deleted')
+      onOpenChange(false)
+      void navigate({ to: '/projects' })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete project')
+    },
+  })
+
+  const busy = updateMutation.isPending || deleteMutation.isPending
+  const nameMissing = nameTouched && !name.trim()
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
@@ -120,11 +146,27 @@ export function EditProjectDialog({
             <Input
               id="edit-project-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value)
+                setNameTouched(true)
+              }}
+              onBlur={() => setNameTouched(true)}
               placeholder="e.g. Website Redesign"
+              aria-invalid={nameMissing || undefined}
+              aria-describedby={
+                nameMissing ? 'edit-project-name-error' : undefined
+              }
               className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg h-10 focus-visible:ring-primary/40"
               autoFocus
             />
+            {nameMissing && (
+              <p
+                id="edit-project-name-error"
+                className="text-[11px] text-destructive"
+              >
+                Name is required
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -206,15 +248,29 @@ export function EditProjectDialog({
             <Button
               type="button"
               variant="outline"
+              onClick={() => setConfirmDelete(true)}
+              disabled={busy}
+              className="border-destructive text-destructive hover:bg-destructive/10 sm:mr-auto"
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
+              Delete project
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={updateMutation.isPending}
+              disabled={busy}
               className="border-border bg-transparent text-foreground hover:bg-accent"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={!name.trim() || updateMutation.isPending}
+              disabled={!name.trim() || busy}
               className=" font-semibold"
             >
               {updateMutation.isPending ? (
@@ -225,6 +281,15 @@ export function EditProjectDialog({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Delete project"
+        description={`This permanently deletes "${project.name}" with all its tasks, comments, members, invitations and chat history. This cannot be undone.`}
+        confirmLabel="Delete project"
+        onConfirm={() => deleteMutation.mutate()}
+      />
     </Dialog>
   )
 }

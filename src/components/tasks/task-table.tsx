@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '#/components/ui/table'
 import type { TaskAssignee } from '#/server-functions/tasks'
+import { todayDateString, todayStart } from '#/lib/date-utils'
 import { Link } from '@tanstack/react-router'
 import { Trash2 } from 'lucide-react'
 
@@ -39,7 +40,8 @@ export function TaskTable({
   showProject = true,
   onDelete,
 }: TaskTableProps) {
-  const now = Date.now()
+  // Due today is not overdue: compare with the start of the viewer's today.
+  const startOfToday = todayStart(todayDateString()).getTime()
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <Table>
@@ -65,7 +67,7 @@ export function TaskTable({
             const overdue =
               task.deadline != null &&
               task.status !== 'COMPLETED' &&
-              new Date(task.deadline).getTime() < now
+              new Date(task.deadline).getTime() < startOfToday
             return (
               <TableRow
                 key={task.id}
