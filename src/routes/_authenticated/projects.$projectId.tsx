@@ -44,6 +44,8 @@ function RouteComponent() {
     queryFn: () => listTasks({ data: { projectId, pageSize: 50 } }),
   })
 
+  // Only project admins may edit or delete the project (enforced server-side too).
+  const isAdmin = members?.myRole === 'ADMIN'
   // Only project admins and managers may create tasks (enforced server-side too).
   const canCreateTask =
     members?.myRole === 'ADMIN' || members?.myRole === 'PROJECT_MANAGER'
@@ -83,10 +85,15 @@ function RouteComponent() {
           actions={
             <>
               <StatusBadge status={project.status} />
-              <Button variant="outline" onClick={() => setShowEditDialog(true)}>
-                <Pencil className="size-4" />
-                Edit
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEditDialog(true)}
+                >
+                  <Pencil className="size-4" />
+                  Edit
+                </Button>
+              )}
               {canCreateTask && (
                 <Button onClick={() => setShowTaskDialog(true)}>
                   <Plus className="size-4" />
@@ -166,22 +173,24 @@ function RouteComponent() {
         projectId={projectId}
       />
 
-      <EditProjectDialog
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        project={{
-          id: project.id,
-          name: project.name,
-          description: project.description,
-          status: project.status,
-          deadline:
-            project.deadline != null
-              ? typeof project.deadline === 'number'
-                ? project.deadline
-                : new Date(project.deadline).getTime()
-              : null,
-        }}
-      />
+      {isAdmin && (
+        <EditProjectDialog
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          project={{
+            id: project.id,
+            name: project.name,
+            description: project.description,
+            status: project.status,
+            deadline:
+              project.deadline != null
+                ? typeof project.deadline === 'number'
+                  ? project.deadline
+                  : new Date(project.deadline).getTime()
+                : null,
+          }}
+        />
+      )}
     </PageContainer>
   )
 }

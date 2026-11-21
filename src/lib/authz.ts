@@ -37,8 +37,8 @@ export async function getProjectRole(
  * Returns the caller's role in the project, or throws when they are not a
  * member or (if `roles` is given) their role is not one of `roles`.
  *
- * Both cases throw the same message by default so project ids can't be
- * probed by non-members.
+ * Non-members always get the same generic message, so project ids can't be
+ * probed. `message` replaces it only for members whose role is not allowed.
  */
 export async function requireProjectRole(
   db: Database,
@@ -49,9 +49,11 @@ export async function requireProjectRole(
     message?: string
   } = {},
 ): Promise<ProjectRole> {
-  const message = options.message ?? 'Project not found or access denied'
+  const notFound = 'Project not found or access denied'
   const role = await getProjectRole(db, projectId, userId)
-  if (!role) throw new Error(message)
-  if (options.roles && !options.roles.includes(role)) throw new Error(message)
+  if (!role) throw new Error(notFound)
+  if (options.roles && !options.roles.includes(role)) {
+    throw new Error(options.message ?? notFound)
+  }
   return role
 }

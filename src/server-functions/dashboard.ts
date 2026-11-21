@@ -6,9 +6,12 @@ import {
   taskAssignee,
   user,
 } from '#/db/schema'
+import { todayStart } from '#/lib/date-utils'
 import { authMiddleware } from '#/lib/middleware'
+import { input, todaySchema } from '#/lib/validation'
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, gt, gte, lt, ne, sql } from 'drizzle-orm'
+import { and, count, desc, eq, gte, lt, ne, sql } from 'drizzle-orm'
+import { z } from 'zod'
 
 const DAY_MS = 86_400_000
 const PRODUCTIVITY_DAYS = 14
@@ -17,7 +20,9 @@ const WORKLOAD_LIMIT = 8
 
 export const getDashboardData = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .handler(async ({ context: { db, userId } }) => {
+  .validator(input(z.object({ today: todaySchema })))
+  .handler(async ({ data, context: { db, userId } }) => {
+    const startOfToday = todayStart(data.today)
     const memberCondition = sql`${project.id} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`
 
     const [
@@ -54,7 +59,7 @@ export const getDashboardData = createServerFn({ method: 'GET' })
         .where(
           and(
             sql`${task.projectId} IN (SELECT ${projectMember.projectId} FROM ${projectMember} WHERE ${projectMember.userId} = ${userId})`,
-            and(lt(task.deadline, new Date()), ne(task.status, 'COMPLETED')),
+            and(lt(task.deadline, startOfToday), ne(task.status, 'COMPLETED')),
           ),
         ),
       db
@@ -107,7 +112,7 @@ export const getDashboardData = createServerFn({ method: 'GET' })
             sql`${task.status} != 'COMPLETED'`,
           ),
         )
-        .where(and(memberCondition, gt(project.deadline, new Date())))
+        .where(and(memberCondition, gte(project.deadline, startOfToday)))
         .groupBy(project.id)
         .orderBy(project.deadline)
         .limit(5),
@@ -276,8 +281,9 @@ export const getDashboardData = createServerFn({ method: 'GET' })
       projectProgress,
       productivity,
       memberWorkload,
-      recentActivities: recentActivities.map((a) => ({
+      recentActivities: recentActivities.map(({ metadata, ...a }) => ({
         ...a,
+        detail: activityDetail(metadata),
         timeAgo: getTimeAgo(a.createdAt),
       })),
       myOpenTasks: myOpenTasks.map(withDue),
@@ -304,6 +310,21 @@ function withDue<T extends { deadline: Date | null }>(t: T) {
         })
       : '—',
   }
+}
+
+/** The task title, project name or member an activity row is about. */
+function activityDetail(metadata: string | null): string | null {
+  if (!metadata) return null
+  try {
+    const m = JSON.parse(metadata) as Record<string, unknown>
+    for (const key of ['title', 'taskTitle', 'name', 'email']) {
+      const value = m[key]
+      if (typeof value === 'string' && value.trim()) return value
+    }
+  } catch {
+    // Malformed metadata: show the label alone.
+  }
+  return null
 }
 
 function getTimeAgo(date: Date): string {

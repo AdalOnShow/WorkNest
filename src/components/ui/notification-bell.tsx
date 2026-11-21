@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, Check, ChevronRight, Mail } from 'lucide-react'
+import { Bell, Check } from 'lucide-react'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '#/components/ui/popover'
 import { Button } from '#/components/ui/button'
+import { InvitationRow } from '#/components/ui/invitation-row'
 import { cn } from '#/lib/utils'
 import {
   listNotifications,
@@ -15,12 +16,6 @@ import {
   markNotificationRead,
 } from '#/server-functions/notifications'
 import { listMyPendingInvitations } from '#/server-functions/invitations'
-
-const ROLE_LABELS = {
-  ADMIN: 'Admin',
-  PROJECT_MANAGER: 'Project Manager',
-  TEAM_MEMBER: 'Team Member',
-} as const
 
 /** No WebSocket push for notifications: poll, and refetch on window focus. */
 const POLL_MS = 60_000
@@ -121,34 +116,11 @@ export function NotificationBell({ className }: { className?: string }) {
             <div className="flex flex-col">
               {/* Pending invitations: click to review and confirm */}
               {invites.map((inv) => (
-                <Link
+                <InvitationRow
                   key={inv.id}
-                  to="/invitations/$token"
-                  params={{ token: inv.token }}
-                  onClick={() => setOpen(false)}
-                  className="group flex items-start gap-3 p-4 border-b border-border/50 border-l-2 border-l-primary bg-primary/5 hover:bg-accent/50 transition-colors"
-                >
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-                    <Mail className="w-4 h-4" />
-                  </span>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <p className="text-sm font-semibold leading-none text-foreground">
-                      Project invitation
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      <span className="text-foreground">
-                        {inv.inviterName ?? 'Someone'}
-                      </span>{' '}
-                      invited you to{' '}
-                      <span className="text-foreground">{inv.projectName}</span>{' '}
-                      as {ROLE_LABELS[inv.role]}
-                    </p>
-                    <p className="text-xs font-semibold text-primary">
-                      Review invitation
-                    </p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 mt-2 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </Link>
+                  invitation={inv}
+                  onNavigate={() => setOpen(false)}
+                />
               ))}
 
               {items.map((n) => (

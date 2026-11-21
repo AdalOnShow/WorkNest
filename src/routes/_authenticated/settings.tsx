@@ -1,11 +1,13 @@
 import { PageContainer } from '#/components/layout/page-container'
 import { PageHeader } from '#/components/layout/page-header'
 import { Button } from '#/components/ui/button'
+import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Separator } from '#/components/ui/separator'
 import { UserAvatar } from '#/components/ui/user-avatar'
 import {
+  deleteAccount,
   deleteProfilePhoto,
   updateProfile,
   uploadProfilePhoto,
@@ -37,6 +39,8 @@ function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -103,6 +107,20 @@ function SettingsPage() {
       )
     } finally {
       setIsDeleting(false)
+    }
+  }, [])
+
+  const handleDeleteAccount = useCallback(async () => {
+    setIsDeletingAccount(true)
+    try {
+      await deleteAccount()
+      toast.success('Account deleted')
+      window.location.href = '/'
+    } catch (error) {
+      setIsDeletingAccount(false)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to delete account',
+      )
     }
   }, [])
 
@@ -328,21 +346,33 @@ function SettingsPage() {
         <div className="bg-card border border-border rounded-xl p-6 space-y-4">
           <h3 className="label-lg text-foreground">Account</h3>
           <div className="space-y-3">
+            <p className="body-sm text-muted-foreground">
+              Permanently delete your account. Tasks, comments and messages you
+              wrote stay in their projects without your name.
+            </p>
             <Button
               variant="outline"
-              className="border-border text-card-foreground hover:bg-accent"
-            >
-              Change Password
-            </Button>
-            <Button
-              variant="outline"
+              onClick={() => setConfirmDeleteAccount(true)}
+              disabled={isDeletingAccount}
               className="border-destructive text-destructive hover:bg-destructive/10"
             >
+              {isDeletingAccount && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
               Delete Account
             </Button>
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteAccount}
+        onOpenChange={setConfirmDeleteAccount}
+        title="Delete account"
+        description="This permanently deletes your account and removes you from every project. This cannot be undone."
+        confirmLabel="Delete account"
+        onConfirm={() => void handleDeleteAccount()}
+      />
     </PageContainer>
   )
 }

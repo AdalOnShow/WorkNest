@@ -15,7 +15,7 @@ A team collaboration app for projects, tasks and real-time project chat. It runs
 - **Project chat:** one real-time room per project, backed by a Durable Object with WebSocket hibernation. History is stored in D1.
 - **Notifications and activity log:** stored in D1 and refreshed with TanStack Query.
 - **Per-project roles:** `ADMIN`, `PROJECT_MANAGER` and `TEAM_MEMBER`, enforced on the server.
-- **Auth:** Google or GitHub OAuth, plus optional email/password sign-in for demo accounts.
+- **Auth:** Google or GitHub OAuth, plus optional one-click sign-in to the seeded demo accounts.
 - **Themes and layout:** light and dark themes (Mono design system), with responsive desktop, tablet and phone layouts.
 
 ## Stack
@@ -45,7 +45,7 @@ pnpm dev                                 # http://localhost:3000
 
 ### Demo accounts
 
-`pnpm db:seed` creates three accounts. They all use the password **`worknest-demo`**.
+`pnpm db:seed` creates three accounts. The login page has a **Try a demo account** panel with one button per account: click one to sign in as that role. There is no email/password form; the buttons sign in with the shared demo password (**`worknest-demo`**) behind the scenes.
 
 | Email                 | What you can try                                                                 |
 | --------------------- | -------------------------------------------------------------------------------- |
@@ -53,7 +53,7 @@ pnpm dev                                 # http://localhost:3000
 | `pm@worknest.dev`     | Admin of _Mobile App Launch_, project manager on _Website Redesign_              |
 | `member@worknest.dev` | Team member on most projects (sees the restricted UI)                            |
 
-Signing in with email needs `ENABLE_EMAIL_PASSWORD=true`; the example `.dev.vars` sets it. Email sign-up is disabled, so new users register through Google or GitHub. The seed is idempotent: it only creates rows whose id starts with `demo-`, and re-running it resets them.
+The demo panel only appears when `ENABLE_EMAIL_PASSWORD=true`; the example `.dev.vars` sets it. Email sign-up is disabled, so new users register through Google or GitHub. The seed is idempotent: it only creates rows whose id starts with `demo-`, and re-running it resets them.
 
 ### Environment
 
@@ -65,7 +65,7 @@ Local values go in `.dev.vars`. Production secrets are set with `wrangler secret
 | `BETTER_AUTH_URL`                                    | yes in prod | `http://localhost:3000` locally; set in `wrangler.jsonc` vars for prod |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`          | one method  | OAuth callback: `<BETTER_AUTH_URL>/api/auth/callback/google`           |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`          | one method  | OAuth callback: `<BETTER_AUTH_URL>/api/auth/callback/github`           |
-| `ENABLE_EMAIL_PASSWORD`                              | one method  | `"true"` shows the email form (sign-in only). Defaults to `"false"`    |
+| `ENABLE_EMAIL_PASSWORD`                              | one method  | `"true"` shows the one-click demo account panel. Defaults to `"false"` |
 | `CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET` | no          | Only needed for profile photo uploads                                  |
 
 At least one sign-in method must be configured: Google, GitHub, or email.

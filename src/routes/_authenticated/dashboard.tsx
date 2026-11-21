@@ -4,6 +4,7 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { lazy, Suspense } from 'react'
 import { ErrorState } from '#/components/ui/error-state'
 import { LoadingState } from '#/components/ui/loading-state'
+import { todayDateString } from '#/lib/date-utils'
 import { getDashboardData } from '#/server-functions/dashboard'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
@@ -39,9 +40,10 @@ export const Route = createFileRoute('/_authenticated/dashboard')({
 })
 
 function DashboardPage() {
+  const todayKey = todayDateString()
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['dashboard'],
-    queryFn: () => getDashboardData(),
+    queryKey: ['dashboard', todayKey],
+    queryFn: () => getDashboardData({ data: { today: todayKey } }),
   })
 
   if (isLoading) {
@@ -297,6 +299,12 @@ function DashboardPage() {
                       />
                       <p className="truncate text-[13px] text-foreground">
                         {activityLabel(activity.action)}
+                        {activity.detail && (
+                          <span className="text-muted-foreground">
+                            {' — '}
+                            {activity.detail}
+                          </span>
+                        )}
                       </p>
                     </div>
                     <span className="shrink-0 font-mono text-[11px] text-muted-foreground">

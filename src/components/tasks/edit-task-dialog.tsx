@@ -59,6 +59,7 @@ export function EditTaskDialog({
 }: EditTaskDialogProps) {
   const queryClient = useQueryClient()
   const [title, setTitle] = useState(task.title)
+  const [titleTouched, setTitleTouched] = useState(false)
   const [description, setDescription] = useState(task.description ?? '')
   const [status, setStatus] = useState<Status>(task.status)
   const [priority, setPriority] = useState<Priority>(task.priority)
@@ -68,6 +69,7 @@ export function EditTaskDialog({
   // Reset the form from the latest task each time the dialog opens.
   useEffect(() => {
     if (!open) return
+    setTitleTouched(false)
     setTitle(task.title)
     setDescription(task.description ?? '')
     setStatus(task.status)
@@ -137,9 +139,27 @@ export function EditTaskDialog({
             <Input
               id="edit-task-title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value)
+                setTitleTouched(true)
+              }}
+              onBlur={() => setTitleTouched(true)}
+              aria-invalid={(titleTouched && !title.trim()) || undefined}
+              aria-describedby={
+                titleTouched && !title.trim()
+                  ? 'edit-task-title-error'
+                  : undefined
+              }
               className={inputClass}
             />
+            {titleTouched && !title.trim() && (
+              <p
+                id="edit-task-title-error"
+                className="text-[11px] text-destructive"
+              >
+                Title is required
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -29,6 +29,7 @@ export function CreateProjectDialog({
 }: CreateProjectDialogProps) {
   const queryClient = useQueryClient()
   const [name, setName] = useState('')
+  const [nameTouched, setNameTouched] = useState(false)
   const [description, setDescription] = useState('')
   const [deadline, setDeadline] = useState('')
 
@@ -53,6 +54,7 @@ export function CreateProjectDialog({
   })
 
   function resetForm() {
+    setNameTouched(false)
     setName('')
     setDescription('')
     setDeadline('')
@@ -90,11 +92,27 @@ export function CreateProjectDialog({
             <Input
               id="project-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value)
+                setNameTouched(true)
+              }}
+              onBlur={() => setNameTouched(true)}
+              aria-invalid={(nameTouched && !name.trim()) || undefined}
+              aria-describedby={
+                nameTouched && !name.trim() ? 'project-name-error' : undefined
+              }
               placeholder="e.g. Website Redesign"
               className="bg-background border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg h-10 focus-visible:ring-primary/40"
               autoFocus
             />
+            {nameTouched && !name.trim() && (
+              <p
+                id="project-name-error"
+                className="text-[11px] text-destructive"
+              >
+                Name is required
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

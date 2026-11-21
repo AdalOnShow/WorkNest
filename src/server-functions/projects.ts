@@ -1,5 +1,5 @@
 import { closeChatRoom, disconnectChatUser } from '#/chat/room-control'
-import { project, projectMember, task, user } from '#/db/schema'
+import { notification, project, projectMember, task, user } from '#/db/schema'
 import { logActivity } from '#/lib/activity'
 import { requireProjectRole } from '#/lib/authz'
 import { authMiddleware, rateLimitMiddleware } from '#/lib/middleware'
@@ -214,7 +214,10 @@ export const updateProject = createServerFn({ method: 'POST' })
     ),
   )
   .handler(async ({ data, context: { db, userId } }) => {
-    await requireProjectRole(db, data.projectId, userId, { roles: ['ADMIN'] })
+    await requireProjectRole(db, data.projectId, userId, {
+      roles: ['ADMIN'],
+      message: 'Only project admins can edit a project',
+    })
 
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (data.name !== undefined) updates.name = data.name
@@ -251,7 +254,19 @@ export const deleteProject = createServerFn({ method: 'POST' })
       message: 'Only project admins can delete a project',
     })
 
-    await db.delete(project).where(eq(project.id, data.projectId))
+    // Tasks, members, invitations, comments, chat and activity cascade from
+    // the project row. Notifications only hold a task id in reference_id
+    // (no FK), so remove them explicitly in the same transaction.
+    const projectTaskIds = db
+      .select({ id: task.id })
+      .from(task)
+      .where(eq(task.projectId, data.projectId))
+    await db.batch([
+      db
+        .delete(notification)
+        .where(inArray(notification.referenceId, projectTaskIds)),
+      db.delete(project).where(eq(project.id, data.projectId)),
+    ])
     await closeChatRoom(data.projectId)
     return { success: true }
   })
@@ -267,8 +282,14 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
     )
 
     const [targetMember] = await db
-      .select({ id: projectMember.id, role: projectMember.role })
+      .select({
+        id: projectMember.id,
+        role: projectMember.role,
+        name: user.name,
+        email: user.email,
+      })
       .from(projectMember)
+      .innerJoin(user, eq(user.id, projectMember.userId))
       .where(
         and(
           eq(projectMember.projectId, data.projectId),
@@ -310,7 +331,11 @@ export const removeProjectMember = createServerFn({ method: 'POST' })
       action: 'PROJECT_MEMBER_REMOVED',
       entityType: 'member',
       entityId: targetMember.id,
-      metadata: { userId: data.userId },
+      metadata: {
+        userId: data.userId,
+        name: targetMember.name,
+        email: targetMember.email,
+      },
     })
 
     return { success: true }
