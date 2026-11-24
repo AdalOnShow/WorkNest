@@ -1,6 +1,27 @@
+<div align="center">
+
 # WorkNest
 
-A team collaboration app for projects, tasks and real-time project chat. It runs as a single Cloudflare Worker.
+**A team collaboration app for projects, tasks and real-time project chat. It runs as a single Cloudflare Worker.**
+
+[**Live Demo**](https://worknest.sadal.dev/) · [Screenshots](#screenshots) · [Stack](#stack) · [Quick start](#quick-start)
+
+![TanStack Start](https://img.shields.io/badge/TanStack_Start-000000?logo=reactquery&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?logo=cloudflareworkers&logoColor=white)
+![Cloudflare D1](https://img.shields.io/badge/Cloudflare_D1-F38020?logo=cloudflare&logoColor=white)
+![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-C5F74F?logo=drizzle&logoColor=black)
+![Better Auth](https://img.shields.io/badge/Better_Auth-000000)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_v4-06B6D4?logo=tailwindcss&logoColor=white)
+
+<br />
+
+<img src="docs/screenshots/dashboard.png" alt="WorkNest dashboard: KPI cards, completed-tasks chart, tasks by status and priority, member workload and project progress" width="900" />
+
+</div>
+
+---
 
 - **Projects:** members, invitations, status, deadlines, search, filter, sort and pagination.
 - **Tasks:**
@@ -17,6 +38,53 @@ A team collaboration app for projects, tasks and real-time project chat. It runs
 - **Per-project roles:** `ADMIN`, `PROJECT_MANAGER` and `TEAM_MEMBER`, enforced on the server.
 - **Auth:** Google or GitHub OAuth, plus optional one-click sign-in to the seeded demo accounts.
 - **Themes and layout:** light and dark themes (Mono design system), with responsive desktop, tablet and phone layouts.
+
+## Screenshots
+
+All screenshots show the seeded demo data (4 projects, 34 tasks), signed in as the demo admin.
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/dashboard.png" alt="Dashboard with KPI cards and charts" /><br />
+      <b>Dashboard.</b> KPI cards, tasks completed per day, status and priority breakdowns, member workload and project progress.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/projects.png" alt="Project list" /><br />
+      <b>Projects.</b> Every project you belong to, with status, task count and deadline, plus search, status filter and sort.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/project-detail.png" alt="Project detail page for Mobile App Launch" /><br />
+      <b>Project detail.</b> Task, member and deadline summary, with the project's task table and overdue dates flagged.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/tasks.png" alt="Task list with filters" /><br />
+      <b>Tasks.</b> Tasks from every project, filtered by status, priority, project, assignee and deadline, with pagination.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/task-detail.png" alt="Task detail with comments" /><br />
+      <b>Task detail.</b> Inline status and priority, assignees, due date, description and a comment thread.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/chat.png" alt="Project chat room" /><br />
+      <b>Project chat.</b> One live room per project over WebSockets, with message history and who is online.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/notifications.png" alt="Notifications page" /><br />
+      <b>Notifications.</b> Task assignments, status changes and new comments, stored in D1 and refreshed with TanStack Query.
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/members.png" alt="Team members table" /><br />
+      <b>Members.</b> Everyone in your projects, with their highest project role and how many projects you share.
+    </td>
+  </tr>
+</table>
 
 ## Stack
 
