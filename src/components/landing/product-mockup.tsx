@@ -75,13 +75,6 @@ const NAV = [
   { label: 'Members', icon: Users },
 ]
 
-const KPIS = [
-  { label: 'Open tasks', value: '48', delta: '+6', hint: 'this week' },
-  { label: 'Completed', value: '132', delta: '+18%', hint: 'vs last week' },
-  { label: 'On-time rate', value: '94%', delta: '+2.4%', hint: 'vs last week' },
-  { label: 'Overdue', value: '3', delta: '-2', hint: 'since Monday' },
-]
-
 const SERIES = {
   '7d': {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -270,26 +263,6 @@ export function ProductMockup() {
                   Last 7 days · All projects
                 </p>
               </div>
-            </div>
-
-            <div className="grid shrink-0 grid-cols-2 gap-3 lg:grid-cols-4">
-              {KPIS.map((k) => (
-                <div
-                  key={k.label}
-                  className="flex flex-col justify-between rounded-lg border border-border/60 bg-background p-3"
-                >
-                  <span className="text-[11px] text-muted-foreground">
-                    {k.label}
-                  </span>
-                  <span className="mt-2 text-xl font-semibold tracking-tight tabular-nums sm:text-[1.6rem]">
-                    {k.value}
-                  </span>
-                  <span className="mt-1 text-[10px] text-muted-foreground">
-                    <span className="font-medium text-primary">{k.delta}</span>{' '}
-                    {k.hint}
-                  </span>
-                </div>
-              ))}
             </div>
 
             <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1.55fr_1fr]">
